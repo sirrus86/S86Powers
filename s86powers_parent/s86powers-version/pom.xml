@@ -5,7 +5,7 @@
     <artifactId>s86powers-parent</artifactId>
     <version>parent</version>
   </parent>
-  <artifactId>s86powers-nms</artifactId>
-  <version>nms</version>
-  <name>NMS</name>
+  <artifactId>s86powers-version</artifactId>
+  <version>version</version>
+  <name>Version</name>
 </project>

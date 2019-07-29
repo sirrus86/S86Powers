@@ -43,9 +43,9 @@ import me.sirrus86.s86powers.powers.PowerManifest;
 import me.sirrus86.s86powers.powers.PowerStat;
 import me.sirrus86.s86powers.powers.PowerType;
 import me.sirrus86.s86powers.tools.PowerTools;
+import me.sirrus86.s86powers.tools.version.MCVersion;
 import me.sirrus86.s86powers.users.PowerUser;
 import me.sirrus86.s86powers.utils.PowerTime;
-import me.sirrus86.s86powers.version.MCVersion;
 
 @PowerManifest(name = "Auto Gun", type = PowerType.OFFENSE, author = "sirrus86", concept = "sirrus86", version = MCVersion.v1_14, icon=Material.DISPENSER,
 	description = "[act:item]ing against a solid block while holding [item] will place a turret against that block. Turrets will search out and fire upon any living targets within [range] blocks.")

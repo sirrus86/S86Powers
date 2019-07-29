@@ -17,7 +17,7 @@
 		<module>s86powers-v1_13_R1</module>
 		<module>s86powers-v1_13_R2</module>
 		<module>s86powers-v1_14_R1</module>
-		<module>s86powers-nms</module>
+		<module>s86powers-version</module>
 		<module>s86powers-plugin</module>
 	</modules>
 

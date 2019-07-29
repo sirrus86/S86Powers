@@ -24,9 +24,9 @@ import me.sirrus86.s86powers.powers.PowerManifest;
 //import me.sirrus86.s86powers.powers.PowerStat;
 import me.sirrus86.s86powers.powers.PowerType;
 import me.sirrus86.s86powers.tools.PowerTools;
+import me.sirrus86.s86powers.tools.version.MCVersion;
 import me.sirrus86.s86powers.users.PowerUser;
 import me.sirrus86.s86powers.utils.PowerTime;
-import me.sirrus86.s86powers.version.MCVersion;
 
 @PowerManifest(name = "Laser", type = PowerType.OFFENSE, author = "sirrus86", concept = "n33dy1", version=MCVersion.v1_14, icon=Material.DISPENSER,
 	description = "[act:item]ing while holding [item] shoots a laser in front of you. The laser can penetrate walls and will constantly damage enemies.[useConsume] Consumes [consumable] as fuel.[/useConsume] [cooldown] cooldown.")

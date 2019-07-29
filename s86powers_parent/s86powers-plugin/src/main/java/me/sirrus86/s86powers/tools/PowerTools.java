@@ -16,8 +16,9 @@ import java.util.function.Predicate;
 import me.sirrus86.s86powers.S86Powers;
 import me.sirrus86.s86powers.config.ConfigOption;
 import me.sirrus86.s86powers.tools.nms.NMSLibrary;
+import me.sirrus86.s86powers.tools.version.MCVersion;
+import me.sirrus86.s86powers.tools.version.VersionTools;
 import me.sirrus86.s86powers.users.PowerUser;
-import me.sirrus86.s86powers.version.MCVersion;
 
 import org.apache.commons.lang.WordUtils;
 import org.bukkit.Axis;
@@ -66,9 +67,10 @@ public class PowerTools {
 	private static final BlockFace[] radial = { BlockFace.NORTH, BlockFace.NORTH_EAST, BlockFace.EAST, BlockFace.SOUTH_EAST, BlockFace.SOUTH, BlockFace.SOUTH_WEST, BlockFace.WEST, BlockFace.NORTH_WEST };
 
 	private final static NMSLibrary nms = resolveNMS();
-	private final static PacketManager manager = new PacketManager();
+	private final static PacketManager pm = new PacketManager();
 	protected final static S86Powers plugin = JavaPlugin.getPlugin(S86Powers.class);
 	private final static Random random = new Random();
+	private static VersionTools vTools = resolveVTools();
 	
 	/**
 	 * Adds a disguise to an entity, making it look like a different kind of entity.
@@ -80,7 +82,7 @@ public class PowerTools {
 	 * @param type - The {@link EntityType} to disguise the entity as
 	 */
 	public static void addDisguise(LivingEntity entity, EntityType type) {
-		manager.addDisguise(entity, type, null);
+		pm.addDisguise(entity, type, null);
 	}
 	
 	/**
@@ -94,7 +96,7 @@ public class PowerTools {
 	 * @param meta - Metadata to be supplied with the disguise packet. May be {@code null}
 	 */
 	public static void addDisguise(LivingEntity entity, EntityType type, WrappedDataWatcher meta) {
-		manager.addDisguise(entity, type, meta);
+		pm.addDisguise(entity, type, meta);
 	}
 	
 	/**
@@ -107,7 +109,7 @@ public class PowerTools {
 	 * @param item - An {@link ItemStack} that matches this entity's disguise
 	 */
 	public static void addDisguise(Entity entity, ItemStack item) {
-		manager.addDisguise(entity, item);
+		pm.addDisguise(entity, item);
 	}
 	
 	/**
@@ -120,7 +122,7 @@ public class PowerTools {
 	 * @param player - The player to disguise the entity as
 	 */
 	public static void addDisguise(Entity entity, Player player) {
-		manager.addDisguise(entity, player);
+		pm.addDisguise(entity, player);
 	}
 	
 	/**
@@ -132,7 +134,7 @@ public class PowerTools {
 	 * @param player - Player to apply ghost appearance to
 	 */
 	public static void addGhost(Player player) {
-		manager.addGhost(player);
+		pm.addGhost(player);
 	}
 	
 	/**
@@ -146,7 +148,7 @@ public class PowerTools {
 	 * @return An instance of the resulting Shulker.
 	 */
 	public static void addSpectralBlock(Player viewer, Block block, ChatColor color) {
-		manager.addSpectralBlock(viewer, block, color);
+		pm.addSpectralBlock(viewer, block, color);
 	}
 	
 	/**
@@ -159,7 +161,7 @@ public class PowerTools {
 	 * @param material - Material to disguise the block as. Using non-block materials may kick any players who can see it
 	 */
 	public static void blockDisguise(Block block, Material material) {
-		manager.blockDisguise(block, material);
+		pm.blockDisguise(block, material);
 	}
 	
 	/**
@@ -173,7 +175,7 @@ public class PowerTools {
 	 * @param meta - Metadata to be applied to the packet. Useful for materials that appear different with metadata (e.g. Wool)
 	 */
 	public static void blockDisguise(Collection<Block> blocks, Material material, BlockData data) {
-		manager.blockDisguise(blocks, material, data);
+		pm.blockDisguise(blocks, material, data);
 	}	
 
 	/**
@@ -181,7 +183,7 @@ public class PowerTools {
 	 * @param block - Block to update
 	 */
 	public static void blockUpdate(Block block) {
-		manager.blockUpdate(block);
+		pm.blockUpdate(block);
 	}
 	
 	/**
@@ -189,7 +191,7 @@ public class PowerTools {
 	 * @param blocks - Blocks to update
 	 */
 	public static void blockUpdate(Collection<Block> blocks) {
-		manager.blockUpdate(blocks);
+		pm.blockUpdate(blocks);
 	}
 
 	/**
@@ -216,7 +218,7 @@ public class PowerTools {
 	public static void createBeam(Location from, Location to) {
 		if (from.getWorld() == to.getWorld()) {
 			EnderCrystal crystal = from.getWorld().spawn(from, EnderCrystal.class);
-			manager.hide(crystal);
+			pm.hide(crystal);
 			crystal.setBeamTarget(to);
 		}
 	}
@@ -227,11 +229,11 @@ public class PowerTools {
 	 * @param item - Item to be picked up
 	 */
 	public static void fakeCollect(Entity entity, Item item) {
-		manager.fakeCollect(entity, item);
+		pm.fakeCollect(entity, item);
 	}
 	
 	public static void fakeExplosion(Location loc, float radius) {
-		manager.fakeExplosion(loc, radius);
+		pm.fakeExplosion(loc, radius);
 	}
 	
 	public static String getActionString(ItemStack item) {
@@ -491,7 +493,7 @@ public class PowerTools {
 	}
 	
 	public static <T extends Entity> T getTargetEntity(Class<T> clazz, Location location, Vector direction, double maxDistance, Predicate<Entity> filter) {
-		return nms.getTargetEntity(clazz, location, direction, maxDistance, filter);
+		return vTools.getTargetEntity(clazz, location, direction, maxDistance, filter);
 	}
 
 	public static World getWorld(String world) {
@@ -499,15 +501,15 @@ public class PowerTools {
 	}
 	
 	public static boolean hasDisguise(Block block) {
-		return manager.hasDisguise(block);
+		return pm.hasDisguise(block);
 	}
 
 	public static boolean hasDisguise(Entity entity) {
-		return manager.hasDisguise(entity);
+		return pm.hasDisguise(entity);
 	}
 
 	public static void hide(Entity entity) {
-		manager.hide(entity);
+		pm.hide(entity);
 	}
 
 	public static boolean inSunlight(Location loc) {
@@ -536,7 +538,7 @@ public class PowerTools {
 	}
 
 	public static boolean isGhost(Player player) {
-		return manager.isGhost(player);
+		return pm.isGhost(player);
 	}
 
 	public static final boolean isHelmet(ItemStack item) {
@@ -611,15 +613,15 @@ public class PowerTools {
 	}
 	
 	public static void removeDisguise(Entity entity) {
-		manager.removeDisguise(entity);
+		pm.removeDisguise(entity);
 	}
 	
 	public static void removeGhost(Player player) {
-		manager.removeGhost(player);
+		pm.removeGhost(player);
 	}
 	
 	public static void removeSpectralBlock(Player player, Block block) {
-		manager.removeSpectralBlock(player, block);
+		pm.removeSpectralBlock(player, block);
 	}
 	
 	@SuppressWarnings("deprecation")
@@ -641,8 +643,29 @@ public class PowerTools {
 		}
 	}
 	
+	private static VersionTools resolveVTools() {
+		if (vTools == null) {
+			try {
+				switch(MCVersion.CURRENT_VERSION) {
+					case v1_13: case v1_13_1: case v1_13_2: {
+						vTools = (VersionTools) Class.forName("me.sirrus86.s86powers.tools.version.v1_13.VersionTools").newInstance();
+						break;
+					}
+					default: {
+						vTools = (VersionTools) Class.forName("me.sirrus86.s86powers.tools.version.v1_14.VersionTools").newInstance();
+						break;
+					}
+				}
+			} catch (Exception e) {
+				e.printStackTrace();
+				return null;
+			}
+		}
+		return vTools;
+	}
+	
 	public static void setControlling(PowerUser user, LivingEntity entity) {
-		manager.setControlling(user.getPlayer(), entity);
+		pm.setControlling(user.getPlayer(), entity);
 	}
 	
 	public static void setDirection(Fireball entity, Vector dir) {
@@ -654,7 +677,7 @@ public class PowerTools {
 	}
 	
 	public static void setPOV(Entity entity, PowerUser user) {
-		manager.setPointOfView(entity, user.getPlayer());
+		pm.setPointOfView(entity, user.getPlayer());
 	}
 	
 	public static void setTamed(Creature entity, PowerUser owner) {
@@ -662,7 +685,7 @@ public class PowerTools {
 			nms.setTamed(entity, owner.getPlayer());
 			tamed.put(entity.getUniqueId(), owner.getUUID());
 			if (ConfigOption.Powers.SHOW_HEARTS_ON_TAMED) {
-				manager.showHearts(entity, owner.getPlayer());
+				pm.showHearts(entity, owner.getPlayer());
 			}
 		}
 		else {
@@ -674,20 +697,20 @@ public class PowerTools {
 	}
 	
 	public static void showActionBarMessage(Player player, String message) {
-		manager.showActionBarMessage(player, message);
+		pm.showActionBarMessage(player, message);
 	}
 	
 	public static void showAsSpectral(Player player, Entity entity, boolean spectral) {
 		if (spectral) {
-			manager.addSpectralEntity(player, entity);
+			pm.addSpectralEntity(player, entity);
 		}
 		else {
-			manager.removeSpectralEntity(player, entity);
+			pm.removeSpectralEntity(player, entity);
 		}
 	}
 	
 	public static void showItemCooldown(Player player, ItemStack item, long cooldown) {
-		manager.showItemCooldown(player, item, cooldown);
+		pm.showItemCooldown(player, item, cooldown);
 	}
 	
 	public static void spawnEntity(Entity entity, Location loc) {

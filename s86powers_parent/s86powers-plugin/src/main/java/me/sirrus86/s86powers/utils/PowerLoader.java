@@ -13,7 +13,7 @@ import me.sirrus86.s86powers.localization.LocaleString;
 import me.sirrus86.s86powers.powers.Power;
 import me.sirrus86.s86powers.powers.PowerContainer;
 import me.sirrus86.s86powers.powers.PowerManifest;
-import me.sirrus86.s86powers.version.MCVersion;
+import me.sirrus86.s86powers.tools.version.MCVersion;
 
 public class PowerLoader {
 

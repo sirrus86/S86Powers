@@ -5,9 +5,7 @@ import java.lang.reflect.Method;
 import java.util.EnumMap;
 import java.util.LinkedHashSet;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Predicate;
 
-import org.bukkit.FluidCollisionMode;
 import org.bukkit.Location;
 import org.bukkit.craftbukkit.v1_14_R1.CraftWorld;
 import org.bukkit.craftbukkit.v1_14_R1.entity.CraftCreature;
@@ -110,19 +108,6 @@ public class NMSLibrary extends me.sirrus86.s86powers.tools.nms.NMSLibrary {
 	@Override
 	public Item getNMSItem(org.bukkit.inventory.ItemStack item) {
 		return CraftItemStack.asNMSCopy(item).getItem();
-	}
-	
-	@SuppressWarnings("unchecked")
-	@Override
-	public <T extends org.bukkit.entity.Entity> T getTargetEntity(Class<T> clazz, Location location, Vector direction, double maxDistance, Predicate<org.bukkit.entity.Entity> filter) {
-		org.bukkit.util.RayTraceResult rayTrace = location.getWorld().rayTrace(location, direction, maxDistance, FluidCollisionMode.NEVER, true, 1.0D, filter);
-		if (rayTrace != null
-				&& rayTrace.getHitEntity() != null
-				&& rayTrace.getHitBlock() == null) {
-			org.bukkit.entity.Entity target = rayTrace.getHitEntity();
-			return (T) target;
-		}
-		return null;
 	}
 
 	@Override

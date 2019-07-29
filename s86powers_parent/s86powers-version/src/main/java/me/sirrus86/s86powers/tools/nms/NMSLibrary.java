@@ -1,7 +1,5 @@
 package me.sirrus86.s86powers.tools.nms;
 
-import java.util.function.Predicate;
-
 import org.bukkit.Location;
 import org.bukkit.entity.Creature;
 import org.bukkit.entity.Entity;
@@ -13,8 +11,6 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.Vector;
 
 public abstract class NMSLibrary {
-	
-//	protected final S86Powers plugin = JavaPlugin.getPlugin(S86Powers.class);
 	
 	public abstract void controlWASD(Player rider, LivingEntity entity, float forward, float strafe, boolean jump);
 
@@ -31,8 +27,6 @@ public abstract class NMSLibrary {
 	public abstract String getItemName(ItemStack item);
 	
 	public abstract Object getNMSItem(ItemStack item);
-	
-	public abstract <T extends Entity> T getTargetEntity(Class<T> clazz, Location location, Vector direction, double maxDistance, Predicate<Entity> filter);
 
 	public abstract void setDirection(Fireball entity, Vector vec);
 	

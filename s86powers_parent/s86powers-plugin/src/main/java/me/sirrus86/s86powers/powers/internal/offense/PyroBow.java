@@ -22,9 +22,9 @@ import me.sirrus86.s86powers.powers.PowerManifest;
 import me.sirrus86.s86powers.powers.PowerStat;
 import me.sirrus86.s86powers.powers.PowerType;
 import me.sirrus86.s86powers.tools.PowerTools;
+import me.sirrus86.s86powers.tools.version.MCVersion;
 import me.sirrus86.s86powers.users.PowerUser;
 import me.sirrus86.s86powers.utils.PowerTime;
-import me.sirrus86.s86powers.version.MCVersion;
 
 @PowerManifest(name = "Pyro Bow", type = PowerType.OFFENSE, author = "sirrus86", concept = "FyreCat", version = MCVersion.v1_14, icon = Material.BOW,
 	description = "All arrows fired ignite their targets[igniteBlocks], or the block they hit if they miss[/igniteBlocks].[disableIfWet] Cannot use power if you've been in water or rain within the last [cooldown].[/disableIfWet]")

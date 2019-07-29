@@ -12,7 +12,7 @@ import java.util.EnumSet;
 
 import org.bukkit.event.entity.EntityTargetEvent;
 
-import me.sirrus86.s86powers.version.MCVersion;
+import me.sirrus86.s86powers.tools.version.MCVersion;
 
 public class PathfinderGoalTamerHurtByTarget extends PathfinderGoalTarget {
 

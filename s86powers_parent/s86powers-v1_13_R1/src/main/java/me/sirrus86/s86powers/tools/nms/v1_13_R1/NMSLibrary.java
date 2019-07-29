@@ -2,7 +2,6 @@ package me.sirrus86.s86powers.tools.nms.v1_13_R1;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.util.function.Predicate;
 
 import org.bukkit.Location;
 import org.bukkit.craftbukkit.v1_13_R1.CraftWorld;
@@ -105,23 +104,6 @@ public class NMSLibrary extends me.sirrus86.s86powers.tools.nms.NMSLibrary {
 	@Override
 	public Item getNMSItem(org.bukkit.inventory.ItemStack item) {
 		return CraftItemStack.asNMSCopy(item).getItem();
-	}
-	
-	@Override
-	public <T extends org.bukkit.entity.Entity> T getTargetEntity(Class<T> clazz, Location location, Vector direction, double maxDistance, Predicate<org.bukkit.entity.Entity> filter) {
-		for (Location checkLoc = location.clone(); checkLoc.distanceSquared(location) < maxDistance * maxDistance; checkLoc.add(direction)) {
-			org.bukkit.block.Block block = checkLoc.getBlock();
-			if (block.getType().isSolid()) {
-				return null;
-			}
-			for (T entity : location.getWorld().getEntitiesByClass(clazz)) {
-				if (checkLoc.distanceSquared(entity.getLocation()) < 1.0D
-						&& filter.test(entity)) {
-					return entity;
-				}
-			}
-		}
-		return null;
 	}
 
 	@Override

@@ -1,4 +1,4 @@
-package me.sirrus86.s86powers.version;
+package me.sirrus86.s86powers.tools.version;
 
 import org.bukkit.Bukkit;
 

@@ -5,7 +5,7 @@ import java.lang.annotation.RetentionPolicy;
 
 import org.bukkit.Material;
 
-import me.sirrus86.s86powers.version.MCVersion;
+import me.sirrus86.s86powers.tools.version.MCVersion;
 
 /**
  * Annotation which contains unique authoring information about this power. The information provided here is used when players view this power in the plugin's power database.

@@ -28,8 +28,8 @@
 		</dependency>
 		<dependency>
 			<groupId>me.sirrus86</groupId>
-			<artifactId>s86powers-nms</artifactId>
-			<version>nms</version>
+			<artifactId>s86powers-version</artifactId>
+			<version>version</version>
 			<scope>compile</scope>
 			<optional>true</optional>
 		</dependency>

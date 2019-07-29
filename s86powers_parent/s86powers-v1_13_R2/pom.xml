@@ -22,8 +22,8 @@
 		</dependency>
 		<dependency>
 			<groupId>me.sirrus86</groupId>
-			<artifactId>s86powers-nms</artifactId>
-			<version>nms</version>
+			<artifactId>s86powers-version</artifactId>
+			<version>version</version>
 			<type>jar</type>
 		</dependency>
 	</dependencies>

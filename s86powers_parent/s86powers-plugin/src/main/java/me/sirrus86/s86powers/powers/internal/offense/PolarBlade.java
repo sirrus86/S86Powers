@@ -26,9 +26,9 @@ import me.sirrus86.s86powers.powers.Power;
 import me.sirrus86.s86powers.powers.PowerManifest;
 import me.sirrus86.s86powers.powers.PowerType;
 import me.sirrus86.s86powers.tools.PowerTools;
+import me.sirrus86.s86powers.tools.version.MCVersion;
 import me.sirrus86.s86powers.users.PowerUser;
 import me.sirrus86.s86powers.utils.PowerTime;
-import me.sirrus86.s86powers.version.MCVersion;
 
 @PowerManifest(name = "Polar Blade", type = PowerType.OFFENSE, author = "sirrus86", concept = "bobby16may", version=MCVersion.v1_14, icon=Material.IRON_SWORD,
 	description = "Able to craft Polar Blades. Polar Blades require a sword and snow materials. When crafted, comes equipped with a Sharpness enchant. Attacks with a Polar Blade also slow enemies.")

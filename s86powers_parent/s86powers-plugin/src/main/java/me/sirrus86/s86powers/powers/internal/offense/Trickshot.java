@@ -25,9 +25,9 @@ import me.sirrus86.s86powers.powers.PowerManifest;
 import me.sirrus86.s86powers.powers.PowerStat;
 import me.sirrus86.s86powers.powers.PowerType;
 import me.sirrus86.s86powers.tools.PowerTools;
+import me.sirrus86.s86powers.tools.version.MCVersion;
 import me.sirrus86.s86powers.users.PowerUser;
 import me.sirrus86.s86powers.utils.PowerTime;
-import me.sirrus86.s86powers.version.MCVersion;
 
 @PowerManifest(name = "Trickshot", type = PowerType.OFFENSE, author = "sirrus86", concept = "sirrus86", version = MCVersion.v1_14, icon = Material.BOW,
 	description = "While holding a bow at maximum power, targets are highlighted. Upon release, the arrow will attempt to home in on the highlighted target.")
