@@ -1,0 +1,116 @@
+name: S86Powers
+main: me.sirrus86.s86powers.S86Powers
+version: '${project.version}'
+api-version: 1.13
+author: sirrus86
+load: POSTWORLD
+dev-url: https://www.spigotmc.org/resources/s86-powers.68637/
+depend: [ProtocolLib]
+softdepend: [Multiverse-Core]
+
+commands:
+    powers:
+        description: Allows users to manage S86Powers via console or in-game.
+        aliases: [p, power]
+        usage: /powers [help|config|group|player|power|region]
+
+permissions:
+    s86powers.admin:
+        description: Gives user complete control of managing powers, players, groups, and regions.
+        default: op
+        children:
+            s86powers.manage.config.*: true
+            s86powers.manage.group.*: true
+            s86powers.manage.help: true
+            s86powers.manage.player.*: true
+            s86powers.manage.power.*: true
+            s86powers.manage.region.*: true
+            s86powers.manage.self.*: true
+    s86powers.enable:
+        description: Enables powers for current player/rank/world.
+        default: true
+    s86powers.manage.config.*:
+        description: Allows user to completely manage all config options.
+        default: false
+        children:
+            s86powers.manage.config: true
+            s86powers.manage.config.help: true
+            s86powers.manage.config.info: true
+            s86powers.manage.config.list: true
+            s86powers.manage.config.reload: true
+            s86powers.manage.config.save: true
+            s86powers.manage.config.set: true
+    s86powers.manage.group.*:
+        description: Allows user to completely manage all groups.
+        default: false
+        children:
+            s86powers.manage.group: true
+            s86powers.manage.group.add: true
+            s86powers.manage.group.assign: true
+            s86powers.manage.group.create: true
+            s86powers.manage.group.delete: true
+            s86powers.manage.group.help: true
+            s86powers.manage.group.info: true
+            s86powers.manage.group.kick: true
+            s86powers.manage.group.list: true
+            s86powers.manage.group.remove: true
+    s86powers.manage.player.*:
+        description: Allows user to completely manage all players.
+        default: false
+        children:
+            s86powers.manage.player: true
+            s86powers.manage.player.add: true
+            s86powers.manage.player.create: true
+            s86powers.manage.player.delete: true
+            s86powers.manage.player.help: true
+            s86powers.manage.player.info: true
+            s86powers.manage.player.list: true
+            s86powers.manage.player.remove: true
+            s86powers.manage.player.stats: true
+            s86powers.manage.player.supply: true
+            s86powers.manage.player.toggle: true
+    s86powers.manage.power.*:
+        description: Allows user to completely manage all powers.
+        default: false
+        children:
+            s86powers.manage.power: true
+            s86powers.manage.power.block: true
+            s86powers.manage.power.disable: true
+            s86powers.manage.power.enable: true
+            s86powers.manage.power.help: true
+            s86powers.manage.power.info: true
+            s86powers.manage.power.kill: true
+            s86powers.manage.power.list: true
+            s86powers.manage.power.lock: true
+            s86powers.manage.power.option: true
+            s86powers.manage.power.reload: true
+            s86powers.manage.power.save: true
+            s86powers.manage.power.stats: true
+            s86powers.manage.power.supplies: true
+            s86powers.manage.power.unblock: true
+            s86powers.manage.power.unlock: true
+    s86powers.manage.region.*:
+        description: Allows user to completely manage all regions.
+        default: false
+        children:
+            s86powers.manage.region.create: true
+            s86powers.manage.region.delete: true
+            s86powers.manage.region.help: true
+            s86powers.manage.region.info: true
+            s86powers.manage.region.list: true
+            s86powers.manage.region.resize: true
+            s86powers.manage.region.toggle: true
+    s86powers.manage.self.*:
+        description: Allows user to completely manage themselves.
+        default: false
+        children:
+            s86powers.manage.self: true
+            s86powers.manage.self.add: true
+            s86powers.manage.self.info: true
+            s86powers.manage.self.join: true
+            s86powers.manage.self.leave: true
+            s86powers.manage.self.remove: true
+            s86powers.manage.self.stats: true
+            s86powers.manage.self.supply: true
+            s86powers.manage.self.toggle: true
+    
