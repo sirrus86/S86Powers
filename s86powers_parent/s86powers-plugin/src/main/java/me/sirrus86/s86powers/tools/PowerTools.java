@@ -55,21 +55,20 @@ import com.google.common.collect.Sets;
 /**
  * Class which contains an assortment of tools for use within power classes.
  * @author sirrus86
- *
  */
 public class PowerTools {
 	
 	private static Map<UUID, UUID> tamed = new HashMap<>();
 	private static Map<Double, Set<Vector>> auraCoords = new HashMap<>();
-	private final static TreeMap<Integer, String> romanNums = new TreeMap<>();
+	private static final TreeMap<Integer, String> romanNums = new TreeMap<>();
 	
-	private final static BlockFace[] axis = { BlockFace.NORTH, BlockFace.EAST, BlockFace.SOUTH, BlockFace.WEST };
+	private static final BlockFace[] axis = { BlockFace.NORTH, BlockFace.EAST, BlockFace.SOUTH, BlockFace.WEST };
 	private static final BlockFace[] radial = { BlockFace.NORTH, BlockFace.NORTH_EAST, BlockFace.EAST, BlockFace.SOUTH_EAST, BlockFace.SOUTH, BlockFace.SOUTH_WEST, BlockFace.WEST, BlockFace.NORTH_WEST };
 
-	private final static NMSLibrary nms = resolveNMS();
-	private final static PacketManager pm = new PacketManager();
-	protected final static S86Powers plugin = JavaPlugin.getPlugin(S86Powers.class);
-	private final static Random random = new Random();
+	private static final NMSLibrary nms = resolveNMS();
+	private static final PacketManager pm = new PacketManager();
+	protected static final S86Powers plugin = JavaPlugin.getPlugin(S86Powers.class);
+	private static final Random random = new Random();
 	private static VersionTools vTools = resolveVTools();
 	
 	/**

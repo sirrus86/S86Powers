@@ -147,7 +147,6 @@ public class Summoner extends Power {
 	@EventHandler(ignoreCancelled = true)
 	private void onUse(PowerUseEvent event) {
 		if (event.getPower() == this
-//				&& event.isCorrectClick()
 				&& event.hasBlock()
 				&& event.getBlockFace() == BlockFace.UP
 				&& event.getClickedBlock().getWorld().getEnvironment() != Environment.NETHER) {
