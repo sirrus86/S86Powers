@@ -421,11 +421,11 @@ public class PowerTools {
 		return nms != null ? nms : resolveNMS();
 	}
 	
-	public static LivingEntity getRandomTarget(Creature entity, double radius, LivingEntity... ignore) {
-		return getRandomTarget(entity, radius, ignore != null ? Sets.newHashSet(ignore) : null);
+	public static LivingEntity getRandomEntity(Entity entity, double radius, LivingEntity... ignore) {
+		return getRandomEntity(entity, radius, ignore != null ? Sets.newHashSet(ignore) : null);
 	}
 	
-	public static LivingEntity getRandomTarget(Creature entity, double radius, Set<LivingEntity> ignore) {
+	public static LivingEntity getRandomEntity(Entity entity, double radius, Set<LivingEntity> ignore) {
 		List<Entity> eList = entity.getNearbyEntities(radius, radius, radius);
 		Collections.shuffle(eList);
 		for (int i = 0; i < eList.size(); i ++) {

@@ -172,7 +172,7 @@ public class LocustSwarm extends Power {
 				Set<LivingEntity> targetList = new HashSet<>();
 				targetList.addAll(sList.keySet());
 				targetList.add(owner.getPlayer());
-				fish.setTarget(PowerTools.getRandomTarget(fish, 10.0D, targetList));
+				fish.setTarget(PowerTools.getRandomEntity(fish, 10.0D, targetList));
 				sList.putAll(sfish);
 			}
 			registerEvents(this);
@@ -194,7 +194,7 @@ public class LocustSwarm extends Power {
 						Set<LivingEntity> targetList = new HashSet<>();
 						targetList.addAll(sList.keySet());
 						targetList.add(owner.getPlayer());
-						sfish.setTarget(PowerTools.getRandomTarget(sfish, 10.0D, targetList));
+						sfish.setTarget(PowerTools.getRandomEntity(sfish, 10.0D, targetList));
 						owner.increaseStat(summonCount, 1);
 					}
 				}
