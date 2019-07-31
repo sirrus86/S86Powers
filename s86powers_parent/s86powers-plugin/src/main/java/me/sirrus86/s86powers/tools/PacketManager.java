@@ -82,7 +82,15 @@ public class PacketManager {
 			@Override
 			public void onPacketSending(PacketEvent event) {
 				Player viewer = event.getPlayer();
-				Entity entity = event.getPacket().getEntityModifier(event).readSafely(0);
+				Entity entity = null;
+				try {
+					entity = event.getPacket().getEntityModifier(event).readSafely(0);
+				} catch (Exception e) {
+					// ProtocolLib can't pinpoint the entity, so leave the field null
+					if (ConfigOption.Plugin.SHOW_PACKET_ERRORS) {
+						e.printStackTrace();
+					}
+				}
 				if (event.getPacketType() == PacketType.Play.Server.BLOCK_CHANGE) {
 					BlockPosition bPos = event.getPacket().getBlockPositionModifier().readSafely(0);
 					if (bPos != null
