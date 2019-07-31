@@ -139,7 +139,9 @@ public class PowerContainer {
 				field = power.getClass().getSuperclass().getDeclaredField(option);
 				field.setAccessible(true);
 				object = field.get(power);
-			} catch (NoSuchFieldException | IllegalArgumentException | IllegalAccessException e1) {
+			} catch (NoSuchFieldException e1) { 
+				return null;
+			} catch(IllegalArgumentException | IllegalAccessException e1) {
 				e1.printStackTrace();
 			}
 		} catch (IllegalAccessException | IllegalArgumentException e) {
@@ -190,27 +192,31 @@ public class PowerContainer {
 			String field = tmp.substring(i + 1, j);
 			if (field.startsWith("act:")) {
 				ItemStack item = (ItemStack) getFieldValue(field.substring(4));
-				tmp = tmp.replace(tag, PowerTools.getActionString(item));
+				if (item != null) {
+					tmp = tmp.replace(tag, PowerTools.getActionString(item));
+				}
 			}
 			else {
 				Object object = getFieldValue(field);
-				if (object instanceof Boolean) {
-					String endTag = "[/" + field + "]";
-					if (!Boolean.parseBoolean(object.toString())) {
-						tmp = tmp.substring(0, tmp.indexOf(tag)) + tmp.substring(tmp.indexOf(endTag) + endTag.length());
+				if (object != null) {
+					if (object instanceof Boolean) {
+						String endTag = "[/" + field + "]";
+						if (!Boolean.parseBoolean(object.toString())) {
+							tmp = tmp.substring(0, tmp.indexOf(tag)) + tmp.substring(tmp.indexOf(endTag) + endTag.length());
+						}
+						else {
+							tmp = tmp.replace(tag, "").replace(endTag, "");
+						}
+					}
+					else if (object instanceof ItemStack) {
+						tmp = tmp.replace(tag, PowerTools.getItemName((ItemStack)object));
+					}
+					else if (object instanceof Long) {
+						tmp = tmp.replace(tag, PowerTime.asLongString((Long)object));
 					}
 					else {
-						tmp = tmp.replace(tag, "").replace(endTag, "");
+						tmp = tmp.replace(tag, object.toString());
 					}
-				}
-				else if (object instanceof ItemStack) {
-					tmp = tmp.replace(tag, PowerTools.getItemName((ItemStack)object));
-				}
-				else if (object instanceof Long) {
-					tmp = tmp.replace(tag, PowerTime.asLongString((Long)object));
-				}
-				else {
-					tmp = tmp.replace(tag, object.toString());
 				}
 			}
 		}
