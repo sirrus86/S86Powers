@@ -2,6 +2,8 @@ package me.sirrus86.s86powers.utils;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
@@ -28,9 +30,30 @@ public class PowerLoader {
 	
 	private void load(File file) {
 		if (file.isDirectory()) {
+			File[] files = file.listFiles();
+			Arrays.sort(files, new Comparator<File>() {
+				@Override
+				public int compare(File o1, File o2) {
+					String o1name = o1.getName();
+					int o1dot = o1name.lastIndexOf('.');
+					String o2name = o2.getName();
+					int o2dot = o2name.lastIndexOf('.');
+					if ((o1dot == -1) == (o2dot == -1)) {
+						o1name = o1name.substring(o1dot + 1);
+						o2name = o2name.substring(o2dot + 1);
+						return o1name.compareTo(o2name);
+					}
+					else if (o1dot == -1) {
+						return -1;
+					}
+					else {
+						return 1;
+					}
+				}
+			});
 			try {
 				ClassLoader loader = new PowerClassLoader(file.toURI().toURL());
-				for (final File item : file.listFiles()) {
+				for (final File item : files) {
 					load(item, loader);
 				}
 			} catch (final Exception e) {
@@ -51,8 +74,10 @@ public class PowerLoader {
 		if (IOHelper.isJar(file)) {
 			load(new JarFile(file), new PowerClassLoader(IOHelper.getJarUrl(file)));
 		}
-		else if (loader == null) {
-			loader = new PowerClassLoader(file.getParentFile().toURI().toURL());
+		else {
+			if (loader == null) {
+				loader = new PowerClassLoader(file.getParentFile().toURI().toURL());
+			}
 			load(file, loader, "");
 		}
 	}
