@@ -19,7 +19,7 @@ public class PowerLoader {
 
 	private final S86Powers plugin;
 	private static final String POWER_PREFIX = "me.sirrus86.s86powers.powers.internal.";
-	private static final String[] TYPE_PREFIX = new String[]{"defense.", "offense.", "passive.", "utility.", ""};
+	private static final String[] TYPE_PREFIX = new String[] { "defense.", "offense.", "passive.", "utility.", "" };
 	
 	public PowerLoader(final S86Powers plugin, File file) {
 		this.plugin = plugin;
@@ -51,8 +51,8 @@ public class PowerLoader {
 		if (IOHelper.isJar(file)) {
 			load(new JarFile(file), new PowerClassLoader(IOHelper.getJarUrl(file)));
 		}
-		else {
-			if (loader == null) loader = new PowerClassLoader(file.getParentFile().toURI().toURL());
+		else if (loader == null) {
+			loader = new PowerClassLoader(file.getParentFile().toURI().toURL());
 			load(file, loader, "");
 		}
 	}
@@ -136,7 +136,6 @@ public class PowerLoader {
 					plugin.log(Level.INFO, LocaleString.POWER_LOAD_SUCCESS.build(power));
 				}
 				PowerContainer.getContainer(power).setEnabled(true);
-//				power.setEnabled(true);
 				plugin.getConfigManager().addPower(power);
 			}
 			else {
