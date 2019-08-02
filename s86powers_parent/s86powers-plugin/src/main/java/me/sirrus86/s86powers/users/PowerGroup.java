@@ -115,7 +115,7 @@ public class PowerGroup implements Comparable<PowerGroup> {
 				}
 			}
 			if (config.contains("powers")) {
-				for (String pwr : config.getConfigurationSection("powers").getKeys(false)) {
+				for (String pwr : config.getStringList("powers")) {
 					Power power = plugin.getConfigManager().getPower(pwr);
 					if (power != null) {
 						addPower(power);
