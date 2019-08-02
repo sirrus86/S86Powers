@@ -29,6 +29,8 @@ import org.bukkit.ChatColor;
 import org.bukkit.command.PluginCommand;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import com.comphenix.protocol.ProtocolLib;
+
 /**
  * 
  * @author sirrus86
@@ -36,6 +38,8 @@ import org.bukkit.plugin.java.JavaPlugin;
  */
 public final class S86Powers extends JavaPlugin {
 
+	private static final double MIN_PROTOCOLLIB_VERSION = 4.5D;
+	
 	private BlockListener bList;
 	private PowerComExecutor comExec;
 	private ConfigManager configManager;
@@ -50,7 +54,7 @@ public final class S86Powers extends JavaPlugin {
 		configManager = new ConfigManager(this);
 		configManager.loadPluginConfig();
 		configManager.loadPowerConfig();
-		configManager.loadNeutralRegions();;
+		configManager.loadNeutralRegions();
 		try {
 			new LocaleLoader();
 		} catch (IOException e) {
@@ -70,6 +74,14 @@ public final class S86Powers extends JavaPlugin {
 		if (ConfigOption.Plugin.USE_METRICS) {
 			doMetrics();
 		}
+		try {
+			ProtocolLib pLib = JavaPlugin.getPlugin(ProtocolLib.class);
+			double pLibVer = Double.parseDouble(pLib.getDescription().getVersion().substring(0, 3));
+			if (pLibVer < MIN_PROTOCOLLIB_VERSION) {
+				log(Level.SEVERE, ChatColor.RED + "ProtocolLib v" + MIN_PROTOCOLLIB_VERSION + " or higher is required for S86Powers to work properly!");
+				log(Level.SEVERE, ChatColor.RED + "Currently installed: v" + pLibVer);
+			}
+		} catch (Exception e) {}
 	}
 	
 	@Override
