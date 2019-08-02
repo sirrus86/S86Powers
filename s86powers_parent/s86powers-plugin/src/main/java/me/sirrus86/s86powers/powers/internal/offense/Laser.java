@@ -35,6 +35,7 @@ public class Laser extends Power {
 	private Map<PowerUser, Beam> lasers;
 	
 	private double damage, dist;
+	private int laserBlue, laserGreen, laserRed;
 //	private PowerStat laserDmg;
 	private boolean useConsume;
 	
@@ -58,6 +59,9 @@ public class Laser extends Power {
 		damage = option("damage", 5.0D, "Amount of damage done by laser beams.");
 		dist = option("laser-distance", 10.0D, "Maximum distance a laser can travel.");
 		item = option("item", new ItemStack(Material.DISPENSER), "Item used to start/stop firing the laser.");
+		laserBlue = option("color.blue", 0, "Blue value for laser color. Values below 0 or above 255 may provide unexpected results.");
+		laserGreen = option("color.green", 255, "Green value for laser color. Values below 0 or above 255 may provide unexpected results.");
+		laserRed = option("color.red", 255, "Red value for laser color. Values below 0 or above 255 may provide unexpected results.");
 //		laserDmg = stat("laser-damage", 150, "Damage done by lasers", "Lasers will now split when shot through glass."); // TODO
 		useConsume = option("use-consumable", true, "Whether consumable item should be required and consumed when laser is used.");
 		supplies(item, new ItemStack(consumable.getType(), consumable.getMaxStackSize()));
@@ -113,7 +117,7 @@ public class Laser extends Power {
 					for (int i = 0; i < dist * 10; i ++) {
 						Vector newDir = dir.clone().multiply(i * 0.1D);
 						loc.add(newDir);
-						PowerTools.playRedstoneEffect(loc, new Vector(0, 0, 0), 1, new DustOptions(Color.YELLOW, 1.0F));
+						PowerTools.playRedstoneEffect(loc, new Vector(0, 0, 0), 1, new DustOptions(Color.fromRGB(laserRed, laserGreen, laserBlue), 1.0F));
 						for (Entity entity : entities) {
 							if (entity instanceof Damageable
 									&& BoundingBox.of(loc, 0.25D, 0.25D, 0.25D).overlaps(entity.getBoundingBox())) {
