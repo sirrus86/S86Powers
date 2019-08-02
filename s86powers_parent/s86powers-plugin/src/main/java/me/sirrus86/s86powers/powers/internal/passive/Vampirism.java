@@ -80,7 +80,8 @@ public class Vampirism extends Power {
 			Iterator<PowerUser> it = getInstance().getUsers().iterator();
 			while (it.hasNext()) {
 				PowerUser user = it.next();
-				if (user.allowPower(getInstance())) {
+				if (user.isOnline()
+						&& user.allowPower(getInstance())) {
 					if (PowerTools.inSunlight(user.getPlayer().getLocation())) {
 						if (transformed.contains(user)) {
 							transform(user, false);
