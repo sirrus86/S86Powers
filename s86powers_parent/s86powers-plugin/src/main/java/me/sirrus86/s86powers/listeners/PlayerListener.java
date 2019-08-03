@@ -3,6 +3,7 @@ package me.sirrus86.s86powers.listeners;
 import me.sirrus86.s86powers.S86Powers;
 import me.sirrus86.s86powers.config.ConfigOption;
 import me.sirrus86.s86powers.powers.Power;
+import me.sirrus86.s86powers.powers.PowerContainer;
 import me.sirrus86.s86powers.powers.PowerType;
 import me.sirrus86.s86powers.tools.PowerTools;
 import me.sirrus86.s86powers.users.PowerUser;
@@ -37,16 +38,25 @@ public class PlayerListener implements Listener {
 	private void onJoin(PlayerJoinEvent event) {
 		if (!plugin.getConfigManager().hasUser(event.getPlayer().getUniqueId())) {
 			PowerUser user = plugin.getConfigManager().getUser(event.getPlayer().getUniqueId());
-			if (ConfigOption.Users.AUTO_ASSIGN) {
+			if (user != null) {
 				UserContainer uCont = UserContainer.getContainer(user);
-				for (PowerType type : PowerType.values()) {
-					if (type != PowerType.UTILITY
-							&& uCont.getAssignedPowersByType(type).isEmpty()) {
-						List<Power> tempList = Lists.newArrayList(plugin.getConfigManager().getPowersByType(type));
-						Collections.shuffle(tempList); 
-						uCont.addPower(tempList.get(0));
+				if (ConfigOption.Users.AUTO_ASSIGN) {
+					for (PowerType type : PowerType.values()) {
+						if (type != PowerType.UTILITY
+								&& uCont.getAssignedPowersByType(type).isEmpty()) {
+							List<Power> tempList = Lists.newArrayList(plugin.getConfigManager().getPowersByType(type));
+							Collections.shuffle(tempList); 
+							uCont.addPower(tempList.get(0));
+						}
 					}
 				}
+				for (Power power : uCont.getPowers(true)) {
+					if (uCont.hasPowerEnabled(power)) {
+						PowerContainer pCont = PowerContainer.getContainer(power);
+						pCont.enable(user);
+					}
+				}
+				
 			}
 		}
 	}
