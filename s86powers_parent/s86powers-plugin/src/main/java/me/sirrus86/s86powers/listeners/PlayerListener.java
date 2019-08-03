@@ -50,13 +50,16 @@ public class PlayerListener implements Listener {
 						}
 					}
 				}
-				for (Power power : uCont.getPowers(true)) {
-					if (uCont.hasPowerEnabled(power)) {
-						PowerContainer pCont = PowerContainer.getContainer(power);
-						pCont.enable(user);
-					}
+			}
+		}
+		PowerUser user = plugin.getConfigManager().getUser(event.getPlayer().getUniqueId());
+		if (user != null) {
+			UserContainer uCont = UserContainer.getContainer(user);
+			for (Power power : uCont.getPowers(true)) {
+				if (uCont.hasPowerEnabled(power)) {
+					PowerContainer pCont = PowerContainer.getContainer(power);
+					pCont.enable(user);
 				}
-				
 			}
 		}
 	}
@@ -64,9 +67,14 @@ public class PlayerListener implements Listener {
 	@EventHandler
 	private void onQuit(PlayerQuitEvent event) {
 		PowerUser user = plugin.getConfigManager().getUser(event.getPlayer().getUniqueId());
-		UserContainer.getContainer(user).save();
-		PowerTools.removeGhost(event.getPlayer());
-		PowerTools.removeDisguise(event.getPlayer());
+		UserContainer uCont = UserContainer.getContainer(user);
+		uCont.save();
+		for (Power power : uCont.getPowers(true)) {
+			if (uCont.hasPowerEnabled(power)) {
+				PowerContainer pCont = PowerContainer.getContainer(power);
+				pCont.disable(user);
+			}
+		}
 	}
 	
 }
