@@ -21,15 +21,15 @@ import me.sirrus86.s86powers.permissions.PermissionHandler;
 import me.sirrus86.s86powers.powers.Power;
 import me.sirrus86.s86powers.powers.PowerContainer;
 import me.sirrus86.s86powers.powers.PowerType;
+import me.sirrus86.s86powers.tools.version.MCVersion;
 import me.sirrus86.s86powers.utils.Metrics;
 import me.sirrus86.s86powers.utils.PowerExporter;
 import me.sirrus86.s86powers.utils.PowerLoader;
 
 import org.bukkit.ChatColor;
 import org.bukkit.command.PluginCommand;
+import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
-
-import com.comphenix.protocol.ProtocolLib;
 
 /**
  * 
@@ -75,11 +75,14 @@ public final class S86Powers extends JavaPlugin {
 			doMetrics();
 		}
 		try {
-			ProtocolLib pLib = JavaPlugin.getPlugin(ProtocolLib.class);
-			double pLibVer = Double.parseDouble(pLib.getDescription().getVersion().substring(0, 3));
-			if (pLibVer < MIN_PROTOCOLLIB_VERSION) {
-				log(Level.SEVERE, ChatColor.RED + "ProtocolLib v" + MIN_PROTOCOLLIB_VERSION + " or higher is required for S86Powers to work properly!");
-				log(Level.SEVERE, ChatColor.RED + "Currently installed: v" + pLibVer);
+			Plugin pLib = this.getServer().getPluginManager().getPlugin("ProtocolLib");
+			if (pLib != null) {
+				double pLibVer = Double.parseDouble(pLib.getDescription().getVersion().substring(0, 3));
+				if (pLibVer < MIN_PROTOCOLLIB_VERSION
+						&& !MCVersion.isVersion(MCVersion.v1_13, MCVersion.v1_13_1, MCVersion.v1_13_2)) {
+					log(Level.SEVERE, ChatColor.RED + "ProtocolLib v" + MIN_PROTOCOLLIB_VERSION + " or higher is required for S86Powers to work properly!");
+					log(Level.SEVERE, ChatColor.RED + "Currently installed: v" + pLibVer);
+				}
 			}
 		} catch (Exception e) {}
 	}
