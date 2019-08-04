@@ -553,7 +553,7 @@ public class PowerTools {
 	}
 
 	public static boolean isOutside(Location loc) {
-		return loc.getBlockY() < loc.getWorld().getHighestBlockYAt(loc);
+		return loc.getBlockY() > loc.getWorld().getHighestBlockYAt(loc);
 	}
 
 	public static final boolean isPickaxe(ItemStack item) {
