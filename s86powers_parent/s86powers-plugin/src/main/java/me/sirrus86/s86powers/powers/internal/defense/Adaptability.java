@@ -53,7 +53,7 @@ public class Adaptability extends Power {
 		double amt = 1.0D;
 		if (aUsers.get(user).getType() != type) {
 			amt = dmgIncr;
-			if (user.getCooldown(this) == 0) {
+			if (user.getCooldown(this) <= 0L) {
 				user.sendMessage(ChatColor.YELLOW + "Now adapting to " + type.toString().toLowerCase() + " damage.");
 				aUsers.get(user).setType(type).setAmount(initAmt);
 				user.setCooldown(this, cooldown);
@@ -61,7 +61,7 @@ public class Adaptability extends Power {
 		}
 		else {
 			amt = aUsers.get(user).getAmount();
-			if (user.getCooldown(this) == 0
+			if (user.getCooldown(this) <= 0L
 					&& aUsers.get(user).getAmount() < maxAmt) {
 				aUsers.get(user).increaseAmount(incrAmt);
 				user.sendMessage(ChatColor.YELLOW + "Resistance to " + type.toString().toLowerCase() + " increased to " + aUsers.get(user).getAmount() + "%.");
