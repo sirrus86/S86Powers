@@ -6,6 +6,7 @@ import java.util.Set;
 import org.bukkit.ChatColor;
 import org.bukkit.EntityEffect;
 import org.bukkit.Material;
+import org.bukkit.Particle;
 import org.bukkit.Sound;
 import org.bukkit.World;
 import org.bukkit.World.Environment;
@@ -15,6 +16,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.player.PlayerToggleSprintEvent;
+import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
@@ -32,7 +34,7 @@ import me.sirrus86.s86powers.tools.PowerTools;
 import me.sirrus86.s86powers.users.PowerUser;
 
 @PowerManifest(name = "Lycanthropy", type = PowerType.PASSIVE, author = "sirrus86", concept = "vashvhexx", icon=Material.RABBIT_FOOT,
-	description = "[control]By [act:item]ing while holding [item][/control][noControl]At night during a full moon [/noControl]you change into a wolf. As a wolf[speed] sprinting speed increases,[/speed][nv] you gain night vision,[/nv][either] and[/either] damage increases by [dmgIncr]%, but you take [ironDmg]% damage from iron tools and weapons, and are unable to wear any armor.[noControl] Effect ends at sunrise.[/noControl]")
+	description = "[control]By [act:item]ing while holding [item][/control][noControl]At night during a full moon [/noControl]you change into a wolf. As a wolf[speed] sprinting speed increases,[/speed][nv] you gain night vision,[/nv][either] and[/either] unarmed damage increases by [dmgIncr]%, but you take [ironDmg]% damage from iron tools and weapons, and are unable to wear any armor.[noControl] Effect ends at sunrise.[/noControl]")
 public class Lycanthropy extends Power {
 
 	private Set<PowerUser> isWolf;
@@ -168,9 +170,11 @@ public class Lycanthropy extends Power {
 		}
 		if (event.getDamager() instanceof Player) {
 			PowerUser user = getUser((Player) event.getDamager());
-			if (isWolf.contains(user)
-					&& !PowerTools.isTool(user.getPlayer().getInventory().getItemInMainHand())) {
+			if (user.allowPower(this)
+					&& isWolf.contains(user)
+					&& user.getEquipment(EquipmentSlot.HAND) == null) {
 				event.setDamage(event.getDamage() * (dmgIncr / 100));
+				PowerTools.playParticleEffect(event.getEntity().getLocation(), Particle.CRIT, 5);
 			}
 		}
 	}
