@@ -2,7 +2,6 @@ package me.sirrus86.s86powers.command;
 
 import java.util.Set;
 
-import me.sirrus86.s86powers.config.ConfigOption;
 import me.sirrus86.s86powers.localization.LocaleString;
 import me.sirrus86.s86powers.permissions.S86Permission;
 import me.sirrus86.s86powers.powers.Power;
@@ -263,9 +262,6 @@ public class ComPower extends ComAbstract {
 					if (value != null) {
 						power.setOption(option, option.getDefaultValue() instanceof Long ? (Long) value : value);
 						sender.sendMessage(SUCCESS + LocaleString.SET_OPTION_SUCCESS.build(option.getPath(), value));
-						if (ConfigOption.Plugin.AUTO_SAVE) {
-							power.getPower().saveConfig();
-						}
 					}
 					else {
 						sender.sendMessage(ERROR + LocaleString.SET_OPTION_FAIL.build(option.getPath(), option.getDefaultValue().getClass(), valueStr));
@@ -324,9 +320,6 @@ public class ComPower extends ComAbstract {
 					int value = validate(stat, valueStr);
 					power.setStatValue(stat, value);
 					sender.sendMessage(SUCCESS + LocaleString.SET_STAT_SUCCESS.build(stat.getPath(), value));
-					if (ConfigOption.Plugin.AUTO_SAVE) {
-						power.getPower().saveConfig();
-					}
 				}
 				else {
 					sender.sendMessage(ChatColor.GREEN + stat.getPath());
