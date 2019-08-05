@@ -15,7 +15,6 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
-import org.bukkit.util.BoundingBox;
 import org.bukkit.util.Vector;
 
 import me.sirrus86.s86powers.events.PowerUseEvent;
@@ -24,11 +23,10 @@ import me.sirrus86.s86powers.powers.PowerManifest;
 //import me.sirrus86.s86powers.powers.PowerStat;
 import me.sirrus86.s86powers.powers.PowerType;
 import me.sirrus86.s86powers.tools.PowerTools;
-import me.sirrus86.s86powers.tools.version.MCVersion;
 import me.sirrus86.s86powers.users.PowerUser;
 import me.sirrus86.s86powers.utils.PowerTime;
 
-@PowerManifest(name = "Laser", type = PowerType.OFFENSE, author = "sirrus86", concept = "n33dy1", version=MCVersion.v1_14, icon=Material.DISPENSER,
+@PowerManifest(name = "Laser", type = PowerType.OFFENSE, author = "sirrus86", concept = "n33dy1", icon=Material.DISPENSER,
 	description = "[act:item]ing while holding [item] shoots a laser in front of you. The laser can penetrate walls and will constantly damage enemies.[useConsume] Consumes [consumable] as fuel.[/useConsume] [cooldown] cooldown.")
 public class Laser extends Power {
 
@@ -120,7 +118,7 @@ public class Laser extends Power {
 						PowerTools.playRedstoneEffect(loc, new Vector(0, 0, 0), 1, new DustOptions(Color.fromRGB(laserRed, laserGreen, laserBlue), 1.0F));
 						for (Entity entity : entities) {
 							if (entity instanceof Damageable
-									&& BoundingBox.of(loc, 0.25D, 0.25D, 0.25D).overlaps(entity.getBoundingBox())) {
+									&& entity.getLocation().distanceSquared(loc) < 1.0D) {
 								owner.causeDamage(getInstance(), (Damageable) entity, DamageCause.PROJECTILE, damage);
 							}
 						}
