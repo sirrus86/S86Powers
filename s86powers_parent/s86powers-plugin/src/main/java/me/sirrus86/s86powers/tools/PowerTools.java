@@ -48,7 +48,6 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.util.Vector;
 
-import com.comphenix.protocol.wrappers.WrappedDataWatcher;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
@@ -94,7 +93,7 @@ public class PowerTools {
 	 * @param type - The {@link EntityType} to disguise the entity as
 	 * @param meta - Metadata to be supplied with the disguise packet. May be {@code null}
 	 */
-	public static void addDisguise(LivingEntity entity, EntityType type, WrappedDataWatcher meta) {
+	public static void addDisguise(LivingEntity entity, EntityType type, Map<Integer, Object> meta) {
 		pm.addDisguise(entity, type, meta);
 	}
 	

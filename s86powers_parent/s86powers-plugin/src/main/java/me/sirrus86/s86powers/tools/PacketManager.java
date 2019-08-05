@@ -191,14 +191,15 @@ public class PacketManager {
 		});
 	}
 	
-	protected void addDisguise(LivingEntity entity, EntityType type, WrappedDataWatcher meta) {
+	protected void addDisguise(LivingEntity entity, EntityType type, Map<Integer, Object> meta) {
 		PacketContainer packet1 = pm.createPacketConstructor(PacketType.Play.Server.SPAWN_ENTITY_LIVING, entity).createPacket(entity);
 		packet1.getIntegers().write(1, nms.getEntityTypeID(type));
 		if (meta != null) {
-			packet1.getDataWatcherModifier().write(0, meta);
+			WrappedDataWatcher watcher = createWrappedDataWatcher(meta);
+			packet1.getDataWatcherModifier().write(0, watcher);
 			PacketContainer packet2 = pm.createPacket(PacketType.Play.Server.ENTITY_METADATA, true);
 			packet2.getIntegers().write(0, entity.getEntityId());
-			packet2.getWatchableCollectionModifier().write(0, meta.getWatchableObjects());
+			packet2.getWatchableCollectionModifier().write(0, watcher.getWatchableObjects());
 			pm.broadcastServerPacket(packet2, entity, false);
 			metadata.put(entity.getUniqueId(), packet2);
 		}
@@ -370,6 +371,14 @@ public class PacketManager {
 			packets.add(packet);
 		}
 		return packets;
+	}
+	
+	private WrappedDataWatcher createWrappedDataWatcher(Map<Integer, Object> map) {
+		WrappedDataWatcher watcher = new WrappedDataWatcher();
+		for (Integer i : map.keySet()) {
+			watcher.setObject(i, Registry.get(map.get(i).getClass()), (Object) map.get(i), true);
+		}
+		return watcher;
 	}
 	
 	protected void fakeCollect(Entity entity, Item item) {
