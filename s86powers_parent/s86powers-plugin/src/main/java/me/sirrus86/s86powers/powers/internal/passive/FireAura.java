@@ -27,7 +27,7 @@ import me.sirrus86.s86powers.tools.PowerTools;
 import me.sirrus86.s86powers.users.PowerUser;
 import me.sirrus86.s86powers.utils.PowerTime;
 
-@PowerManifest(name = "Fire Aura", type = PowerType.PASSIVE, author = "sirrus86", concept = "FyreCat", icon = Material.CAMPFIRE,
+@PowerManifest(name = "Fire Aura", type = PowerType.PASSIVE, author = "sirrus86", concept = "FyreCat", icon = Material.BLAZE_POWDER,
 	description = "Regenerate hunger from fire and magma blocks, while regenerating health while in lava. Lose hunger in rain, and lose health in water.[goBlind] Vision while in lava is improved.[/goBlind]")
 public class FireAura extends Power {
 	
