@@ -27,6 +27,8 @@ public abstract class NMSLibrary {
 	public abstract String getItemName(ItemStack item);
 	
 	public abstract Object getNMSItem(ItemStack item);
+	
+	public abstract void removePathfinding(Creature creature);
 
 	public abstract void setDirection(Fireball entity, Vector vec);
 	

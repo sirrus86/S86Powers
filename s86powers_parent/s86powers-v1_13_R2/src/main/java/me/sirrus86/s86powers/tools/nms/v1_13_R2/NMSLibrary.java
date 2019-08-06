@@ -106,6 +106,25 @@ public class NMSLibrary extends me.sirrus86.s86powers.tools.nms.NMSLibrary {
 	public Item getNMSItem(org.bukkit.inventory.ItemStack item) {
 		return CraftItemStack.asNMSCopy(item).getItem();
 	}
+	
+	@Override
+	public void removePathfinding(Creature entity) {
+		try {
+			entity.setTarget(null);
+			EntityCreature handle = ((CraftCreature)entity).getHandle();
+			PathfinderGoalSelector[] goalSelectors = new PathfinderGoalSelector[] { handle.goalSelector, handle.targetSelector };
+			for (int i = 0; i < goalSelectors.length; i ++) {
+				Field c = goalSelectors[i].getClass().getDeclaredField("c"),
+						d = goalSelectors[i].getClass().getDeclaredField("d");
+				c.setAccessible(true);
+				d.setAccessible(true);
+				c.set(goalSelectors[i], Sets.newLinkedHashSet());
+				d.set(goalSelectors[i], Sets.newLinkedHashSet());
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
 
 	@Override
 	public void setDirection(Fireball entity, Vector vec) {

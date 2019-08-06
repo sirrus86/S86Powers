@@ -109,6 +109,27 @@ public class NMSLibrary extends me.sirrus86.s86powers.tools.nms.NMSLibrary {
 	public Item getNMSItem(org.bukkit.inventory.ItemStack item) {
 		return CraftItemStack.asNMSCopy(item).getItem();
 	}
+	
+	@Override
+	public void removePathfinding(Creature entity) {
+		try {
+			entity.setTarget(null);
+			EntityCreature handle = ((CraftCreature)entity).getHandle();
+			handle.goalSelector = new PathfinderGoalSelector((handle.world != null && handle.world.getMethodProfiler() != null) ? handle.world.getMethodProfiler() : null);
+			handle.targetSelector = new PathfinderGoalSelector((handle.world != null && handle.world.getMethodProfiler() != null) ? handle.world.getMethodProfiler() : null);
+//			PathfinderGoalSelector[] goalSelectors = new PathfinderGoalSelector[] { handle.goalSelector, handle.targetSelector };
+//			for (int i = 0; i < goalSelectors.length; i ++) {
+//				Field c = goalSelectors[i].getClass().getDeclaredField("c"),
+//						d = goalSelectors[i].getClass().getDeclaredField("d");
+//				c.setAccessible(true);
+//				d.setAccessible(true);
+//				c.set(goalSelectors[i], new EnumMap<PathfinderGoal.Type, PathfinderGoalWrapped>(PathfinderGoal.Type.class));
+//				d.set(goalSelectors[i], new LinkedHashSet<PathfinderGoalWrapped>());
+//			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
 
 	@Override
 	public void setDirection(Fireball entity, Vector vec) {
@@ -174,7 +195,7 @@ public class NMSLibrary extends me.sirrus86.s86powers.tools.nms.NMSLibrary {
 	public void unTame(Creature entity) {
 		try {
 			EntityCreature handle = ((CraftCreature)entity).getHandle();
-			PathfinderGoalSelector[] goalSelectors = {handle.goalSelector, handle.targetSelector};
+			PathfinderGoalSelector[] goalSelectors = { handle.goalSelector, handle.targetSelector };
 			for (PathfinderGoalSelector goalSelector : goalSelectors) {
 				Field c = goalSelector.getClass().getDeclaredField("c"),
 						d = goalSelector.getClass().getDeclaredField("d");

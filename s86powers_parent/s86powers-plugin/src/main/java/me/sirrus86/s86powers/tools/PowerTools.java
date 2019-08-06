@@ -610,6 +610,12 @@ public class PowerTools {
 		}
 	}
 	
+	public static void removeControl(Player player, Creature creature) {
+		creature.eject();
+		nms.unTame(creature);
+		setPOV(player, player);
+	}
+	
 	public static void removeDisguise(Entity entity) {
 		pm.removeDisguise(entity);
 	}
@@ -662,8 +668,8 @@ public class PowerTools {
 		return vTools;
 	}
 	
-	public static void setControlling(PowerUser user, LivingEntity entity) {
-		pm.setControlling(user.getPlayer(), entity);
+	public static void setControlling(Player player, LivingEntity entity) {
+		pm.setControlling(player, entity);
 	}
 	
 	public static void setDirection(Fireball entity, Vector dir) {
@@ -674,8 +680,8 @@ public class PowerTools {
 		return nms.setItemGlow(item);
 	}
 	
-	public static void setPOV(Entity entity, PowerUser user) {
-		pm.setPointOfView(entity, user.getPlayer());
+	public static void setPOV(Player player, Entity entity) {
+		pm.setPointOfView(player, entity);
 	}
 	
 	public static void setTamed(Creature entity, PowerUser owner) {
@@ -713,6 +719,13 @@ public class PowerTools {
 	
 	public static void spawnEntity(Entity entity, Location loc) {
 		nms.spawnEntity(entity, loc);
+	}
+	
+	public static void takeControl(Player player, Creature creature) {
+		creature.addPassenger(player);
+		nms.removePathfinding(creature);
+		setControlling(player, creature);
+		setPOV(player, creature);
 	}
 	
 	public static final boolean usesDurability(ItemStack item) {

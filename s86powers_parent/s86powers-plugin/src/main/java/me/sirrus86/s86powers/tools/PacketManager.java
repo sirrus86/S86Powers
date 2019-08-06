@@ -19,6 +19,7 @@ import org.bukkit.Sound;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.block.Block;
 import org.bukkit.block.data.BlockData;
+import org.bukkit.entity.Creature;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.ExperienceOrb;
@@ -47,6 +48,7 @@ import com.comphenix.protocol.wrappers.WrappedChatComponent;
 import com.comphenix.protocol.wrappers.WrappedDataWatcher;
 import com.comphenix.protocol.wrappers.EnumWrappers.ChatType;
 import com.comphenix.protocol.wrappers.EnumWrappers.ItemSlot;
+import com.comphenix.protocol.wrappers.EnumWrappers.PlayerDigType;
 import com.comphenix.protocol.wrappers.WrappedDataWatcher.Registry;
 import com.google.common.collect.Lists;
 
@@ -77,7 +79,7 @@ public class PacketManager {
 		pm = ProtocolLibrary.getProtocolManager();
 		pm.addPacketListener(new PacketAdapter(plugin, PacketType.Play.Server.ENTITY_METADATA, PacketType.Play.Server.SPAWN_ENTITY,
 				PacketType.Play.Server.SPAWN_ENTITY_LIVING, PacketType.Play.Server.NAMED_ENTITY_SPAWN,
-				PacketType.Play.Server.BLOCK_CHANGE, PacketType.Play.Client.STEER_VEHICLE) {
+				PacketType.Play.Server.BLOCK_CHANGE, PacketType.Play.Client.STEER_VEHICLE, PacketType.Play.Client.USE_ENTITY, PacketType.Play.Client.BLOCK_DIG) {
 			
 			@Override
 			public void onPacketSending(PacketEvent event) {
@@ -168,19 +170,48 @@ public class PacketManager {
 			
 			@Override
 			public void onPacketReceiving(PacketEvent event) {
+				if (event.getPacketType() == PacketType.Play.Client.USE_ENTITY) {
+					if (event.getPlayer().getEntityId() == event.getPacket().getIntegers().read(0)
+							&& control.containsKey(event.getPlayer().getUniqueId())) {
+						event.setCancelled(true);
+					}
+				}
+				if (event.getPacketType() == PacketType.Play.Client.STEER_VEHICLE) {
+					if (control.containsKey(event.getPlayer().getUniqueId())) {
+						if (event.getPacket().getBooleans().read(1)) {
+							event.setCancelled(true);
+						}
+						plugin.getServer().getScheduler().runTask(plugin, new Runnable() {
+							@Override
+							public void run() {
+								Player controller = event.getPlayer();
+								if (control.containsKey(controller.getUniqueId())
+										&& control.get(controller.getUniqueId()) != null) {
+									float forward = 0.0F;
+									if (event.getPacket().getBooleans().read(1)) {
+										forward = 1.0F;
+									}
+									LivingEntity entity = control.get(controller.getUniqueId());
+									nms.controlWASD(controller, entity, forward, 0.0F, false);
+								}
+							}
+						});
+					}
+				}
 				plugin.getServer().getScheduler().runTask(plugin, new Runnable() {
 
 					@Override
 					public void run() {
-						if (event.getPacketType() == PacketType.Play.Client.STEER_VEHICLE) {
-							Player controller = event.getPlayer();
-							if (control.containsKey(controller.getUniqueId())
-									&& control.get(controller.getUniqueId()) != null) {
-								LivingEntity entity = control.get(controller.getUniqueId());
-								float forward = event.getPacket().getFloat().read(1);
-								float strafe = event.getPacket().getFloat().read(0);
-								boolean jumping = event.getPacket().getBooleans().read(0);
-								nms.controlWASD(controller, entity, forward, strafe, jumping);
+						if (event.getPacketType() == PacketType.Play.Client.BLOCK_DIG) {
+							if (event.getPacket().getPlayerDigTypes().read(0) == PlayerDigType.DROP_ITEM) {
+								Player player = event.getPlayer();
+								if (player.isInsideVehicle()
+										&& player.getVehicle() instanceof Creature
+										&& control.containsKey(player.getUniqueId())) {
+									Creature vehicle = (Creature) player.getVehicle();
+									control.remove(player.getUniqueId());
+									PowerTools.removeControl(player, vehicle);
+								}
 							}
 						}
 					}
@@ -491,7 +522,7 @@ public class PacketManager {
 		control.put(player.getUniqueId(), entity);
 	}
 	
-	protected void setPointOfView(Entity entity, Player player) {
+	protected void setPointOfView(Player player, Entity entity) {
 		PacketContainer packet = pm.createPacket(PacketType.Play.Server.CAMERA);
 		packet.getIntegers().write(0, entity.getEntityId());
 		sendServerPacket(player, packet);
