@@ -279,11 +279,15 @@ public class ConfigManager {
 	
 	public void loadUsers() {
 		for (OfflinePlayer player : plugin.getServer().getOfflinePlayers()) {
+			PowerUser user = null;
 			if (!users.containsKey(player.getUniqueId())) {
-				PowerUser user = new PowerUser(player.getUniqueId());
+				user = new PowerUser(player.getUniqueId());
 				users.put(player.getUniqueId(), user);
-				getContainer(user).load();
 			}
+			else {
+				user = users.get(player.getUniqueId());
+			}
+			getContainer(user).load();
 		}
 	}
 	
