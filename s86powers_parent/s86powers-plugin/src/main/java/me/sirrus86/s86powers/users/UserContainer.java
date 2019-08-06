@@ -170,7 +170,8 @@ public class UserContainer {
 	
 	public Set<PowerGroup> getPermissibleGroups() {
 		Set<PowerGroup> tmp = new HashSet<PowerGroup>();
-		if (user.isOnline()) {
+		if (user.isOnline()
+				&& ConfigOption.Plugin.ENABLE_PERMISSION_ASSIGNMENTS) {
 			for (PowerGroup group : plugin.getConfigManager().getGroups()) {
 				if (user.getPlayer().hasPermission(group.getRequiredPermission())) {
 					tmp.add(group);
@@ -182,7 +183,8 @@ public class UserContainer {
 	
 	public Set<Power> getPermissiblePowers() {
 		Set<Power> tmp = new HashSet<Power>();
-		if (user.isOnline()) {
+		if (user.isOnline()
+				&& ConfigOption.Plugin.ENABLE_PERMISSION_ASSIGNMENTS) {
 			for (Power power : plugin.getConfigManager().getPowers()) {
 				if (user.getPlayer().hasPermission(PowerContainer.getContainer(power).getUsePermission())) {
 					tmp.add(power);

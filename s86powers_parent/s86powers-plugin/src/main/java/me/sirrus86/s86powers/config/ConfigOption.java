@@ -24,6 +24,8 @@ public class ConfigOption {
 		public static boolean AUTO_SAVE = plugin.getConfigManager().getConfig().getBoolean(PARENT + "auto-save", true);
 
 		public static long AUTO_SAVE_COOLDOWN = plugin.getConfigManager().getConfig().getLong(PARENT + "auto-save-cooldown", PowerTime.toMillis(5, 0));
+
+		public static boolean ENABLE_PERMISSION_ASSIGNMENTS = plugin.getConfigManager().getConfig().getBoolean(PARENT + "enable-permission-assignments", true);
 		
 		public static String LOCALIZATION = plugin.getConfigManager().getConfig().getString(PARENT + "localization", "enUS");
 		
