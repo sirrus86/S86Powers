@@ -8,6 +8,8 @@ import me.sirrus86.s86powers.command.HelpTopic;
 import me.sirrus86.s86powers.powers.Power;
 import me.sirrus86.s86powers.powers.PowerType;
 import me.sirrus86.s86powers.regions.NeutralRegion;
+import me.sirrus86.s86powers.tools.version.MCServer;
+import me.sirrus86.s86powers.tools.version.MCVersion;
 import me.sirrus86.s86powers.users.PowerGroup;
 import me.sirrus86.s86powers.users.PowerUser;
 import me.sirrus86.s86powers.utils.PowerTime;
@@ -141,7 +143,8 @@ public enum LocaleString {
 	INVALID_POWER_MANIFEST("console", "&string is missing a PowerManifest and was not loaded."),
 	INVALID_POWER_NAME("console", "&string has no assigned name and was not loaded."),
 	INVALID_POWER_TYPE("console", "&string has an invalid power type and was not loaded."),
-	INVALID_SERVER_VERSION("console", "&string will not work with this server version and was not loaded."),
+	INVALID_SERVER_SOFTWARE("console", "&string will not work with this server software and was not loaded. Required software: &server"),
+	INVALID_SERVER_VERSION("console", "&string will not work with this server version and was not loaded. Required version: &version"),
 	LOAD_ATTEMPT("console", "Attempting to load &file..."),
 	LOAD_FAIL("console", "Failed to load &file."),
 	LOAD_SUCCESS("console", "Successfully loaded &file."),
@@ -317,6 +320,16 @@ public enum LocaleString {
 					&& text.contains("&region")) {
 				NeutralRegion region = (NeutralRegion) objects[i];
 				text = text.replaceAll("&region", region.getName());
+			}
+			else if (objects[i] instanceof MCVersion
+					&& text.contains("&version")) {
+				MCVersion version = (MCVersion) objects[i];
+				text = text.replaceAll("&version", version.name().replace("_", "."));
+			}
+			else if (objects[i] instanceof MCServer
+					&& text.contains("&server")) {
+				MCServer server = (MCServer) objects[i];
+				text = text.replaceAll("&server", server.toString());
 			}
 			else if (text.contains("&value")) {
 				text = text.replaceAll("&value", objects[i] != null ? objects[i].toString() : "null");

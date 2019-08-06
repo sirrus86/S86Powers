@@ -15,6 +15,7 @@ import me.sirrus86.s86powers.localization.LocaleString;
 import me.sirrus86.s86powers.powers.Power;
 import me.sirrus86.s86powers.powers.PowerContainer;
 import me.sirrus86.s86powers.powers.PowerManifest;
+import me.sirrus86.s86powers.tools.version.MCServer;
 import me.sirrus86.s86powers.tools.version.MCVersion;
 
 public class PowerLoader {
@@ -133,7 +134,10 @@ public class PowerLoader {
     					plugin.log(Level.WARNING, LocaleString.INVALID_POWER_NAME.build(name));
     				}
     				else if (manifest.version().ordinal() > MCVersion.CURRENT_VERSION.ordinal()) {
-    					plugin.log(Level.WARNING, LocaleString.INVALID_SERVER_VERSION.build(name));
+    					plugin.log(Level.WARNING, LocaleString.INVALID_SERVER_VERSION.build(name, manifest.version()));
+    				}
+    				else if (manifest.server().ordinal() > MCServer.CURRENT_SERVER.ordinal()) {
+    					plugin.log(Level.WARNING, LocaleString.INVALID_SERVER_SOFTWARE.build(name, manifest.server()));
     				}
     				else if (manifest.incomplete()
     						&& !ConfigOption.Powers.LOAD_INCOMPLETE_POWERS) {

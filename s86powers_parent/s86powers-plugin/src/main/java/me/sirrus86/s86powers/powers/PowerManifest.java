@@ -5,6 +5,7 @@ import java.lang.annotation.RetentionPolicy;
 
 import org.bukkit.Material;
 
+import me.sirrus86.s86powers.tools.version.MCServer;
 import me.sirrus86.s86powers.tools.version.MCVersion;
 
 /**
@@ -54,6 +55,11 @@ public @interface PowerManifest {
 	 * The user-friendly name of this power. If the true name of your power should contain non-alphanumeric symbols or spaces, this is where you'd print the name.
 	 */
 	public String name();
+	
+	/**
+	 * The minimum required server software for this power to function properly. If not set, Bukkit or greater is required.
+	 */
+	public MCServer server() default MCServer.BUKKIT;
 	
 	/**
 	 * The {@link PowerType} of this power. This determines whether the power is considered offensive, defensive, passive, or utility.
