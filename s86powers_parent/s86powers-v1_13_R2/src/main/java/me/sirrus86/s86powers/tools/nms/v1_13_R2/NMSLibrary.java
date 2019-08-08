@@ -6,6 +6,7 @@ import java.lang.reflect.Method;
 import org.bukkit.Location;
 import org.bukkit.craftbukkit.v1_13_R2.CraftWorld;
 import org.bukkit.craftbukkit.v1_13_R2.entity.CraftCreature;
+import org.bukkit.craftbukkit.v1_13_R2.entity.CraftEntity;
 import org.bukkit.craftbukkit.v1_13_R2.entity.CraftLivingEntity;
 import org.bukkit.craftbukkit.v1_13_R2.entity.CraftFireball;
 import org.bukkit.craftbukkit.v1_13_R2.entity.CraftPlayer;
@@ -84,17 +85,7 @@ public class NMSLibrary extends me.sirrus86.s86powers.tools.nms.NMSLibrary {
 	
 	@Override
 	public int getEntityTypeID(EntityType type) {
-		EntityTypes<?> types = null;
-		try {
-			@SuppressWarnings("deprecation")
-			Field field = EntityTypes.class.getDeclaredField(type.getName().toUpperCase());
-			field.setAccessible(true);
-			types = (EntityTypes<?>) field.get(null);
-		} catch (Exception e) {
-			e.printStackTrace();
-			return -1;
-		}
-		return IRegistry.ENTITY_TYPE.a(types);
+		return IRegistry.ENTITY_TYPE.a(getNMSEntityType(type));
 	}
 
 	@Override
@@ -103,8 +94,28 @@ public class NMSLibrary extends me.sirrus86.s86powers.tools.nms.NMSLibrary {
 	}
 	
 	@Override
+	public EntityTypes<?> getNMSEntityType(EntityType type) {
+		EntityTypes<?> types = null;
+		try {
+			@SuppressWarnings("deprecation")
+			Field field = EntityTypes.class.getDeclaredField(type.getName().toUpperCase());
+			field.setAccessible(true);
+			types = (EntityTypes<?>) field.get(null);
+		} catch (Exception e) {
+			e.printStackTrace();
+			return null;
+		}
+		return types;
+	}
+	
+	@Override
 	public Item getNMSItem(org.bukkit.inventory.ItemStack item) {
-		return CraftItemStack.asNMSCopy(item).getItem();
+		return getNMSItemStack(item).getItem();
+	}
+	
+	@Override
+	public ItemStack getNMSItemStack(org.bukkit.inventory.ItemStack item) {
+		return CraftItemStack.asNMSCopy(item);
 	}
 	
 	@Override
@@ -143,6 +154,15 @@ public class NMSLibrary extends me.sirrus86.s86powers.tools.nms.NMSLibrary {
 		tag.set("ench", ench);
 		nmsItem.setTag(tag);
 		return CraftItemStack.asCraftMirror(nmsItem);
+	}
+	
+	@Override
+	public void setRotation(org.bukkit.entity.Entity entity, float yaw, float pitch) {
+		Entity nmsEntity = ((CraftEntity)entity).getHandle();
+		nmsEntity.lastYaw = nmsEntity.yaw;
+		nmsEntity.yaw = yaw;
+		nmsEntity.lastPitch = nmsEntity.pitch;
+		nmsEntity.pitch = pitch;
 	}
 
 	@Override

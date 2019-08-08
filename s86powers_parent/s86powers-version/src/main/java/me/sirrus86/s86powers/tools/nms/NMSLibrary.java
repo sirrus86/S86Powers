@@ -26,13 +26,19 @@ public abstract class NMSLibrary {
 
 	public abstract String getItemName(ItemStack item);
 	
+	public abstract Object getNMSEntityType(EntityType type);
+	
 	public abstract Object getNMSItem(ItemStack item);
+
+	public abstract Object getNMSItemStack(ItemStack item);
 	
 	public abstract void removePathfinding(Creature creature);
 
 	public abstract void setDirection(Fireball entity, Vector vec);
 	
 	public abstract ItemStack setItemGlow(ItemStack item);
+	
+	public abstract void setRotation(Entity entity, float yaw, float pitch);
 
 	public abstract void setTamed(Creature entity, Player player);
 

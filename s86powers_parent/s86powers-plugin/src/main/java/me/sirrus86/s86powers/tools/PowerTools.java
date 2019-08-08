@@ -21,6 +21,7 @@ import me.sirrus86.s86powers.tools.version.VersionTools;
 import me.sirrus86.s86powers.users.PowerUser;
 
 import org.apache.commons.lang.WordUtils;
+import org.bukkit.Art;
 import org.bukkit.Axis;
 import org.bukkit.ChatColor;
 import org.bukkit.Effect;
@@ -55,7 +56,7 @@ import com.google.common.collect.Sets;
  * Class which contains an assortment of tools for use within power classes.
  * @author sirrus86
  */
-public class PowerTools {
+public final class PowerTools {
 	
 	private static Map<UUID, UUID> tamed = new HashMap<>();
 	private static Map<Double, Set<Vector>> auraCoords = new HashMap<>();
@@ -79,8 +80,8 @@ public class PowerTools {
 	 * @param entity - The entity which needs to be disguised
 	 * @param type - The {@link EntityType} to disguise the entity as
 	 */
-	public static void addDisguise(LivingEntity entity, EntityType type) {
-		pm.addDisguise(entity, type, null);
+	public static void addDisguise(Entity entity, EntityType type) {
+		pm.addDisguise(entity, type);
 	}
 	
 	/**
@@ -93,8 +94,23 @@ public class PowerTools {
 	 * @param type - The {@link EntityType} to disguise the entity as
 	 * @param meta - Metadata to be supplied with the disguise packet. May be {@code null}
 	 */
-	public static void addDisguise(LivingEntity entity, EntityType type, Map<Integer, Object> meta) {
+	public static void addDisguise(Entity entity, EntityType type, Map<Integer, Object> meta) {
 		pm.addDisguise(entity, type, meta);
+	}
+	
+	/**
+	 * Adds a disguise to an entity, making it look like a different kind of entity.
+	 * <p>
+	 * Uses packets to maintain the disguise. The disguise will remain until {@link PowerTools#removeDisguise(Entity)} is called, or if the entity dies or despawns.
+	 * <p>
+	 * Disguises are not maintained after the server restarts or reloads.
+	 * @param entity - The entity which needs to be disguised
+	 * @param type - The {@link EntityType} to disguise the entity as
+	 * @param meta - Metadata to be supplied with the disguise packet. May be {@code null}
+	 * @param data - Extra object data, such as {@link Art} for paintings
+	 */
+	public static void addDisguise(Entity entity, EntityType type, Map<Integer, Object> meta, Object data) {
+		pm.addDisguise(entity, type, meta, data);
 	}
 	
 	/**
@@ -111,16 +127,20 @@ public class PowerTools {
 	}
 	
 	/**
-	 * Adds a disguise to an entity, making it look like a player.
+	 * Adds a disguise to an entity, making it look like another entity.
 	 * <p>
 	 * Uses packets to maintain the disguise. The disguise will remain until {@link PowerTools#removeDisguise(Entity)} is called, or if the entity dies or despawns.
 	 * <p>
 	 * Disguises are not maintained after the server restarts or reloads.
 	 * @param entity - The entity which needs to be disguised
-	 * @param player - The player to disguise the entity as
+	 * @param target - The entity to disguise the original entity as
 	 */
-	public static void addDisguise(Entity entity, Player player) {
-		pm.addDisguise(entity, player);
+	public static void addDisguise(Entity entity, Entity target) {
+		pm.addDisguise(entity, target);
+	}
+	
+	public static void addEquipmentDisguise(Entity entity, LivingEntity target) {
+		pm.addEquipmentDisguise(entity, target);
 	}
 	
 	/**
@@ -684,6 +704,10 @@ public class PowerTools {
 		pm.setPointOfView(player, entity);
 	}
 	
+	public static void setRotation(Entity entity, float yaw, float pitch) {
+		nms.setRotation(entity, yaw, pitch);
+	}
+	
 	public static void setTamed(Creature entity, PowerUser owner) {
 		if (owner != null) {
 			nms.setTamed(entity, owner.getPlayer());
@@ -704,9 +728,9 @@ public class PowerTools {
 		pm.showActionBarMessage(player, message);
 	}
 	
-	public static void showAsSpectral(Player player, Entity entity, boolean spectral) {
+	public static void showAsSpectral(Player player, Entity entity, ChatColor color, boolean spectral) {
 		if (spectral) {
-			pm.addSpectralEntity(player, entity);
+			pm.addSpectralEntity(player, entity, color);
 		}
 		else {
 			pm.removeSpectralEntity(player, entity);
