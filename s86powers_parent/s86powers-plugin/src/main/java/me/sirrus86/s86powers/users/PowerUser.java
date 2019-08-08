@@ -93,6 +93,17 @@ public class PowerUser implements Comparable<PowerUser> {
 		}
 	}
 	
+	public void addItems(ItemStack... items) {
+		if (isOnline()) {
+			Map<Integer, ItemStack> added = getPlayer().getInventory().addItem(items);
+			if (!added.isEmpty()) {
+				for (ItemStack stack : added.values()) {
+					getPlayer().getWorld().dropItemNaturally(getPlayer().getLocation(), stack);
+				}
+			}
+		}
+	}
+	
 	/**
 	 * Adds a potion effect discretely to the user.
 	 * <p>
