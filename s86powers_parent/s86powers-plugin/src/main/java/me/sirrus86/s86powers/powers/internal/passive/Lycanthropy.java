@@ -30,25 +30,32 @@ import me.sirrus86.s86powers.powers.PowerManifest;
 import me.sirrus86.s86powers.powers.PowerStat;
 import me.sirrus86.s86powers.powers.PowerType;
 import me.sirrus86.s86powers.tools.PowerTools;
+import me.sirrus86.s86powers.tools.version.MCVersion;
 import me.sirrus86.s86powers.users.PowerUser;
+import me.sirrus86.s86powers.users.UserContainer;
 
 @PowerManifest(name = "Lycanthropy", type = PowerType.PASSIVE, author = "sirrus86", concept = "vashvhexx", icon=Material.RABBIT_HIDE,
 	description = "[control]By [act:item]ing while holding [item][/control][noControl]At night during a full moon [/noControl]you change into a wolf. As a wolf[speed] sprinting speed increases,[/speed][nv] you gain night vision,[/nv][either] and[/either] unarmed damage increases by [dmgIncr]%, but you take [ironDmg]% damage from iron tools and weapons, and are unable to wear any armor.[noControl] Effect ends at sunrise.[/noControl]")
-public class Lycanthropy extends Power {
+public final class Lycanthropy extends Power {
 
 	private Set<PowerUser> isWolf;
 	
 	private final Map<Integer, Object> angryMeta = new HashMap<>();
 	
-	private double dmgIncr, ironDmg;
+	private double dmgIncr, infectChance, ironDmg;
 	@SuppressWarnings("unused")
-	private boolean control, either, noControl, nv, speed;
+	private boolean control, either, infect, noControl, nv, speed;
 	private int moonEnd, moonStart, spdIncr;
 	private PowerStat transforms;
 	
 	@Override
 	protected void onEnable() {
-		angryMeta.put(13,  (byte) 0x02); // isn't working?
+		if (MCVersion.isLessThan(MCVersion.v1_14)) {
+			angryMeta.put(13, (byte) 0x02);
+		}
+		else {
+			angryMeta.put(15, (byte) 0x02);
+		}
 		isWolf = new HashSet<>();
 		runTaskTimer(manage, 0L, 0L);
 	}
@@ -64,6 +71,8 @@ public class Lycanthropy extends Power {
 	protected void options() {
 		control = option("control-transformation", false, "Whether users should always be able to willfully transform.");
 		dmgIncr = option("damage-multiplier", 400.0D, "Percentage increase of damage done while transformed and barehanded.");
+		infect = option("infect-other-players", false, "Whether barehanded attacks from werewolves should infect players without the power.");
+		infectChance = option("infect-chance", 15.0D, "Percent chance that other players will be infected.");
 		ironDmg = option("iron-multiplier", 200.0D, "Percent of damage done by iron weapons against transformed werewolves.");
 		item = option("item", new ItemStack(Material.ROTTEN_FLESH), "Item used to manually transform into a werewolf.");
 		moonEnd = option("full-moon-end", 22000, "Time (in game ticks) moon sets.");
@@ -80,32 +89,34 @@ public class Lycanthropy extends Power {
 		@Override
 		public void run() {
 			for (PowerUser user : getUsers()) {
-				if (isWolf.contains(user)) {
-					if (user.isOnline()
-							&& user.getPlayer().getInventory().getArmorContents() != null) {
-						boolean hadArmor = false;
-						for (ItemStack armor : user.getPlayer().getInventory().getArmorContents()) {
-							if (armor != null
-									&& armor.getType() != Material.AIR) {
-								user.getPlayer().getWorld().dropItem(user.getPlayer().getLocation(), armor);
-								hadArmor = true;
+				if (user.allowPower(getInstance())) {
+					if (isWolf.contains(user)) {
+						if (user.isOnline()
+								&& user.getPlayer().getInventory().getArmorContents() != null) {
+							boolean hadArmor = false;
+							for (ItemStack armor : user.getPlayer().getInventory().getArmorContents()) {
+								if (armor != null
+										&& armor.getType() != Material.AIR) {
+									user.getPlayer().getWorld().dropItem(user.getPlayer().getLocation(), armor);
+									hadArmor = true;
+								}
 							}
+							if (hadArmor) {
+								user.sendMessage(ChatColor.RED + "Your power prevents you from wearing armor.");
+							}
+							user.getPlayer().getInventory().setArmorContents(null);
 						}
-						if (hadArmor) {
-							user.sendMessage(ChatColor.RED + "Your power prevents you from wearing armor.");
+						if (user.isOnline()
+								&& !isFullMoon(user.getPlayer().getWorld())
+								&& !canControl(user)) {
+							revert(user);
 						}
-						user.getPlayer().getInventory().setArmorContents(null);
 					}
-					if (user.isOnline()
-							&& !isFullMoon(user.getPlayer().getWorld())
-							&& !canControl(user)) {
-						revert(user);
-					}
-				}
-				else if (user.isOnline()
-							&& isFullMoon(user.getPlayer().getWorld())
-							&& !canControl(user)) {
+					else if (user.isOnline()
+								&& isFullMoon(user.getPlayer().getWorld())
+								&& !canControl(user)) {
 						transform(user);
+					}
 				}
 			}
 		}
@@ -171,9 +182,20 @@ public class Lycanthropy extends Power {
 			PowerUser user = getUser((Player) event.getDamager());
 			if (user.allowPower(this)
 					&& isWolf.contains(user)
-					&& user.getEquipment(EquipmentSlot.HAND) == null) {
+					&& user.getEquipment(EquipmentSlot.HAND).getType() == Material.AIR) {
 				event.setDamage(event.getDamage() * (dmgIncr / 100));
 				PowerTools.playParticleEffect(event.getEntity().getLocation(), Particle.CRIT, 5);
+				if (event.getEntity() instanceof Player
+						&& infect) {
+					PowerUser victim = getUser((Player) event.getEntity());
+					UserContainer vCont = UserContainer.getContainer(victim);
+					if (!vCont.hasPower(this)
+							&& !vCont.hasPower("Vampirism")
+							&& random.nextDouble() < (infectChance / 100.0D)) {
+						victim.sendMessage(ChatColor.RED + "You've been infected with Lycanthropy!");
+						vCont.addPower(this, true);
+					}
+				}
 			}
 		}
 	}
