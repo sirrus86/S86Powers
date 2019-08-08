@@ -24,6 +24,7 @@ import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Fox;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.MushroomCow;
 import org.bukkit.entity.Panda;
 import org.bukkit.entity.Parrot;
 import org.bukkit.entity.Pig;
@@ -65,12 +66,13 @@ public class MobCatcher extends Power {
 	
 	private final NamespacedKey ageableAge = createNamespacedKey("ageable-age"),
 			catType = createNamespacedKey("cat-type"),
-			collarColor = createNamespacedKey("collor-color"),
+			collarColor = createNamespacedKey("collar-color"),
 			creeperPowered = createNamespacedKey("creeper-powered"),
 			customName = createNamespacedKey("custom-name"),
 			entityHealth = createNamespacedKey("entity-health"),
 			entityType = createNamespacedKey("entity-type"),
 			foxType = createNamespacedKey("fox-type"),
+			mooshroomVariant = createNamespacedKey("mooshroom-variant"),
 			ownerUUID = createNamespacedKey("owner-uuid"),
 			pandaHiddenGene = createNamespacedKey("panda-hidden-gene"),
 			pandaMainGene = createNamespacedKey("panda-main-gene"),
@@ -139,6 +141,10 @@ public class MobCatcher extends Power {
 			stats.add("Type: " + WordUtils.capitalize(((Fox)entity).getFoxType().toString().replace("_", " ").toLowerCase()));
 			meta.getPersistentDataContainer().set(foxType, PersistentDataType.STRING, ((Fox)entity).getFoxType().toString());
 		}
+		if (entity instanceof MushroomCow) {
+			stats.add("Color: " + WordUtils.capitalize(((MushroomCow)entity).getVariant().toString().replace("_", " ").toLowerCase()));
+			meta.getPersistentDataContainer().set(foxType, PersistentDataType.STRING, ((MushroomCow)entity).getVariant().toString());
+		}
 		if (entity instanceof Panda) {
 			meta.getPersistentDataContainer().set(pandaHiddenGene, PersistentDataType.STRING, ((Panda)entity).getHiddenGene().toString());
 			meta.getPersistentDataContainer().set(pandaMainGene, PersistentDataType.STRING, ((Panda)entity).getMainGene().toString());
@@ -205,6 +211,9 @@ public class MobCatcher extends Power {
 		}
 		if (entity instanceof Fox) {
 			((Fox)entity).setFoxType(Fox.Type.valueOf(meta.getPersistentDataContainer().get(foxType, PersistentDataType.STRING)));
+		}
+		if (entity instanceof MushroomCow) {
+			((MushroomCow)entity).setVariant(MushroomCow.Variant.valueOf(meta.getPersistentDataContainer().get(mooshroomVariant, PersistentDataType.STRING)));
 		}
 		if (entity instanceof Panda) {
 			((Panda)entity).setHiddenGene(Panda.Gene.valueOf(meta.getPersistentDataContainer().get(pandaHiddenGene, PersistentDataType.STRING)));
