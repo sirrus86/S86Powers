@@ -31,6 +31,7 @@ public class PlayerListener implements Listener {
 	
 	@EventHandler
 	private void onDeath(PlayerDeathEvent event) {
+		PowerTools.removeDisguise(event.getEntity());
 		PowerTools.removeGhost(event.getEntity());
 	}
 	
