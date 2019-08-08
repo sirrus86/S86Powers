@@ -73,9 +73,13 @@ public enum MCVersion {
 		return this.path;
 	}
 	
+	public static final boolean isLessThan(MCVersion version) {
+		return MCVersion.CURRENT_VERSION.ordinal() < version.ordinal();
+	}
+	
 	public static final boolean isVersion(MCVersion... versions) {
 		for (int i = 0; i < versions.length; i ++) {
-			if (MCVersion.CURRENT_VERSION == versions[i]) {
+			if (MCVersion.CURRENT_VERSION.equals(versions[i])) {
 				return true;
 			}
 		}

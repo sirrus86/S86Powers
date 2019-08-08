@@ -79,7 +79,7 @@ public final class S86Powers extends JavaPlugin {
 			if (pLib != null) {
 				double pLibVer = Double.parseDouble(pLib.getDescription().getVersion().substring(0, 3));
 				if (pLibVer < MIN_PROTOCOLLIB_VERSION
-						&& !MCVersion.isVersion(MCVersion.v1_13, MCVersion.v1_13_1, MCVersion.v1_13_2)) {
+						&& !MCVersion.isLessThan(MCVersion.v1_14)) {
 					log(Level.SEVERE, ChatColor.RED + "ProtocolLib v" + MIN_PROTOCOLLIB_VERSION + " or higher is required for S86Powers to work properly!");
 					log(Level.SEVERE, ChatColor.RED + "Currently installed: v" + pLibVer);
 				}
