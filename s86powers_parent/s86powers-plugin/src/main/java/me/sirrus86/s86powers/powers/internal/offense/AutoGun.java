@@ -10,14 +10,12 @@ import java.util.Set;
 import java.util.function.Predicate;
 
 import org.bukkit.Effect;
-import org.bukkit.FluidCollisionMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.data.Directional;
 import org.bukkit.block.data.MultipleFacing;
-import org.bukkit.entity.AbstractArrow.PickupStatus;
 import org.bukkit.entity.Arrow;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
@@ -27,6 +25,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
+import org.bukkit.event.player.PlayerPickupArrowEvent;
 import org.bukkit.event.vehicle.VehicleDamageEvent;
 import org.bukkit.event.vehicle.VehicleEnterEvent;
 import org.bukkit.event.vehicle.VehicleEntityCollisionEvent;
@@ -34,7 +33,6 @@ import org.bukkit.event.vehicle.VehicleMoveEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
-import org.bukkit.util.RayTraceResult;
 import org.bukkit.util.Vector;
 
 import me.sirrus86.s86powers.events.PowerUseEvent;
@@ -43,11 +41,10 @@ import me.sirrus86.s86powers.powers.PowerManifest;
 import me.sirrus86.s86powers.powers.PowerStat;
 import me.sirrus86.s86powers.powers.PowerType;
 import me.sirrus86.s86powers.tools.PowerTools;
-import me.sirrus86.s86powers.tools.version.MCVersion;
 import me.sirrus86.s86powers.users.PowerUser;
 import me.sirrus86.s86powers.utils.PowerTime;
 
-@PowerManifest(name = "Auto Gun", type = PowerType.OFFENSE, author = "sirrus86", concept = "sirrus86", version = MCVersion.v1_14, icon=Material.DISPENSER,
+@PowerManifest(name = "Auto Gun", type = PowerType.OFFENSE, author = "sirrus86", concept = "sirrus86", icon=Material.DISPENSER,
 	description = "[act:item]ing against a solid block while holding [item] will place a turret against that block. Turrets will search out and fire upon any living targets within [range] blocks.")
 public class AutoGun extends Power {
 
@@ -222,7 +219,6 @@ public class AutoGun extends Power {
 							newPower = (float) (cart.getLocation().distance(target.getEyeLocation()) * 0.1F);
 						}
 						Arrow arrow = cart.getWorld().spawnArrow(cart.getLocation().add(newDir).add(cartCenter), newDir, newPower, 0.0F);
-						arrow.setPickupStatus(PickupStatus.DISALLOWED);
 						arrows.add(arrow);
 					}
 					
@@ -232,13 +228,9 @@ public class AutoGun extends Power {
 		
 		private boolean haveLineOfSight(LivingEntity entity) {
 			Vector direction = PowerTools.getDirection(cart.getLocation().add(cartCenter), entity.getLocation());
-			RayTraceResult rayTrace = cart.getWorld().rayTrace(cart.getLocation().add(direction).add(cartCenter), direction, range, FluidCollisionMode.NEVER, true, 1.0D, predEntity);
-			return rayTrace != null
-					&& rayTrace.getHitBlock() == null
-					&& rayTrace.getHitEntity() == entity;
+			return PowerTools.getTargetEntity(LivingEntity.class, cart.getLocation().clone().add(direction).add(cartCenter), direction, range, predEntity) != null;
 		}
 		
-		@SuppressWarnings("deprecation")
 		private void lookAt(Location loc) {
 			if (loc.getWorld() == cart.getWorld()) {
 				double dx = -(loc.getX() - cart.getLocation().getX()),
@@ -247,7 +239,7 @@ public class AutoGun extends Power {
 						dh = Math.sqrt(dx * dx + dz * dz);
 				float yaw = (float) (Math.atan2(dz, dx) * 180.0 / Math.PI),
 						pitch = (float) (-Math.atan(dy / dh) * 180.0 / Math.PI);
-				cart.setRotation(yaw, pitch);
+				PowerTools.setRotation(cart, yaw, pitch);
 			}
 		}
 		
@@ -284,6 +276,14 @@ public class AutoGun extends Power {
 		private void onDeath(EntityDeathEvent event) {
 			if (event.getEntity() == this.target) {
 				this.target = null;
+			}
+		}
+		
+		@SuppressWarnings("deprecation")
+		@EventHandler (ignoreCancelled = true)
+		private void noPickup(PlayerPickupArrowEvent event) {
+			if (arrows.contains(event.getArrow())) {
+				event.setCancelled(true);
 			}
 		}
 		

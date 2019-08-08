@@ -1,11 +1,14 @@
 package me.sirrus86.s86powers.powers.internal.offense;
 
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Predicate;
 
-import org.bukkit.FluidCollisionMode;
+import org.bukkit.ChatColor;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
@@ -17,7 +20,6 @@ import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerItemHeldEvent;
 import org.bukkit.scheduler.BukkitRunnable;
-import org.bukkit.util.RayTraceResult;
 import org.bukkit.util.Vector;
 
 import me.sirrus86.s86powers.powers.Power;
@@ -25,13 +27,12 @@ import me.sirrus86.s86powers.powers.PowerManifest;
 import me.sirrus86.s86powers.powers.PowerStat;
 import me.sirrus86.s86powers.powers.PowerType;
 import me.sirrus86.s86powers.tools.PowerTools;
-import me.sirrus86.s86powers.tools.version.MCVersion;
 import me.sirrus86.s86powers.users.PowerUser;
 import me.sirrus86.s86powers.utils.PowerTime;
 
-@PowerManifest(name = "Trickshot", type = PowerType.OFFENSE, author = "sirrus86", concept = "sirrus86", version = MCVersion.v1_14, icon = Material.BOW,
+@PowerManifest(name = "Trickshot", type = PowerType.OFFENSE, author = "sirrus86", concept = "sirrus86", icon = Material.BOW,
 	description = "While holding a bow at maximum power, targets are highlighted. Upon release, the arrow will attempt to home in on the highlighted target.")
-public class Trickshot extends Power {
+public final class Trickshot extends Power {
 
 	private Map<PowerUser, Integer> aiming;
 	private Map<Entity, Integer> arrows;
@@ -62,7 +63,7 @@ public class Trickshot extends Power {
 			cancelTask(aiming.get(user));
 		}
 		if (targets.containsKey(user)) {
-			PowerTools.showAsSpectral(user.getPlayer(), targets.get(user), false);
+			PowerTools.showAsSpectral(user.getPlayer(), targets.get(user), ChatColor.WHITE, false);
 		}
 	}
 
@@ -115,10 +116,10 @@ public class Trickshot extends Power {
 					if (target != null) {
 						if (targets.containsKey(user)
 								&& targets.get(user) != target) {
-							PowerTools.showAsSpectral(user.getPlayer(), targets.get(user), false);
+							PowerTools.showAsSpectral(user.getPlayer(), targets.get(user), ChatColor.WHITE, false);
 						}
 						targets.put(user, target);
-						PowerTools.showAsSpectral(user.getPlayer(), target, true);
+						PowerTools.showAsSpectral(user.getPlayer(), target, ChatColor.WHITE, true);
 					}
 					aiming.put(user, getInstance().runTaskLater(targetTask(user), 1L).getTaskId());
 				}
@@ -135,7 +136,7 @@ public class Trickshot extends Power {
 				cancelTask(aiming.get(user));
 				if (targets.containsKey(user)) {
 					arrows.put(event.getProjectile(), runTaskLater(homingTask(event.getProjectile(), targets.get(user)), 3L).getTaskId());
-					PowerTools.showAsSpectral(user.getPlayer(), targets.get(user), false);
+					PowerTools.showAsSpectral(user.getPlayer(), targets.get(user), ChatColor.WHITE, false);
 				}
 				((Projectile) event.getProjectile()).setBounce(user.hasStatMaxed(targetsHit));
 			}
@@ -149,7 +150,7 @@ public class Trickshot extends Power {
 				&& aiming.containsKey(user)) {
 			cancelTask(aiming.get(user));
 			if (targets.containsKey(user)) {
-				PowerTools.showAsSpectral(user.getPlayer(), targets.get(user), false);
+				PowerTools.showAsSpectral(user.getPlayer(), targets.get(user), ChatColor.WHITE, false);
 			}
 		}
 	}
@@ -179,42 +180,63 @@ public class Trickshot extends Power {
 					user.increaseStat(targetsHit, 1);
 				}
 				else if (event.getHitBlock() != null
-						&& event.getHitBlockFace() != null
+//						&& event.getHitBlockFace() != null
 						&& user.hasStatMaxed(targetsHit)) {
-					Vector velocity = arrow.getVelocity().clone();
-					Vector newVelocity;
-					switch (event.getHitBlockFace()) {
-						case NORTH: case SOUTH: {
-							newVelocity = new Vector(velocity.getX(), velocity.getY(), -velocity.getZ());
-							break;
-						}
-						case EAST: case WEST: {
-							newVelocity = new Vector(-velocity.getX(), velocity.getY(), velocity.getZ());
-							break;
-						}
-						case DOWN: case UP: {
-							newVelocity = new Vector(velocity.getX(), -velocity.getY(), velocity.getZ());
-							break;
-						}
-						default: newVelocity = velocity;
-					}
-					Vector newDirection = newVelocity.clone().normalize();
-					Projectile newArrow = arrow.getWorld().spawnArrow(arrow.getLocation(), newDirection, 1.0F, 1.0F);
-					newArrow.setShooter(user.getPlayer());
-					arrow.remove();
-					newArrow.setVelocity(newVelocity);
+					float speed = (float) arrow.getVelocity().length();
 					Predicate<Entity> pred = entity -> {
-						return entity != newArrow;
+						return entity instanceof LivingEntity && entity != arrow;
 					};
-					RayTraceResult rayTrace = newArrow.getWorld().rayTrace(newArrow.getLocation(),
-							newDirection, maxDist, FluidCollisionMode.NEVER, true, 1.0D, pred);
-					if (rayTrace != null
-							&& rayTrace.getHitEntity() != null
-							&& rayTrace.getHitBlock() == null
-							&& rayTrace.getHitEntity() instanceof LivingEntity) {
-						Entity target = rayTrace.getHitEntity();
-						arrows.put(newArrow, runTaskLater(homingTask(newArrow, (LivingEntity) target), 3L).getTaskId());
+					LivingEntity target = null;
+					Vector direction = null;
+					List<Entity> entities = arrow.getNearbyEntities(maxDist, maxDist, maxDist);
+					Collections.shuffle(entities);
+					for (Entity entity : entities) {
+						if (entity instanceof LivingEntity) {
+							Location targetLoc = entity.getLocation().clone();
+							direction = targetLoc.subtract(arrow.getLocation()).toVector().normalize();
+							target = PowerTools.getTargetEntity(LivingEntity.class, arrow.getLocation(), direction, maxDist, pred);
+							if (target != null) {
+								break;
+							}
+						}
 					}
+					if (target != null
+							&& direction != null) {
+						Projectile newArrow = arrow.getWorld().spawnArrow(arrow.getLocation(), direction, speed, 0.0F);
+						newArrow.setShooter(user.getPlayer());
+					}
+//					Vector velocity = arrow.getVelocity().clone();
+//					Vector newVelocity;
+//					switch (event.getHitBlockFace()) {
+//						case NORTH: case SOUTH: {
+//							newVelocity = new Vector(velocity.getX(), velocity.getY(), -velocity.getZ());
+//							break;
+//						}
+//						case EAST: case WEST: {
+//							newVelocity = new Vector(-velocity.getX(), velocity.getY(), velocity.getZ());
+//							break;
+//						}
+//						case DOWN: case UP: {
+//							newVelocity = new Vector(velocity.getX(), -velocity.getY(), velocity.getZ());
+//							break;
+//						}
+//						default: newVelocity = velocity;
+//					}
+//					Vector newDirection = newVelocity.clone().normalize();
+//					Projectile newArrow = arrow.getWorld().spawnArrow(arrow.getLocation(), newDirection, 1.0F, 1.0F);
+//					newArrow.setShooter(user.getPlayer());
+//					arrow.remove();
+//					newArrow.setVelocity(newVelocity);
+//					RayTraceResult rayTrace = newArrow.getWorld().rayTrace(newArrow.getLocation(),
+//							newDirection, maxDist, FluidCollisionMode.NEVER, true, 1.0D, pred);
+//					if (rayTrace != null
+//							&& rayTrace.getHitEntity() != null
+//							&& rayTrace.getHitBlock() == null
+//							&& rayTrace.getHitEntity() instanceof LivingEntity) {
+//						Entity target = rayTrace.getHitEntity();
+//					if (target != null) {
+//						arrows.put(newArrow, runTaskLater(homingTask(newArrow, (LivingEntity) target), 3L).getTaskId());
+//					}
 				}
 			}
 		}
