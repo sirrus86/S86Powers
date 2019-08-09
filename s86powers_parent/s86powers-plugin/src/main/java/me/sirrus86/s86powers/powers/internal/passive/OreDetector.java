@@ -27,6 +27,7 @@ import me.sirrus86.s86powers.powers.PowerManifest;
 import me.sirrus86.s86powers.powers.PowerType;
 import me.sirrus86.s86powers.tools.PowerTools;
 import me.sirrus86.s86powers.users.PowerUser;
+import me.sirrus86.s86powers.utils.PowerTime;
 
 @PowerManifest(name = "Ore Detector", type = PowerType.PASSIVE, author = "sirrus86", concept = "sirrus86", icon=Material.COMPASS,
 	description = "While holding [item] in either hand, nearby ore blocks within [range] blocks will become visible.")
@@ -42,6 +43,11 @@ public class OreDetector extends Power {
 	protected void onEnable() {
 		detectBlocks = new HashMap<>();
 	}
+	
+	@Override
+	protected void onEnable(PowerUser user) {
+		refreshDetect(user);
+	}
 
 	@Override
 	protected void onDisable(PowerUser user) {
@@ -55,14 +61,15 @@ public class OreDetector extends Power {
 
 	@Override
 	protected void options() {
+		cooldown = option("update-cooldown", PowerTime.toMillis(1, 0), "Minimum time needed before updating detectable blocks when moving.");
 		item = option("item", new ItemStack(Material.COMPASS), "Item used to detect ores.");
 		range = option("detect-range", 10.0D, "Maximum range to detect ores.");
 		supplies(item);
 	}
 	
 	private void refreshDetect(PowerUser user) {
-		if (!detectBlocks.containsKey(user)
-				|| detectBlocks.get(user) == null) {
+		if (user.allowPower(this)
+				&& !detectBlocks.containsKey(user)) {
 			detectBlocks.put(user, new HashSet<>());
 		}
 		Set<Block> blockMap = detectBlocks.get(user);
@@ -102,6 +109,7 @@ public class OreDetector extends Power {
 			}
 			blockMap.clear();
 		}
+		user.setCooldown(this, cooldown);
 	}
 	
 	@EventHandler (ignoreCancelled = true)
@@ -177,7 +185,10 @@ public class OreDetector extends Power {
 	
 	@EventHandler (ignoreCancelled = true)
 	private void onMove(PlayerMoveEvent event) {
-		refreshDetect(getUser(event.getPlayer()));
+		PowerUser user = getUser(event.getPlayer());
+		if (user.getCooldown(this) <= 0L) {
+			refreshDetect(getUser(event.getPlayer()));
+		}
 	}
 	
 	@EventHandler (ignoreCancelled = true)
