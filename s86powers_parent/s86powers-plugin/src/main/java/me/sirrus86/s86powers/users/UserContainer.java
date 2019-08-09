@@ -224,6 +224,15 @@ public class UserContainer {
 		return getPowers(true).contains(power);
 	}
 	
+	public boolean hasPower(String name) {
+		for (Power power : getPowers(true)) {
+			if (power.getName().equalsIgnoreCase(name)) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
 	public boolean hasPowerAssigned(Power power) {
 		return user.powers.containsKey(power);
 	}
