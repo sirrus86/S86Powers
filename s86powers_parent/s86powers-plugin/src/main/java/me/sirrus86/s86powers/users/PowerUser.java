@@ -396,8 +396,8 @@ public class PowerUser implements Comparable<PowerUser> {
 	}
 	
 	public boolean isHoldingItem(ItemStack item) {
-		return (getPlayer().getInventory().getItemInMainHand() != null && getPlayer().getInventory().getItemInMainHand().getType() == item.getType())
-				|| (getPlayer().getInventory().getItemInOffHand() != null && getPlayer().getInventory().getItemInOffHand().getType() == item.getType());
+		return (isOnline() && getPlayer().getInventory().getItemInMainHand() != null && getPlayer().getInventory().getItemInMainHand().getType() == item.getType())
+				|| (isOnline() && getPlayer().getInventory().getItemInOffHand() != null && getPlayer().getInventory().getItemInOffHand().getType() == item.getType());
 	}
 	
 	public boolean isOnline() {
