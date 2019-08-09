@@ -19,6 +19,7 @@ import org.bukkit.event.entity.EntityShootBowEvent;
 import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerItemHeldEvent;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 
@@ -72,7 +73,8 @@ public final class Trickshot extends Power {
 		maxDist = option("maximum-target-distance", 50.0D, "Maximum distance for which targets can be chosen.");
 		maxAngle = option("maximum-angle", 0.12D, "Maximum rotational angle homing arrows will turn.");
 		targetDelay = option("target-delay", PowerTime.toMillis(1, 500), "How long after aiming bow before target acquisition should begin.");
-		targetsHit = stat("targets-hit", 50, "Targets hit with homing arrows", "Homing arrows that miss will sometimes ricochet.");
+		targetsHit = stat("targets-hit", 50, "Targets hit with homing arrows", "Arrows that miss will often ricochet.");
+		supplies(new ItemStack(Material.BOW, 1), new ItemStack(Material.ARROW, 64));
 	}
 	
 	private Runnable homingTask(Entity arrow, LivingEntity target) {
@@ -180,21 +182,22 @@ public final class Trickshot extends Power {
 					user.increaseStat(targetsHit, 1);
 				}
 				else if (event.getHitBlock() != null
-//						&& event.getHitBlockFace() != null
 						&& user.hasStatMaxed(targetsHit)) {
 					float speed = (float) arrow.getVelocity().length();
 					Predicate<Entity> pred = entity -> {
-						return entity instanceof LivingEntity && entity != arrow;
+						return entity instanceof LivingEntity
+								&& entity != arrow
+								&& entity != user.getPlayer();
 					};
 					LivingEntity target = null;
 					Vector direction = null;
-					List<Entity> entities = arrow.getNearbyEntities(maxDist, maxDist, maxDist);
+					List<Entity> entities = arrow.getNearbyEntities(maxDist / 3.0D, maxDist / 3.0D, maxDist / 3.0D);
 					Collections.shuffle(entities);
 					for (Entity entity : entities) {
 						if (entity instanceof LivingEntity) {
 							Location targetLoc = entity.getLocation().clone();
 							direction = targetLoc.subtract(arrow.getLocation()).toVector().normalize();
-							target = PowerTools.getTargetEntity(LivingEntity.class, arrow.getLocation(), direction, maxDist, pred);
+							target = PowerTools.getTargetEntity(LivingEntity.class, arrow.getLocation(), direction, maxDist / 3.0D, pred);
 							if (target != null) {
 								break;
 							}
@@ -202,41 +205,10 @@ public final class Trickshot extends Power {
 					}
 					if (target != null
 							&& direction != null) {
-						Projectile newArrow = arrow.getWorld().spawnArrow(arrow.getLocation(), direction, speed, 0.0F);
+						Projectile newArrow = arrow.getWorld().spawnArrow(arrow.getLocation(), direction, speed * 0.9F, 0.0F);
 						newArrow.setShooter(user.getPlayer());
+						arrow.remove();
 					}
-//					Vector velocity = arrow.getVelocity().clone();
-//					Vector newVelocity;
-//					switch (event.getHitBlockFace()) {
-//						case NORTH: case SOUTH: {
-//							newVelocity = new Vector(velocity.getX(), velocity.getY(), -velocity.getZ());
-//							break;
-//						}
-//						case EAST: case WEST: {
-//							newVelocity = new Vector(-velocity.getX(), velocity.getY(), velocity.getZ());
-//							break;
-//						}
-//						case DOWN: case UP: {
-//							newVelocity = new Vector(velocity.getX(), -velocity.getY(), velocity.getZ());
-//							break;
-//						}
-//						default: newVelocity = velocity;
-//					}
-//					Vector newDirection = newVelocity.clone().normalize();
-//					Projectile newArrow = arrow.getWorld().spawnArrow(arrow.getLocation(), newDirection, 1.0F, 1.0F);
-//					newArrow.setShooter(user.getPlayer());
-//					arrow.remove();
-//					newArrow.setVelocity(newVelocity);
-//					RayTraceResult rayTrace = newArrow.getWorld().rayTrace(newArrow.getLocation(),
-//							newDirection, maxDist, FluidCollisionMode.NEVER, true, 1.0D, pred);
-//					if (rayTrace != null
-//							&& rayTrace.getHitEntity() != null
-//							&& rayTrace.getHitBlock() == null
-//							&& rayTrace.getHitEntity() instanceof LivingEntity) {
-//						Entity target = rayTrace.getHitEntity();
-//					if (target != null) {
-//						arrows.put(newArrow, runTaskLater(homingTask(newArrow, (LivingEntity) target), 3L).getTaskId());
-//					}
 				}
 			}
 		}
