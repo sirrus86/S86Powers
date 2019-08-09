@@ -140,7 +140,6 @@ public final class Trickshot extends Power {
 					arrows.put(event.getProjectile(), runTaskLater(homingTask(event.getProjectile(), targets.get(user)), 3L).getTaskId());
 					PowerTools.showAsSpectral(user.getPlayer(), targets.get(user), ChatColor.WHITE, false);
 				}
-				((Projectile) event.getProjectile()).setBounce(user.hasStatMaxed(targetsHit));
 			}
 		}
 	}
