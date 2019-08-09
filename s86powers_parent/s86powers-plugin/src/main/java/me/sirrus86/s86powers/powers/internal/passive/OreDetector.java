@@ -75,6 +75,7 @@ public class OreDetector extends Power {
 		Set<Block> blockMap = detectBlocks.get(user);
 		if (user.allowPower(this)
 				&& user.isHoldingItem(item)) {
+			user.setCooldown(this, cooldown);
 			Set<Block> blockCheck = PowerTools.getNearbyBlocks(user.getPlayer().getEyeLocation(), range, detectable);
 			for (Block block : Sets.newConcurrentHashSet(blockMap)) {
 				if (!blockCheck.contains(block)
@@ -103,13 +104,12 @@ public class OreDetector extends Power {
 				}
 			}
 		}
-		else {
+		else if (blockMap != null){
 			for (Block block : blockMap) {
 				PowerTools.removeSpectralBlock(user.getPlayer(), block);
 			}
 			blockMap.clear();
 		}
-		user.setCooldown(this, cooldown);
 	}
 	
 	@EventHandler (ignoreCancelled = true)
@@ -185,9 +185,12 @@ public class OreDetector extends Power {
 	
 	@EventHandler (ignoreCancelled = true)
 	private void onMove(PlayerMoveEvent event) {
-		PowerUser user = getUser(event.getPlayer());
-		if (user.getCooldown(this) <= 0L) {
-			refreshDetect(getUser(event.getPlayer()));
+		if (event.getFrom().getWorld() != event.getTo().getWorld()
+				|| event.getFrom().distanceSquared(event.getTo()) > 0.0D) {
+			PowerUser user = getUser(event.getPlayer());
+			if (user.getCooldown(this) <= 0L) {
+				refreshDetect(getUser(event.getPlayer()));
+			}
 		}
 	}
 	
