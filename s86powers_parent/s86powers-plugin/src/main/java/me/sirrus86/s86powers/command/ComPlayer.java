@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.apache.commons.lang.StringUtils;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 
@@ -46,7 +47,9 @@ public class ComPlayer extends ComAbstract {
 					}
 					else if (args[2].equalsIgnoreCase("stat")
 							|| args[2].equalsIgnoreCase("stats")) {
-						comUserStats(uCont, args.length > 3 ? config.getPower(args[3]) : null);
+						comUserStats(uCont, args.length > 3 ? config.getPower(args[3]) : null,
+								args.length > 2 ? PowerContainer.getContainer(config.getPower(args[1])).getStat(args[2]) : null,
+								args.length > 3 && StringUtils.isNumeric(args[3]) ? Integer.parseInt(args[3]) : -1);
 					}
 					else if (args[2].equalsIgnoreCase("supply")) {
 						comUserSupply(uCont, args.length > 3 ? config.getPower(args[3]) : null);
@@ -168,33 +171,51 @@ public class ComPlayer extends ComAbstract {
 		}
 	}
 	
-	private void comUserStats(UserContainer user, Power power) {
+	private void comUserStats(UserContainer user, Power power, PowerStat stat, int value) {
 		if (sender.hasPermission(S86Permission.PLAYER_STATS)) {
 			if (power == null
 					|| user.hasPower(power)) {
-				sender.sendMessage(INFO + getUserName(user) + " " + LocaleString.STATS);
-				List<Power> powers = power != null ? Lists.newArrayList(power) : new ArrayList<>(user.getPowers());
-				Collections.sort(powers);
-				String tmp = "";
-				for (int i = 0; i < powers.size(); i ++) {
-					Power nextPower = powers.get(i);
-					List<PowerStat> stats = new ArrayList<PowerStat>(PowerContainer.getContainer(nextPower).getStats().keySet());
-					Collections.sort(stats);
-					if (!stats.isEmpty()) {
-						tmp += nextPower.getType().getColor() + nextPower.getName() + "\n";
-						for (int j = 0; j < stats.size(); j ++) {
-							tmp += ChatColor.RESET + " " + stats.get(j).getDescription() + ": " + user.getUser().getStatCount(stats.get(j)) + "/" + nextPower.getStatValue(stats.get(j)) + "\n";
-							tmp += "  " + LocaleString.REWARD + ": " + (!user.getUser().hasStatMaxed(stats.get(j)) ? ChatColor.GRAY : "") + PowerContainer.getContainer(nextPower).getFilteredText(stats.get(j).getReward()) + "\n";
+				if (power != null
+						&& stat != null) {
+					if (sender.hasPermission(S86Permission.SELF_STATS_SET)) {
+						if (value > -1) {
+							user.getUser().increaseStat(stat, value - user.getUser().getStatCount(stat));
+							sender.sendMessage(SUCCESS + LocaleString.SET_STAT_SUCCESS.build(stat.getPath(), user.getUser().getStatCount(stat)));
+						}
+						else {
+							sender.sendMessage(INFO + getUserName(user) + " " + LocaleString.STATS);
+							sender.sendMessage(ChatColor.GREEN + stat.getPath() + ChatColor.RESET + ": " + user.getUser().getStatCount(stat));
 						}
 					}
+					else {
+						sender.sendMessage(ERROR + LocaleString.NO_PERMISSION);
+					}
 				}
-				if (tmp.equalsIgnoreCase("")) {
-					tmp = LocaleString.NO_STATS_RECORDED.toString();
+				else {
+					sender.sendMessage(INFO + getUserName(user) + " " + LocaleString.STATS);
+					List<Power> powers = power != null ? Lists.newArrayList(power) : new ArrayList<>(user.getPowers());
+					Collections.sort(powers);
+					String tmp = "";
+					for (int i = 0; i < powers.size(); i ++) {
+						Power nextPower = powers.get(i);
+						List<PowerStat> stats = new ArrayList<PowerStat>(PowerContainer.getContainer(nextPower).getStats().keySet());
+						Collections.sort(stats);
+						if (!stats.isEmpty()) {
+							tmp += nextPower.getType().getColor() + nextPower.getName() + "\n";
+							for (int j = 0; j < stats.size(); j ++) {
+								tmp += ChatColor.RESET + " " + stats.get(j).getDescription() + ": " + user.getUser().getStatCount(stats.get(j)) + "/" + nextPower.getStatValue(stats.get(j)) + "\n";
+								tmp += "  " + LocaleString.REWARD + ": " + (!user.getUser().hasStatMaxed(stats.get(j)) ? ChatColor.GRAY : "") + PowerContainer.getContainer(nextPower).getFilteredText(stats.get(j).getReward()) + "\n";
+							}
+						}
+					}
+					if (tmp.equalsIgnoreCase("")) {
+						tmp = LocaleString.NO_STATS_RECORDED.toString();
+					}
+					if (tmp.endsWith("\n")) {
+						tmp = tmp.substring(0, tmp.lastIndexOf("\n"));
+					}
+					sender.sendMessage(tmp);
 				}
-				if (tmp.endsWith("\n")) {
-					tmp = tmp.substring(0, tmp.lastIndexOf("\n"));
-				}
-				sender.sendMessage(tmp);
 			}
 			else {
 				sender.sendMessage(ERROR + LocaleString.PLAYER_MISSING_POWER.build(user.getUser(), power));

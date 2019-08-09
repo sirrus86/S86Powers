@@ -37,6 +37,7 @@ public class S86Permission {
 	public static final Permission PLAYER_LIST = new Permission("s86powers.manage.player.list", "Allows user to view a list of all players.", PermissionDefault.TRUE);
 	public static final Permission PLAYER_REMOVE = new Permission("s86powers.manage.player.remove", "Allows user to remove powers from other players.", PermissionDefault.FALSE);
 	public static final Permission PLAYER_STATS = new Permission("s86powers.manage.player.stats", "Allows user to view the power stats of other players.", PermissionDefault.FALSE);
+	public static final Permission PLAYER_STATS_SET = new Permission("s86powers.manage.player.stats.set", "Allows user to set the power stats of other players.", PermissionDefault.FALSE);
 	public static final Permission PLAYER_SUPPLY = new Permission("s86powers.manage.player.supply", "Allows user to supply other players.", PermissionDefault.FALSE);
 	public static final Permission PLAYER_TOGGLE = new Permission("s86powers.manage.player.toggle", "Allows user to toggle the powers of other players.", PermissionDefault.FALSE);
 
@@ -71,6 +72,7 @@ public class S86Permission {
 	public static final Permission SELF_INFO = new Permission("s86powers.manage.self.info", "Allows user to view info on themselves.", PermissionDefault.TRUE);
 	public static final Permission SELF_REMOVE = new Permission("s86powers.manage.self.remove", "Allows user to remove powers from themselves.", PermissionDefault.TRUE);
 	public static final Permission SELF_STATS = new Permission("s86powers.manage.self.stats", "Allows user to view their own power stats.", PermissionDefault.TRUE);
+	public static final Permission SELF_STATS_SET = new Permission("s86powers.manage.self.stats", "Allows user to set their own power stats.", PermissionDefault.FALSE);
 	public static final Permission SELF_SUPPLY = new Permission("s86powers.manage.self.supply", "Allows user to supply themselves.", PermissionDefault.FALSE);
 	public static final Permission SELF_TOGGLE = new Permission("s86powers.manage.self.toggle", "Allows user to toggle their own powers.", PermissionDefault.TRUE);
 	

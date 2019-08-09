@@ -374,7 +374,8 @@ public class PowerUser implements Comparable<PowerUser> {
 		if (!stats.containsKey(stat)) {
 			stats.put(stat, 0);
 		}
-		if (stats.get(stat) < power.getStatValue(stat)) {
+		if (stats.get(stat) < power.getStatValue(stat)
+				|| amount < 0) {
 			int newStat = stats.get(stat) + amount;
 			stats.put(stat, newStat > power.getStatValue(stat) ? power.getStatValue(stat) : newStat);
 			if (isOnline()) {
