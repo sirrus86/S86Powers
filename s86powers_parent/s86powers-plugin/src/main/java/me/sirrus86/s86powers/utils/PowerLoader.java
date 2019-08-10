@@ -148,7 +148,7 @@ public class PowerLoader {
     				}
     			}
     			else {
-    				plugin.log(Level.WARNING, LocaleString.DEBUG_POWER.build(name));
+    				plugin.log(Level.WARNING, LocaleString.INVALID_POWER_MANIFEST.build(name));
     			}
     		}
         } catch (Throwable e) {
