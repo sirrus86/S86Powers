@@ -10,8 +10,12 @@ import java.util.function.Predicate;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.entity.AbstractVillager;
+import org.bukkit.entity.Animals;
+import org.bukkit.entity.Arrow;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.Monster;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
 import org.bukkit.event.EventHandler;
@@ -40,6 +44,7 @@ public final class Trickshot extends Power {
 	private Map<PowerUser, LivingEntity> targets;
 	
 	private double maxDist, maxAngle;
+	private boolean targetAnimals, targetMonsters, targetPlayers, targetVillagers;
 	private long targetDelay;
 	private PowerStat targetsHit;
 	
@@ -72,8 +77,12 @@ public final class Trickshot extends Power {
 	protected void options() {
 		maxDist = option("maximum-target-distance", 50.0D, "Maximum distance for which targets can be chosen.");
 		maxAngle = option("maximum-angle", 0.12D, "Maximum rotational angle homing arrows will turn.");
+		targetAnimals = option("target-animals", false, "Whether animals should be targetted by ricochet arrows.");
 		targetDelay = option("target-delay", PowerTime.toMillis(1, 500), "How long after aiming bow before target acquisition should begin.");
+		targetMonsters = option("target-monsters", true, "Whether monsters should be targetted by ricochet arrows.");
+		targetPlayers = option("target-players", true, "Whether players should be targetted by ricochet arrows.");
 		targetsHit = stat("targets-hit", 50, "Targets hit with homing arrows", "Arrows that miss will often ricochet.");
+		targetVillagers = option("target-villagers", false, "Whether villagers should be targetted by ricochet arrows.");
 		supplies(new ItemStack(Material.BOW, 1), new ItemStack(Material.ARROW, 64));
 	}
 	
@@ -169,44 +178,52 @@ public final class Trickshot extends Power {
 	
 	@EventHandler
 	private void onHit(ProjectileHitEvent event) {
-		Projectile arrow = event.getEntity();
-		if (arrows.containsKey(arrow)) {
-			cancelTask(arrows.get(arrow));
-		}
-		if (arrow.getShooter() instanceof Player) {
-			PowerUser user = getUser((Player) arrow.getShooter());
-			if (user.allowPower(this)) {
-				if (event.getHitEntity() != null
-						&& arrows.containsKey(arrow)) {
-					user.increaseStat(targetsHit, 1);
-				}
-				else if (event.getHitBlock() != null
-						&& user.hasStatMaxed(targetsHit)) {
-					float speed = (float) arrow.getVelocity().length();
-					Predicate<Entity> pred = entity -> {
-						return entity instanceof LivingEntity
-								&& entity != arrow
-								&& entity != user.getPlayer();
-					};
-					LivingEntity target = null;
-					Vector direction = null;
-					List<Entity> entities = arrow.getNearbyEntities(maxDist / 3.0D, maxDist / 3.0D, maxDist / 3.0D);
-					Collections.shuffle(entities);
-					for (Entity entity : entities) {
-						if (entity instanceof LivingEntity) {
-							Location targetLoc = entity.getLocation().clone();
-							direction = targetLoc.subtract(arrow.getLocation()).toVector().normalize();
-							target = PowerTools.getTargetEntity(LivingEntity.class, arrow.getLocation(), direction, maxDist / 3.0D, pred);
-							if (target != null) {
-								break;
+		if (event.getEntity() instanceof Arrow) {
+			Arrow arrow = (Arrow) event.getEntity();
+			if (arrows.containsKey(arrow)) {
+				cancelTask(arrows.get(arrow));
+			}
+			if (arrow.getShooter() instanceof Player) {
+				PowerUser user = getUser((Player) arrow.getShooter());
+				if (user.allowPower(this)) {
+					if (event.getHitEntity() != null
+							&& arrows.containsKey(arrow)) {
+						user.increaseStat(targetsHit, 1);
+					}
+					else if (event.getHitBlock() != null
+							&& user.hasStatMaxed(targetsHit)) {
+						float speed = (float) arrow.getVelocity().length();
+						if (speed > 2.0F) {
+							Predicate<Entity> pred = entity -> {
+								return entity instanceof LivingEntity
+										&& entity != arrow
+										&& entity != user.getPlayer()
+										&& (targetAnimals || !(entity instanceof Animals))
+										&& (targetMonsters || !(entity instanceof Monster))
+										&& (targetPlayers || !(entity instanceof Player))
+										&& (targetVillagers || !(entity instanceof AbstractVillager));
+							};
+							LivingEntity target = null;
+							Vector direction = null;
+							List<Entity> entities = arrow.getNearbyEntities(maxDist / 3.0D, maxDist / 3.0D, maxDist / 3.0D);
+							Collections.shuffle(entities);
+							for (Entity entity : entities) {
+								if (entity instanceof LivingEntity) {
+									Location targetLoc = entity.getLocation().clone();
+									direction = targetLoc.subtract(arrow.getLocation()).toVector().normalize();
+									target = PowerTools.getTargetEntity(LivingEntity.class, arrow.getLocation(), direction, maxDist / 3.0D, pred);
+									if (target != null) {
+										break;
+									}
+								}
+							}
+							if (target != null
+									&& direction != null) {
+								Projectile newArrow = arrow.getWorld().spawnArrow(arrow.getLocation(), direction, speed * 0.9F, 0.0F);
+								newArrow.setShooter(user.getPlayer());
+								arrow.remove();
 							}
 						}
-					}
-					if (target != null
-							&& direction != null) {
-						Projectile newArrow = arrow.getWorld().spawnArrow(arrow.getLocation(), direction, speed * 0.9F, 0.0F);
-						newArrow.setShooter(user.getPlayer());
-						arrow.remove();
 					}
 				}
 			}
