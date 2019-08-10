@@ -25,7 +25,7 @@ public class ConfigOption {
 
 		public static long AUTO_SAVE_COOLDOWN = plugin.getConfigManager().getConfig().getLong(PARENT + "auto-save-cooldown", PowerTime.toMillis(5, 0));
 
-		public static boolean ENABLE_PERMISSION_ASSIGNMENTS = plugin.getConfigManager().getConfig().getBoolean(PARENT + "enable-permission-assignments", true);
+		public static boolean ENABLE_PERMISSION_ASSIGNMENTS = plugin.getConfigManager().getConfig().getBoolean(PARENT + "enable-permission-assignments", false);
 		
 		public static String LOCALIZATION = plugin.getConfigManager().getConfig().getString(PARENT + "localization", "enUS");
 		
@@ -44,6 +44,8 @@ public class ConfigOption {
 		public static boolean SHOW_PACKET_ERRORS = plugin.getConfigManager().getConfig().getBoolean(PARENT + "show-packet-errors", true);
 		
 		public static boolean USE_GUI = plugin.getConfigManager().getConfig().getBoolean(PARENT + "use-gui", true);
+		
+		public static boolean USE_LOOT_TABLES = plugin.getConfigManager().getConfig().getBoolean(PARENT + "use-loot-tables", false);
 		
 		public static boolean USE_METRICS = plugin.getConfigManager().getConfig().getBoolean(PARENT + "use-metrics", true);
 		
