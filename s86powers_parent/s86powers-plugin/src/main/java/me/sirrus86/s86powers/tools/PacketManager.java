@@ -232,7 +232,8 @@ public class PacketManager {
 	}
 	
 	protected void addDisguise(Entity entity, EntityType type, Map<Integer, Object> meta, Object data) {
-		createEntityPacket(entity.getEntityId(), entity.getUniqueId(), entity.getLocation(), entity.getVelocity(), type, createWrappedDataWatcher(null, meta), data, null);
+		createEntityPacket(entity.getEntityId(), entity.getUniqueId(), entity.getLocation(), entity.getVelocity(), type,
+				meta != null ? createWrappedDataWatcher(null, meta) : null, data, null);
 	}
 	
 	private void createEntityPacket(Entity entity, EntityType type, WrappedDataWatcher watcher, Object data) {
@@ -640,7 +641,10 @@ public class PacketManager {
 	
 	private void sendServerPacket(Player player, PacketContainer packet) {
 		try {
-			pm.sendServerPacket(player, packet);
+			if (player != null
+					&& packet != null) {
+				pm.sendServerPacket(player, packet);
+			}
 		} catch (InvocationTargetException e) {
 			if (ConfigOption.Plugin.SHOW_PACKET_ERRORS) {
 				e.printStackTrace();
