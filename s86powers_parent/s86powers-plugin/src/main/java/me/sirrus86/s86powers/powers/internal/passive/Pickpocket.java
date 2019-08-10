@@ -41,7 +41,7 @@ public class Pickpocket extends Power {
 	private Set<LivingEntity> noDrop;
 	private Set<PowerUser> stealth;
 	private double brChance;
-	private boolean dontDrop, repeat;
+	private boolean dontDrop, goToInv, repeat;
 	private PowerStat thefts;
 	
 	@Override
@@ -64,6 +64,7 @@ public class Pickpocket extends Power {
 		brChance = option("stealth-break-chance", 20.0D, "Percentage chance that stealth will break when attempting to pickpocket.");
 		cooldown = option("steal-cooldown", PowerTime.toMillis(5, 0), "Amount of time after stealing before you can pickpocket again.");
 		dontDrop = option("no-drops-after-theft", true, "Whether non-player pickpocket victims should no longer be able to drop items on death.");
+		goToInv = option("steal-to-inventory", true, "Whether items stolen should go directly to inventory.");
 		repeat = option("steal-repeatedly", true, "Whether user can attempt to steal from same non-player target repeatedly.");
 		thefts = stat("items-stolen", 50, "Items stolen", "Stealing items can no longer break stealth.");
 	}
@@ -138,7 +139,12 @@ public class Pickpocket extends Power {
 				if (!noDrop.contains(target)) {
 					ItemStack drop = getDrop(target, user.getPlayer());
 					if (drop != null) {
-						target.getWorld().dropItemNaturally(target.getLocation(), drop);
+						if (goToInv) {
+							user.addItems(drop);
+						}
+						else {
+							target.getWorld().dropItemNaturally(target.getLocation(), drop);
+						}
 						if (random.nextDouble() < (brChance / 100.0D)
 								&& !user.hasStatMaxed(thefts)) {
 							if (target instanceof Monster) {
