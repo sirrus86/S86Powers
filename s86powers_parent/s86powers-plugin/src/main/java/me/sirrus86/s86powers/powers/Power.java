@@ -59,7 +59,7 @@ public abstract class Power implements Comparable<Power>, Listener {
 	/**
 	 * Dedicated instance of {@link java.util.Random} used to create random values where needed.
 	 */
-	protected final Random random = new Random();
+	protected static final Random random = new Random();
 	
 	/**
 	 * Dedicated field to represent the cooldown of a power.
