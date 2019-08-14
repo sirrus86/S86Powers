@@ -11,6 +11,7 @@
 	<artifactId>s86powers-v1_13_R1</artifactId>
 	<version>v1_13_R1</version>
 	<name>v1_13_R1</name>
+	<packaging>jar</packaging>
 
 	<dependencies>
 		<dependency>
@@ -18,7 +19,7 @@
 			<artifactId>craftbukkit</artifactId>
 			<version>1.13-R0.1-SNAPSHOT</version>
 			<type>jar</type>
-			<optional>true</optional>
+			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>me.sirrus86</groupId>
