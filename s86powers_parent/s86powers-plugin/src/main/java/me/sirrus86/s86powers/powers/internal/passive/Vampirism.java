@@ -6,6 +6,7 @@ import java.util.Set;
 
 import org.bukkit.ChatColor;
 import org.bukkit.Effect;
+import org.bukkit.EntityEffect;
 import org.bukkit.Material;
 import org.bukkit.block.BlockFace;
 import org.bukkit.entity.EntityType;
@@ -105,7 +106,7 @@ public final class Vampirism extends Power {
 	};
 	
 	private void transform(PowerUser user, boolean transform) {
-		PowerTools.poof(user.getPlayer().getLocation());
+		user.getPlayer().playEffect(EntityEffect.ENTITY_POOF);
 		user.getPlayer().setAllowFlight(transform);
 		if (transform) {
 			PowerTools.addDisguise(user.getPlayer(), EntityType.BAT);

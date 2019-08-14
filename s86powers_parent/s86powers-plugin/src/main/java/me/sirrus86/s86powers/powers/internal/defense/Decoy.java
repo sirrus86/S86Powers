@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.bukkit.EntityEffect;
 import org.bukkit.Material;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
@@ -57,7 +58,7 @@ public class Decoy extends Power {
 			if (target != null
 					&& !(target instanceof Player)) {
 				if (user.getCooldown(this) <= 0) {
-					PowerTools.poof(target.getLocation());
+					user.getPlayer().playEffect(EntityEffect.ENTITY_POOF);
 					PowerTools.addDisguise(target, user.getPlayer());
 					if (consume) {
 						event.consumeItem();
