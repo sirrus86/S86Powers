@@ -30,7 +30,7 @@ public class ComSelf extends ComAbstract {
 			uCont = UserContainer.getContainer(sUser);
 			if (args.length > 0) {
 				if (args[0].equalsIgnoreCase("add")) {
-					comSelfAdd(args.length > 1 ? config.getPower(args[1]) : null);
+					comSelfAdd(args.length > 1 ? (args[1].equalsIgnoreCase("random") ? getRandomPower(uCont) : config.getPower(args[1])) : null);
 				}
 				else if (args[0].equalsIgnoreCase("info")) {
 					comSelfInfo();

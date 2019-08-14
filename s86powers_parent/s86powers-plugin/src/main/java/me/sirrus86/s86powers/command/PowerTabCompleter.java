@@ -4,12 +4,12 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
-import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.util.StringUtil;
 
 import com.google.common.collect.Lists;
@@ -26,15 +26,16 @@ import me.sirrus86.s86powers.users.PowerGroup;
 import me.sirrus86.s86powers.users.PowerUser;
 import me.sirrus86.s86powers.users.UserContainer;
 
-public class PowerTabCompleter implements TabCompleter {
+public final class PowerTabCompleter implements TabCompleter {
 
-	private final S86Powers plugin = JavaPlugin.getPlugin(S86Powers.class);
 	private static final List<String> BASE = Lists.newArrayList("add", "config", "group", "help", "info", "player", "power", "remove", "stats", "supply", "toggle"),
 			CONFIG = Lists.newArrayList("info", "list", "reload", "save", "set"),
 			GROUP = Lists.newArrayList("add", "assign", "create", "delete", "info", "kick", "remove"),
 			POWER = Lists.newArrayList("block", "disable", "enable", "info", "kill", "lock", "option", "reload", "save", "stats", "supply", "unblock", "unlock"),
 			PLAYER = Lists.newArrayList("add", "info", "remove", "stats", "supply", "toggle"),
 			REGION = Lists.newArrayList("create", "delete", "info", "resize", "toggle");
+	
+	private static final List<String> empty = new ArrayList<>();
 	
 	@Override
 	public List<String> onTabComplete(CommandSender sender, Command cmd, String alias, String[] args) {
@@ -43,12 +44,12 @@ public class PowerTabCompleter implements TabCompleter {
 				if (args[0].equalsIgnoreCase("config")
 						&& sender.hasPermission(S86Permission.CONFIG)) {
 					if (args.length > 3) {
-						return new ArrayList<String>();
+						return empty;
 					}
 					else if (args.length > 2) {
 						if ((args[1].equalsIgnoreCase("info") && sender.hasPermission(S86Permission.CONFIG_INFO))
 								|| (args[1].equalsIgnoreCase("set") && sender.hasPermission(S86Permission.CONFIG_SET))) {
-							return StringUtil.copyPartialMatches(args[2], Lists.newArrayList(plugin.getConfigManager().getOptions().keySet()), new ArrayList<>());
+							return StringUtil.copyPartialMatches(args[2], Lists.newArrayList(S86Powers.getConfigManager().getOptions().keySet()), new ArrayList<>());
 						}
 					}
 					else {
@@ -59,11 +60,11 @@ public class PowerTabCompleter implements TabCompleter {
 						&& sender.hasPermission(S86Permission.GROUP)) {
 					if (args.length > 2) {
 						if (args.length > 4) {
-							return new ArrayList<String>();
+							return empty;
 						}
 						else if (args.length > 3) {
 							if (args[2].equalsIgnoreCase("add") && sender.hasPermission(S86Permission.GROUP_ADD)) {
-								return StringUtil.copyPartialMatches(args[3], getPowerList(false, false), new ArrayList<>());
+								return StringUtil.copyPartialMatches(args[3], getPowerList(false), new ArrayList<>());
 							}
 							else if (args[2].equalsIgnoreCase("assign") && sender.hasPermission(S86Permission.GROUP_ASSIGN)) {
 								return StringUtil.copyPartialMatches(args[3], getPlayerList(false), new ArrayList<>());
@@ -87,11 +88,11 @@ public class PowerTabCompleter implements TabCompleter {
 						&& sender.hasPermission(S86Permission.PLAYER)) {
 					if (args.length > 2) {
 						if (args.length > 4) {
-							return new ArrayList<String>();
+							return empty;
 						}
 						else if (args.length > 3) {
 							if (args[2].equalsIgnoreCase("add") && sender.hasPermission(S86Permission.PLAYER_ADD)) {
-								return StringUtil.copyPartialMatches(args[3], getPowerList(false, false), new ArrayList<>());
+								return StringUtil.copyPartialMatches(args[3], getPowerList(false), new ArrayList<>());
 							}
 							else if ((args[2].equalsIgnoreCase("remove") && sender.hasPermission(S86Permission.PLAYER_REMOVE))
 									|| (args[2].equalsIgnoreCase("stats") && sender.hasPermission(S86Permission.PLAYER_STATS))
@@ -119,7 +120,7 @@ public class PowerTabCompleter implements TabCompleter {
 						&& sender.hasPermission(S86Permission.POWER)) {
 					if (args.length > 2) {
 						if (args.length > 4) {
-							return new ArrayList<String>();
+							return empty;
 						}
 						else if (args[1].equalsIgnoreCase("list") && sender.hasPermission(S86Permission.POWER_LIST)) {
 							return StringUtil.copyPartialMatches(args[2], Lists.newArrayList("defense", "offense", "passive", "utility"), new ArrayList<>());
@@ -129,7 +130,7 @@ public class PowerTabCompleter implements TabCompleter {
 								return StringUtil.copyPartialMatches(args[3], getPowerOptionList(args[1]), new ArrayList<>());
 							}
 							else if (args[2].equalsIgnoreCase("stats") && sender.hasPermission(S86Permission.POWER_STATS)) {
-								return StringUtil.copyPartialMatches(args[3], getPowerStatList(args[1]), new ArrayList<>()); // TODO
+								return StringUtil.copyPartialMatches(args[3], getPowerStatList(args[1]), new ArrayList<>());
 							}
 						}
 						else {
@@ -137,14 +138,14 @@ public class PowerTabCompleter implements TabCompleter {
 						}
 					}
 					else {
-						return StringUtil.copyPartialMatches(args[1], getPowerList(true, true), new ArrayList<>());
+						return StringUtil.copyPartialMatches(args[1], getPowerList(true), new ArrayList<>());
 					}
 				}
 				else if (args[0].equalsIgnoreCase("region")
 						&& sender.hasPermission(S86Permission.REGION)) {
 					if (args.length > 2) {
 						if (args.length > 4) {
-							return new ArrayList<String>();
+							return empty;
 						}
 						else if (args.length > 3) {
 							if (args[2].equalsIgnoreCase("create") && sender.hasPermission(S86Permission.REGION_CREATE)) {
@@ -163,7 +164,7 @@ public class PowerTabCompleter implements TabCompleter {
 					}
 				}
 				else if (args[0].equalsIgnoreCase("add") && sender.hasPermission(S86Permission.SELF_ADD)) {
-					return StringUtil.copyPartialMatches(args[1], getPowerList(false, false), new ArrayList<>());
+					return StringUtil.copyPartialMatches(args[1], getPowerList(false), new ArrayList<>());
 				}
 				else if ((args[0].equalsIgnoreCase("remove") && sender.hasPermission(S86Permission.SELF_REMOVE))
 						|| (args[0].equalsIgnoreCase("stats") && sender.hasPermission(S86Permission.SELF_STATS))
@@ -203,7 +204,7 @@ public class PowerTabCompleter implements TabCompleter {
 				return StringUtil.copyPartialMatches(args[0], newList, new ArrayList<>());
 			}
 		}
-		return new ArrayList<String>();		
+		return empty;		
 	}
 	
 	private List<String> getList(CommandSender sender, String prefix, List<String> commands) {
@@ -218,7 +219,7 @@ public class PowerTabCompleter implements TabCompleter {
 	
 	private List<String> getGroupList(boolean isGroupCommand) {
 		List<String> newList = new ArrayList<>();
-		for (PowerGroup group : plugin.getConfigManager().getGroups()) {
+		for (PowerGroup group : S86Powers.getConfigManager().getGroups()) {
 			newList.add(group.getName());
 		}
 		Collections.sort(newList);
@@ -230,7 +231,7 @@ public class PowerTabCompleter implements TabCompleter {
 	}
 	
 	private List<String> getGroupPowerList(String name) {
-		PowerGroup group = plugin.getConfigManager().getGroup(name);
+		PowerGroup group = S86Powers.getConfigManager().getGroup(name);
 		List<String> pList = new ArrayList<>();
 		if (group != null) {
 			for (Power power : group.getPowers()) {
@@ -242,7 +243,7 @@ public class PowerTabCompleter implements TabCompleter {
 	}
 	
 	private List<String> getGroupUserList(String name) {
-		PowerGroup group = plugin.getConfigManager().getGroup(name);
+		PowerGroup group = S86Powers.getConfigManager().getGroup(name);
 		List<String> pList = new ArrayList<>();
 		if (group != null) {
 			for (PowerUser user : group.getMembers()) {
@@ -257,7 +258,7 @@ public class PowerTabCompleter implements TabCompleter {
 	
 	private List<String> getPlayerList(boolean isUserCommand) {
 		List<String> newList = new ArrayList<>();
-		for (PowerUser user : plugin.getConfigManager().getUserList()) {
+		for (PowerUser user : S86Powers.getConfigManager().getUserList()) {
 			if (user.getName() != null) {
 				newList.add(user.getName());
 			}
@@ -271,7 +272,7 @@ public class PowerTabCompleter implements TabCompleter {
 	}
 	
 	private List<String> getPlayerPowerList(String player) {
-		PowerUser user = plugin.getConfigManager().getUser(player);
+		PowerUser user = S86Powers.getConfigManager().getUser(player);
 		List<String> pList = new ArrayList<>();
 		if (user != null) {
 			for (Power power : UserContainer.getContainer(user).getPowers()) {
@@ -283,8 +284,8 @@ public class PowerTabCompleter implements TabCompleter {
 	}
 	
 	private List<String> getPlayerStatList(String player, String pName) {
-		PowerUser user = plugin.getConfigManager().getUser(player);
-		Power power = plugin.getConfigManager().getPower(pName);
+		PowerUser user = S86Powers.getConfigManager().getUser(player);
+		Power power = S86Powers.getConfigManager().getPower(pName);
 		List<String> statList = new ArrayList<>();
 		if (user != null
 				&& power != null
@@ -298,7 +299,7 @@ public class PowerTabCompleter implements TabCompleter {
 	
 	private List<String> getPowerOptionList(String name) {
 		List<String> optionList = new ArrayList<>();
-		Power power = plugin.getConfigManager().getPower(name);
+		Power power = S86Powers.getConfigManager().getPower(name);
 		if (power != null) {
 			for (PowerOption option : PowerContainer.getContainer(power).getOptions().keySet()) {
 				optionList.add(option.getPath());
@@ -307,11 +308,11 @@ public class PowerTabCompleter implements TabCompleter {
 		return optionList;
 	}
 	
-	private List<String> getPowerList(boolean isPowerCommand, boolean includeUtility) {
+	private List<String> getPowerList(boolean isPowerCommand) {
 		List<String> newList = new ArrayList<>();
-		for (Power power : plugin.getConfigManager().getPowers()) {
+		for (Power power : S86Powers.getConfigManager().getPowers()) {
 			if (power.getType() != PowerType.UTILITY
-					|| includeUtility) {
+					|| isPowerCommand) {
 				newList.add(PowerContainer.getContainer(power).getTag());
 			}
 		}
@@ -320,12 +321,15 @@ public class PowerTabCompleter implements TabCompleter {
 			newList.add(0, "help");
 			newList.add(1, "list");
 		}
+		else {
+			newList.add(0, "random");
+		}
 		return newList;
 	}
 	
 	private List<String> getPowerStatList(String name) {
 		List<String> statList = new ArrayList<>();
-		Power power = plugin.getConfigManager().getPower(name);
+		Power power = S86Powers.getConfigManager().getPower(name);
 		if (power != null) {
 			for (PowerStat stat : PowerContainer.getContainer(power).getStats().keySet()) {
 				statList.add(stat.getPath());
@@ -336,7 +340,7 @@ public class PowerTabCompleter implements TabCompleter {
 	
 	private List<String> getRegionList(boolean isRegionCommand) {
 		List<String> newList = new ArrayList<>();
-		for (NeutralRegion region : plugin.getConfigManager().getRegions()) {
+		for (NeutralRegion region : S86Powers.getConfigManager().getRegions()) {
 			newList.add(region.getName());
 		}
 		Collections.sort(newList);
@@ -349,7 +353,7 @@ public class PowerTabCompleter implements TabCompleter {
 	
 	private List<String> getWorldList() {
 		List<String> wList = new ArrayList<>();
-		for (World world : plugin.getServer().getWorlds()) {
+		for (World world : Bukkit.getServer().getWorlds()) {
 			wList.add(world.getName());
 		}
 		Collections.sort(wList);

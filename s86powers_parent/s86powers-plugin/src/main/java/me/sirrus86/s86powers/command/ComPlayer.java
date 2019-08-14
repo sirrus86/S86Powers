@@ -40,7 +40,7 @@ public class ComPlayer extends ComAbstract {
 						comUserInfo(uCont);
 					}
 					else if (args[2].equalsIgnoreCase("add")) {
-						comUserAdd(uCont, args.length > 3 ? config.getPower(args[3]) : null);
+						comUserAdd(uCont, args.length > 3 ? (args[3].equalsIgnoreCase("random") ? getRandomPower(uCont) : config.getPower(args[3])) : null);
 					}
 					else if (args[2].equalsIgnoreCase("remove")) {
 						comUserRemove(uCont, args.length > 3 ? config.getPower(args[3]) : null);

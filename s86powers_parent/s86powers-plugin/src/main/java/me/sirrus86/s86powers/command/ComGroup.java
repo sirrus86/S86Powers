@@ -11,7 +11,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 
-public class ComGroup extends ComAbstract {
+public final class ComGroup extends ComAbstract {
 	
 	public ComGroup(CommandSender sender, String... args) {
 		super(sender, args);
@@ -31,7 +31,7 @@ public class ComGroup extends ComAbstract {
 						comGroupInfo(group);
 					}
 					else if (args[2].equalsIgnoreCase("add")) {
-						comGroupAdd(group, args.length > 3 ? config.getPower(args[3]) : null);
+						comGroupAdd(group, args.length > 3 ? (args[3].equalsIgnoreCase("random") ? getRandomPower(group) : config.getPower(args[3])) : null);
 					}
 					else if (args[2].equalsIgnoreCase("assign")) {
 						comGroupAssign(group, args.length > 3 ? config.getUser(args[3]) : null);
