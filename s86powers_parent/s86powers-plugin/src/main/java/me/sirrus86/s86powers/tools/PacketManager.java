@@ -63,7 +63,7 @@ import me.sirrus86.s86powers.tools.nms.NMSLibrary;
 import me.sirrus86.s86powers.tools.version.MCVersion;
 import me.sirrus86.s86powers.utils.PowerTime;
 
-public class PacketManager {
+public final class PacketManager {
 
 	private Map<BlockPosition, PacketContainer> blocks = new HashMap<>();
 	private Map<UUID, LivingEntity> control = new HashMap<>();
@@ -75,11 +75,10 @@ public class PacketManager {
 			hidden = new HashSet<>();
 	
 	private final NMSLibrary nms;
-	protected final S86Powers plugin;
+	protected final S86Powers plugin = JavaPlugin.getPlugin(S86Powers.class);
 	private final ProtocolManager pm;
 	
 	public PacketManager() {
-		plugin = JavaPlugin.getPlugin(S86Powers.class);
 		nms = PowerTools.getNMSLibrary();
 		pm = ProtocolLibrary.getProtocolManager();
 		pm.addPacketListener(new PacketAdapter(plugin, PacketType.Play.Server.ENTITY_METADATA, PacketType.Play.Server.SPAWN_ENTITY,
@@ -406,7 +405,7 @@ public class PacketManager {
 			for (Player viewer : pm.getEntityTrackers(player)) {
 				showAsGhost(viewer, player);
 			}
-			player.addPotionEffect(new PotionEffect(PotionEffectType.INVISIBILITY, Integer.MAX_VALUE, 2, false, false, false), true);
+			player.addPotionEffect(new PotionEffect(PotionEffectType.INVISIBILITY, Integer.MAX_VALUE, 0, false, false, false), true);
 		}
 	}
 	
@@ -613,9 +612,10 @@ public class PacketManager {
 			for (Player players : pm.getEntityTrackers(player)) {
 				PacketContainer packet = pm.createPacket(PacketType.Play.Server.SCOREBOARD_TEAM, true);
 				packet.getStrings().write(0, players.getEntityId() + "." + player.getEntityId());
-				packet.getIntegers().write(1, 1);
+				packet.getIntegers().write(0, 1);
 				sendServerPacket(players, packet);
 			}
+			ghosts.remove(player.getUniqueId());
 		}
 	}
 	
@@ -655,13 +655,22 @@ public class PacketManager {
 		}
 	}
 	
+	protected void setCamera(Player player, Entity entity) {
+		PacketContainer packet = pm.createPacket(PacketType.Play.Server.CAMERA);
+		packet.getIntegers().write(0, entity.getEntityId());
+		sendServerPacket(player, packet);
+	}
+	
 	protected void setControlling(Player player, LivingEntity entity) {
 		control.put(player.getUniqueId(), entity);
 	}
 	
-	protected void setPointOfView(Player player, Entity entity) {
-		PacketContainer packet = pm.createPacket(PacketType.Play.Server.CAMERA);
-		packet.getIntegers().write(0, entity.getEntityId());
+	protected void setLook(Player player, Location loc) {
+		PacketContainer packet = pm.createPacket(PacketType.Play.Server.LOOK_AT);
+		packet.getEnumModifier(Anchor.class, 4).write(0, Anchor.EYES);
+		packet.getDoubles().write(0, loc.getX());
+		packet.getDoubles().write(1, loc.getY());
+		packet.getDoubles().write(2, loc.getZ());
 		sendServerPacket(player, packet);
 	}
 	
@@ -675,6 +684,7 @@ public class PacketManager {
 	private void showAsGhost(Player viewer, Player player) {
 		PacketContainer packet = pm.createPacket(PacketType.Play.Server.SCOREBOARD_TEAM, true);
 		packet.getStrings().write(0, viewer.getEntityId() + "." + player.getEntityId());
+		packet.getStrings().write(1, "hideForOwnTeam");
 		packet.getIntegers().write(0, 0);
 		packet.getIntegers().write(1, 2);
 		packet.getModifier().write(7, Lists.newArrayList(viewer.getName(), player.getName()));
@@ -745,6 +755,13 @@ public class PacketManager {
 			}
 			pm.broadcastServerPacket(packet2, entity, sendToEntity);
 		}
+	}
+	
+	private enum Anchor {
+		
+		FEET,
+		EYES;
+		
 	}
 	
 }
