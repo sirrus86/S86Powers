@@ -11,9 +11,9 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
-public class PowerComExecutor implements CommandExecutor {
+public final class PowerComExecutor implements CommandExecutor {
 
-	private final static String HEADER = "-----[" + ChatColor.GOLD + "S86 Powers" + ChatColor.RESET + " v" + JavaPlugin.getPlugin(S86Powers.class).getDescription().getVersion() + "]---------------";
+	private final static String HEADER = "-----[" + ChatColor.GOLD + "S86 Powers" + ChatColor.RESET + " v" + JavaPlugin.getPlugin(S86Powers.class).getDescription().getVersion() + " by sirrus86]---------------";
 	private static String FOOTER;
 	
 	private GUIBase gui = new GUIBase();
