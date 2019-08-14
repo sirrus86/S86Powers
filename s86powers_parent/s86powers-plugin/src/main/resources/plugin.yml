@@ -6,7 +6,7 @@ author: sirrus86
 load: POSTWORLD
 dev-url: https://www.spigotmc.org/resources/s86-powers.68637/
 depend: [ProtocolLib]
-softdepend: [Multiverse-Core]
+softdepend: [Multiverse-Core, MultiWorld]
 
 commands:
     powers:
