@@ -34,7 +34,6 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.loot.LootTable;
 import org.bukkit.loot.LootTables;
 import org.bukkit.persistence.PersistentDataType;
-import org.bukkit.plugin.java.JavaPlugin;
 
 import me.sirrus86.s86powers.S86Powers;
 import me.sirrus86.s86powers.config.ConfigOption;
@@ -54,8 +53,6 @@ public final class PowerCollector extends Power {
 			LootTables.PILLAGER_OUTPOST, LootTables.SHIPWRECK_TREASURE, LootTables.SIMPLE_DUNGEON, LootTables.STRONGHOLD_CORRIDOR,
 			LootTables.STRONGHOLD_CROSSING, LootTables.STRONGHOLD_LIBRARY, LootTables.UNDERWATER_RUIN_BIG, LootTables.UNDERWATER_RUIN_SMALL,
 			LootTables.WOODLAND_MANSION);
-	
-	private static final S86Powers plugin = JavaPlugin.getPlugin(S86Powers.class);
 	
 	private final NamespacedKey powerKey = createNamespacedKey("power-key");
 	
@@ -161,7 +158,7 @@ public final class PowerCollector extends Power {
 				ItemMeta meta = stack.getItemMeta();
 				if (meta.getPersistentDataContainer().has(powerKey, PersistentDataType.STRING)) {
 					String pName = meta.getPersistentDataContainer().get(powerKey, PersistentDataType.STRING);
-					Power power = plugin.getConfigManager().getPower(pName);
+					Power power = S86Powers.getConfigManager().getPower(pName);
 					if (power != null) {
 						UserContainer uCont = UserContainer.getContainer(user);
 						if (uCont.hasPower(power)) {
@@ -190,7 +187,7 @@ public final class PowerCollector extends Power {
 	
 	@EventHandler
 	private void onServerLoad(ServerLoadEvent event) {
-		for (Power power : plugin.getConfigManager().getPowers()) {
+		for (Power power : S86Powers.getConfigManager().getPowers()) {
 			if (power.getType() != PowerType.UTILITY) {
 				for (int i = 0; i < Math.max(0, option("power-weight." + power.getClass().getSimpleName(), 1,
 						"Chance that " + power.getName() + " will be the power found. Higher values increase chances.")); i ++) {

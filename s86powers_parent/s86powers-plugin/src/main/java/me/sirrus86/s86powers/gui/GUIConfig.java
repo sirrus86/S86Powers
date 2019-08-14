@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.bukkit.ChatColor;
 
+import me.sirrus86.s86powers.S86Powers;
 import me.sirrus86.s86powers.localization.LocaleString;
 import me.sirrus86.s86powers.permissions.S86Permission;
 import me.sirrus86.s86powers.tools.PowerTools;
@@ -15,7 +16,7 @@ public final class GUIConfig extends GUIAbstract {
 	
 	public GUIConfig() {
 		super(2, LocaleString.CONFIG.toString());
-		CONFIG_LIST_GUI = GUIAbstractList.createLists(GUIConfigList.class, plugin.getConfigManager().getOptions().keySet());
+		CONFIG_LIST_GUI = GUIAbstractList.createLists(GUIConfigList.class, S86Powers.getConfigManager().getOptions().keySet());
 		setItems();
 	}
 	

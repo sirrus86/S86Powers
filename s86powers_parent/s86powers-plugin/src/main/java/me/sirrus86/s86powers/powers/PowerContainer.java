@@ -29,7 +29,7 @@ public class PowerContainer {
 	}
 	
 	public static PowerContainer getContainer(Power power) {
-		return plugin.getConfigManager().getContainer(power);
+		return S86Powers.getConfigManager().getContainer(power);
 	}
 	
 	public String getAuthor() {

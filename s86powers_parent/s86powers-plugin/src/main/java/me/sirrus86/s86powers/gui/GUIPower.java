@@ -7,13 +7,14 @@ import java.util.Map;
 
 import org.bukkit.ChatColor;
 
+import me.sirrus86.s86powers.S86Powers;
 import me.sirrus86.s86powers.localization.LocaleString;
 import me.sirrus86.s86powers.permissions.S86Permission;
 import me.sirrus86.s86powers.powers.Power;
 import me.sirrus86.s86powers.powers.PowerContainer;
 import me.sirrus86.s86powers.tools.PowerTools;
 
-public class GUIPower extends GUIAbstract {
+public final class GUIPower extends GUIAbstract {
 	
 	private static Map<Power, List<GUIOptionList>> powerOptionList = new HashMap<>();
 	
@@ -26,7 +27,7 @@ public class GUIPower extends GUIAbstract {
 	
 	@Override
 	void refresh() {
-		POWER_LIST_GUI = GUIAbstractList.createLists(GUIPowerList.class, plugin.getConfigManager().getPowers());
+		POWER_LIST_GUI = GUIAbstractList.createLists(GUIPowerList.class, S86Powers.getConfigManager().getPowers());
 		for (int i = 0; i < POWER_LIST_GUI.size(); i ++) {
 			POWER_LIST_GUI.get(i).setSourceList(POWER_LIST_GUI);
 		}

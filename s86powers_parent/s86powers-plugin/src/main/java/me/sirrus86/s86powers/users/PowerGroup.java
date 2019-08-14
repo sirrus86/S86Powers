@@ -32,7 +32,7 @@ public class PowerGroup implements Comparable<PowerGroup> {
 	private YamlConfiguration config;
 	private final String name;
 	private final Permission perm;
-	private final S86Powers plugin = JavaPlugin.getPlugin(S86Powers.class);
+	private static final S86Powers plugin = JavaPlugin.getPlugin(S86Powers.class);
 	
 	public PowerGroup(String name) {
 		this.name = name;
@@ -108,7 +108,7 @@ public class PowerGroup implements Comparable<PowerGroup> {
 			config = YamlConfiguration.loadConfiguration(cFile);
 			if (config.contains("players")) {
 				for (String uName : config.getStringList("players")) {
-					PowerUser user = plugin.getConfigManager().getUser(UUID.fromString(uName));
+					PowerUser user = S86Powers.getConfigManager().getUser(UUID.fromString(uName));
 					if (user != null) {
 						addMember(user);
 					}
@@ -116,7 +116,7 @@ public class PowerGroup implements Comparable<PowerGroup> {
 			}
 			if (config.contains("powers")) {
 				for (String pwr : config.getStringList("powers")) {
-					Power power = plugin.getConfigManager().getPower(pwr);
+					Power power = S86Powers.getConfigManager().getPower(pwr);
 					if (power != null) {
 						addPower(power);
 					}

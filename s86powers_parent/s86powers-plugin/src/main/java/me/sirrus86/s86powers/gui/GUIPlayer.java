@@ -7,6 +7,7 @@ import java.util.Map;
 
 import org.bukkit.ChatColor;
 
+import me.sirrus86.s86powers.S86Powers;
 import me.sirrus86.s86powers.localization.LocaleString;
 import me.sirrus86.s86powers.permissions.S86Permission;
 import me.sirrus86.s86powers.powers.PowerType;
@@ -28,7 +29,7 @@ public class GUIPlayer extends GUIAbstract {
 	
 	@Override
 	void refresh() {
-		PLAYER_LIST_GUI = GUIAbstractList.createLists(GUIPlayerList.class, plugin.getConfigManager().getUserList());
+		PLAYER_LIST_GUI = GUIAbstractList.createLists(GUIPlayerList.class, S86Powers.getConfigManager().getUserList());
 		for (int i = 0; i < PLAYER_LIST_GUI.size(); i ++) {
 			PLAYER_LIST_GUI.get(i).setSourceList(PLAYER_LIST_GUI);
 		}
@@ -40,8 +41,8 @@ public class GUIPlayer extends GUIAbstract {
 			PowerUser user = selectedUser.get(player.getUniqueId());
 			UserContainer uCont = UserContainer.getContainer(user);
 			if (player.hasPermission(S86Permission.PLAYER_ADD)) {
-				userAddPowerList.put(user, GUIAbstractList.createLists(GUIPowerList.class, plugin.getConfigManager().getPowers(),
-						plugin.getConfigManager().getPowersByType(PowerType.UTILITY), uCont.getPowers()));
+				userAddPowerList.put(user, GUIAbstractList.createLists(GUIPowerList.class, S86Powers.getConfigManager().getPowers(),
+						S86Powers.getConfigManager().getPowersByType(PowerType.UTILITY), uCont.getPowers()));
 				for (int i = 0; i < userAddPowerList.get(user).size(); i ++) {
 					userAddPowerList.get(user).get(i).setSourceList(userAddPowerList.get(user));
 				}

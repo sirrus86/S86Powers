@@ -21,14 +21,13 @@ import me.sirrus86.s86powers.tools.version.VersionTools;
 import me.sirrus86.s86powers.users.PowerUser;
 
 import org.apache.commons.lang.WordUtils;
+
 import org.bukkit.Art;
 import org.bukkit.Axis;
 import org.bukkit.ChatColor;
-import org.bukkit.Effect;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Particle;
-import org.bukkit.World;
 import org.bukkit.Particle.DustOptions;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
@@ -46,7 +45,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.util.Vector;
 
 import com.google.common.collect.Lists;
@@ -58,8 +56,8 @@ import com.google.common.collect.Sets;
  */
 public final class PowerTools {
 	
-	private static Map<UUID, UUID> tamed = new HashMap<>();
-	private static Map<Double, Set<Vector>> auraCoords = new HashMap<>();
+	private static final Map<UUID, UUID> tamed = new HashMap<>();
+	private static final Map<Double, Set<Vector>> auraCoords = new HashMap<>();
 	private static final TreeMap<Integer, String> romanNums = new TreeMap<>();
 	
 	private static final BlockFace[] axis = { BlockFace.NORTH, BlockFace.EAST, BlockFace.SOUTH, BlockFace.WEST };
@@ -67,9 +65,8 @@ public final class PowerTools {
 
 	private static final NMSLibrary nms = resolveNMS();
 	private static final PacketManager pm = new PacketManager();
-	protected static final S86Powers plugin = JavaPlugin.getPlugin(S86Powers.class);
 	private static final Random random = new Random();
-	private static VersionTools vTools = resolveVTools();
+	private static final VersionTools vTools = resolveVTools();
 	
 	/**
 	 * Adds a disguise to an entity, making it look like a different kind of entity.
@@ -507,15 +504,11 @@ public final class PowerTools {
 	}
 	
 	public static PowerUser getTamedOwner(Entity entity) {
-		return tamed.containsKey(entity.getUniqueId()) ? plugin.getConfigManager().getUser(tamed.get(entity.getUniqueId())) : null;
+		return tamed.containsKey(entity.getUniqueId()) ? S86Powers.getConfigManager().getUser(tamed.get(entity.getUniqueId())) : null;
 	}
 	
 	public static <T extends Entity> T getTargetEntity(Class<T> clazz, Location location, Vector direction, double maxDistance, Predicate<Entity> filter) {
 		return vTools.getTargetEntity(clazz, location, direction, maxDistance, filter);
-	}
-
-	public static World getWorld(String world) {
-		return plugin.getServer().getWorld(world);
 	}
 	
 	public static boolean hasDisguise(Block block) {
@@ -624,16 +617,10 @@ public final class PowerTools {
 		loc.getWorld().spawnParticle(Particle.REDSTONE, loc.getX(), loc.getY(), loc.getZ(), count, offset.getX(), offset.getY(), offset.getZ(), 1.0D, dustOptions);
 	}
 	
-	public static void poof(Location loc) {
-		for (BlockFace face : radial) {
-			loc.getWorld().playEffect(loc, Effect.SMOKE, face);
-		}
-	}
-	
 	public static void removeControl(Player player, Creature creature) {
 		creature.eject();
 		nms.unTame(creature);
-		setPOV(player, player);
+		setCamera(player, player);
 	}
 	
 	public static void removeDisguise(Entity entity) {
@@ -672,12 +659,10 @@ public final class PowerTools {
 			try {
 				switch(MCVersion.CURRENT_VERSION) {
 					case v1_13: case v1_13_1: case v1_13_2: {
-						vTools = (VersionTools) Class.forName("me.sirrus86.s86powers.tools.version.v1_13.VersionTools").newInstance();
-						break;
+						return (VersionTools) Class.forName("me.sirrus86.s86powers.tools.version.v1_13.VersionTools").newInstance();
 					}
 					default: {
-						vTools = (VersionTools) Class.forName("me.sirrus86.s86powers.tools.version.v1_14.VersionTools").newInstance();
-						break;
+						return (VersionTools) Class.forName("me.sirrus86.s86powers.tools.version.v1_14.VersionTools").newInstance();
 					}
 				}
 			} catch (Exception e) {
@@ -685,7 +670,13 @@ public final class PowerTools {
 				return null;
 			}
 		}
-		return vTools;
+		else {
+			return vTools;
+		}
+	}
+	
+	public static void setCamera(Player player, Entity entity) {
+		pm.setCamera(player, entity);
 	}
 	
 	public static void setControlling(Player player, LivingEntity entity) {
@@ -700,8 +691,8 @@ public final class PowerTools {
 		return nms.setItemGlow(item);
 	}
 	
-	public static void setPOV(Player player, Entity entity) {
-		pm.setPointOfView(player, entity);
+	public static void setLook(Player player, Location loc) {
+		pm.setLook(player, loc);
 	}
 	
 	public static void setRotation(Entity entity, float yaw, float pitch) {
@@ -749,7 +740,7 @@ public final class PowerTools {
 		creature.addPassenger(player);
 		nms.removePathfinding(creature);
 		setControlling(player, creature);
-		setPOV(player, creature);
+		setCamera(player, creature);
 	}
 	
 	public static final boolean usesDurability(ItemStack item) {

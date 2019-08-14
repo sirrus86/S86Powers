@@ -7,6 +7,7 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 
+import me.sirrus86.s86powers.S86Powers;
 import me.sirrus86.s86powers.powers.Power;
 import me.sirrus86.s86powers.users.PowerUser;
 
@@ -33,7 +34,7 @@ public class PowerDamageEvent extends PowerEvent implements Cancellable {
 		super(power);
 		this.cause = event.getCause();
 		this.event = event;
-		this.user = event.getDamager() instanceof Player ? plugin.getConfigManager().getUser(event.getDamager().getUniqueId()) : null;
+		this.user = event.getDamager() instanceof Player ? S86Powers.getConfigManager().getUser(event.getDamager().getUniqueId()) : null;
 		this.target = event.getEntity() instanceof Damageable ? (Damageable) event.getEntity() : null;
 		this.damage = event.getDamage();
 		this.cap = cap;

@@ -9,12 +9,13 @@ import me.sirrus86.s86powers.powers.PowerContainer;
 import me.sirrus86.s86powers.powers.PowerOption;
 import me.sirrus86.s86powers.powers.PowerStat;
 import me.sirrus86.s86powers.powers.PowerType;
+import me.sirrus86.s86powers.tools.PowerTools;
 
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.inventory.ItemStack;
 
-public class ComPower extends ComAbstract {
+public final class ComPower extends ComAbstract {
 
 	public ComPower(CommandSender sender, String... args) {
 		super(sender, args);
@@ -80,7 +81,7 @@ public class ComPower extends ComAbstract {
 		}
 	}
 	
-	private void comPowerBlock(PowerContainer power, boolean isBlock) {
+	private final void comPowerBlock(PowerContainer power, boolean isBlock) {
 		if (isBlock) {
 			if (sender.hasPermission(S86Permission.POWER_BLOCK)) {
 				if (config.blockPower(power.getPower())) {
@@ -109,7 +110,7 @@ public class ComPower extends ComAbstract {
 		}
 	}
 	
-	private void comPowerEnable(PowerContainer power, boolean isEnable) {
+	private final void comPowerEnable(PowerContainer power, boolean isEnable) {
 		if (isEnable) {
 			if (sender.hasPermission(S86Permission.POWER_ENABLE)) {
 				if (!power.isEnabled()) {
@@ -148,7 +149,7 @@ public class ComPower extends ComAbstract {
 		}
 	}
 	
-	private void comPowerHelp(String page) {
+	private final void comPowerHelp(String page) {
 		if (sender.hasPermission(S86Permission.POWER_HELP)) {
 			PageMaker pm = null;
 			int i = 1;
@@ -167,7 +168,7 @@ public class ComPower extends ComAbstract {
 		}
 	}
 	
-	private void comPowerInfo(PowerContainer power) {
+	private final void comPowerInfo(PowerContainer power) {
 		if (sender.hasPermission(S86Permission.POWER_INFO)) {
 			sender.sendMessage(ChatColor.GREEN + power.getPower().getName() + ChatColor.RESET + " (" + ChatColor.GRAY + power.getTag() + ChatColor.RESET + ")");
 			sender.sendMessage(LocaleString.TYPE + ": " + power.getPower().getType().getColor() + power.getPower().getType().getName() + ChatColor.RESET + ".");
@@ -181,7 +182,7 @@ public class ComPower extends ComAbstract {
 		}
 	}
 	
-	private void comPowerKill(PowerContainer power) {
+	private final void comPowerKill(PowerContainer power) {
 		if (sender.hasPermission(S86Permission.POWER_KILL)) {
 			String pName = power.getPower().getName();
 			config.removePower(power.getPower());
@@ -194,7 +195,7 @@ public class ComPower extends ComAbstract {
 		}
 	}
 	
-	private void comPowerList(PowerType type, String page) {
+	private final void comPowerList(PowerType type, String page) {
 		if (sender.hasPermission(S86Permission.POWER_LIST)) {
 			String title = LocaleString.POWERS.toString();
 			int i = 1;
@@ -223,7 +224,7 @@ public class ComPower extends ComAbstract {
 		}
 	}
 	
-	private void comPowerLock(PowerContainer power, boolean isLock) {
+	private final void comPowerLock(PowerContainer power, boolean isLock) {
 		if (isLock) {
 			if (sender.hasPermission(S86Permission.POWER_LOCK)) {
 				if (!power.isLocked()) {
@@ -254,7 +255,7 @@ public class ComPower extends ComAbstract {
 		}
 	}
 	
-	private void comPowerOption(PowerContainer power, String page, PowerOption option, String valueStr) {
+	private final void comPowerOption(PowerContainer power, String page, PowerOption option, String valueStr) {
 		if (sender.hasPermission(S86Permission.POWER_OPTION)) {
 			if (option != null) {
 				if (valueStr != null) {
@@ -271,7 +272,7 @@ public class ComPower extends ComAbstract {
 					sender.sendMessage(ChatColor.GREEN + option.getPath());
 					sender.sendMessage(LocaleString.DESCRIPTION + ": " + ChatColor.GRAY + option.getDescription());
 					sender.sendMessage(LocaleString.TYPE + ": " + ChatColor.GRAY + power.getOptionValue(option).getClass().getSimpleName());
-					sender.sendMessage(LocaleString.VALUE + ": " + ChatColor.BLUE + (power.getOptionValue(option) instanceof ItemStack ? getItemName((ItemStack) power.getOptionValue(option)) : power.getOptionValue(option).toString()) + ChatColor.RESET + " " + LocaleString.DEFAULT + ": " + ChatColor.GRAY + option.getDefaultValue());
+					sender.sendMessage(LocaleString.VALUE + ": " + ChatColor.BLUE + (power.getOptionValue(option) instanceof ItemStack ? PowerTools.getItemName((ItemStack) power.getOptionValue(option)) : power.getOptionValue(option).toString()) + ChatColor.RESET + " " + LocaleString.DEFAULT + ": " + ChatColor.GRAY + option.getDefaultValue());
 				}
 			}
 			else if (page != null) {
@@ -293,7 +294,7 @@ public class ComPower extends ComAbstract {
 		}
 	}
 	
-	private void comPowerReload(PowerContainer power) {
+	private final void comPowerReload(PowerContainer power) {
 		if (sender.hasPermission(S86Permission.POWER_RELOAD)) {
 			power.reload();
 			sender.sendMessage(SUCCESS + LocaleString.POWER_RELOAD_SUCCESS.build(power.getPower()));
@@ -303,7 +304,7 @@ public class ComPower extends ComAbstract {
 		}
 	}
 	
-	private void comPowerSave(PowerContainer power) {
+	private final void comPowerSave(PowerContainer power) {
 		if (sender.hasPermission(S86Permission.POWER_SAVE)) {
 			power.getPower().saveConfig();
 			sender.sendMessage(SUCCESS + LocaleString.POWER_SAVE_SUCCESS.build(power.getPower()));
@@ -313,7 +314,7 @@ public class ComPower extends ComAbstract {
 		}
 	}
 	
-	private void comPowerStats(PowerContainer power, String page, PowerStat stat, String valueStr) {
+	private final void comPowerStats(PowerContainer power, String page, PowerStat stat, String valueStr) {
 		if (sender.hasPermission(S86Permission.POWER_STATS)) {
 			if (stat != null) {
 				if (valueStr != null) {
@@ -346,7 +347,7 @@ public class ComPower extends ComAbstract {
 		}
 	}
 	
-	private void comPowerSupply(PowerContainer power, String index, String value, String quantity) {
+	private final void comPowerSupply(PowerContainer power, String index, String value, String quantity) {
 		if (sender.hasPermission(S86Permission.POWER_SUPPLY)) {
 			if (index != null) {
 				int i = -1;
@@ -375,7 +376,7 @@ public class ComPower extends ComAbstract {
 							ItemStack item = createItemStack(value, qty);
 							if (item != null) {
 								power.setSupply(i, item);
-								sender.sendMessage(SUCCESS + LocaleString.POWER_SUPPLY_ADD.build(i, getItemName(item)));
+								sender.sendMessage(SUCCESS + LocaleString.POWER_SUPPLY_ADD.build(i, PowerTools.getItemName(item)));
 							}
 							else {
 								sender.sendMessage(ERROR + LocaleString.ITEM_CREATED_INVALID);

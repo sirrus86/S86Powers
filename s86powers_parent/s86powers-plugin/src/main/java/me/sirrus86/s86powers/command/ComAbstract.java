@@ -12,6 +12,7 @@ import me.sirrus86.s86powers.powers.Power;
 import me.sirrus86.s86powers.powers.PowerContainer;
 import me.sirrus86.s86powers.powers.PowerOption;
 import me.sirrus86.s86powers.powers.PowerStat;
+import me.sirrus86.s86powers.powers.PowerType;
 import me.sirrus86.s86powers.regions.NeutralRegion;
 import me.sirrus86.s86powers.tools.PowerTools;
 import me.sirrus86.s86powers.users.PowerGroup;
@@ -24,14 +25,11 @@ import org.bukkit.Material;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.plugin.java.JavaPlugin;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
 public abstract class ComAbstract {
-
-	private final S86Powers plugin = JavaPlugin.getPlugin(S86Powers.class);
 	
 	protected static final String ERROR = ChatColor.WHITE + "[" + ChatColor.RED + LocaleString.ERROR_CAPS + ChatColor.WHITE + "] " + ChatColor.RESET,
 			HELP = ChatColor.WHITE + "[" + ChatColor.YELLOW + LocaleString.HELP_CAPS + ChatColor.WHITE + "] " + ChatColor.RESET,
@@ -39,30 +37,20 @@ public abstract class ComAbstract {
 			LIST = ChatColor.WHITE + "[" + ChatColor.YELLOW + LocaleString.LIST_CAPS + ChatColor.WHITE + "] " + ChatColor.RESET,
 			SUCCESS = ChatColor.WHITE + "[" + ChatColor.GREEN + LocaleString.SUCCESS_CAPS + ChatColor.WHITE + "] " + ChatColor.RESET;
 
-	protected final ConfigManager config;
+	protected static final ConfigManager config = S86Powers.getConfigManager();
 	protected final CommandSender sender;
 	protected final PowerUser sUser;
 
 	protected ComAbstract(CommandSender sender, String... args) {
 		this.sender = sender;
-		sUser = sender instanceof Player ? plugin.getConfigManager().getUser(((Player) sender).getUniqueId()) : null;
-		config = plugin.getConfigManager();
+		sUser = sender instanceof Player ? S86Powers.getConfigManager().getUser(((Player) sender).getUniqueId()) : null;
 	}
 
-	protected String capitalize(String line) {
-		if (line != null) {
-			return line.length() > 1 ? line.substring(0, 1).toUpperCase() + line.substring(1).toLowerCase() : line.toUpperCase();
-		}
-		else {
-			return "";
-		}
-	}
-
-	protected ItemStack createItemStack(String value) {
+	protected final ItemStack createItemStack(String value) {
 		return createItemStack(value, 1);
 	}
 
-	protected ItemStack createItemStack(String value, int qty) {
+	protected final ItemStack createItemStack(String value, int qty) {
 		ItemStack item = null;
 		String type = "";
 		Material mat = Material.getMaterial(type);
@@ -83,8 +71,8 @@ public abstract class ComAbstract {
 		return null;
 	}
 
-	protected String getGroups() {
-		List<PowerGroup> groups = Lists.newArrayList(plugin.getConfigManager().getGroups());
+	protected final String getGroups() {
+		List<PowerGroup> groups = Lists.newArrayList(S86Powers.getConfigManager().getGroups());
 		Collections.sort(groups);
 		String tmp = "";
 		for (int i = 0; i < groups.size(); i ++) {
@@ -97,7 +85,7 @@ public abstract class ComAbstract {
 		return tmp == "" ? LocaleString.NONE.toString() : tmp;
 	}
 
-	protected String getGroups(UserContainer user) {
+	protected final String getGroups(UserContainer user) {
 		String tmp = "";
 		List<PowerGroup> pList = Lists.newArrayList(user.getGroups());
 		Collections.sort(pList);
@@ -114,17 +102,13 @@ public abstract class ComAbstract {
 		return tmp.equalsIgnoreCase("") ? LocaleString.NONE.toString() : tmp;
 	}
 
-	protected String getItemName(ItemStack itemStack) {
-		return PowerTools.getItemName(itemStack);
-	}
-
-	protected String getOptions(PowerContainer pCont) {
+	protected final String getOptions(PowerContainer pCont) {
 		List<PowerOption> options = Lists.newArrayList(pCont.getOptions().keySet());
 		Collections.sort(options);
 		String tmp = "";
 		for (int i = 0; i < options.size(); i ++) {
 			PowerOption option = options.get(i);
-			tmp = tmp + ChatColor.GREEN + option.getPath() + ChatColor.GRAY + ": " + ChatColor.WHITE + (pCont.getOptionValue(option) instanceof ItemStack ? getItemName((ItemStack) pCont.getOptionValue(option)) : pCont.getOptionValue(option).toString()) + "\n";
+			tmp = tmp + ChatColor.GREEN + option.getPath() + ChatColor.GRAY + ": " + ChatColor.WHITE + (pCont.getOptionValue(option) instanceof ItemStack ? PowerTools.getItemName((ItemStack) pCont.getOptionValue(option)) : pCont.getOptionValue(option).toString()) + "\n";
 		}
 		if (tmp.endsWith("\n")) {
 			tmp = tmp.substring(0, tmp.lastIndexOf("\n"));
@@ -133,12 +117,12 @@ public abstract class ComAbstract {
 		return tmp == "" ? LocaleString.NONE.toString() : tmp;
 	}
 
-	protected String getPowerDesc(PowerContainer pCont) {
+	protected final String getPowerDesc(PowerContainer pCont) {
 		pCont.refreshOptions();
 		return pCont.getFilteredText(pCont.getDescription());
 	}
 
-	protected String getPowerList(Set<Power> list) {
+	protected final String getPowerList(Set<Power> list) {
 		String tmp = "(" + ChatColor.GRAY + list.size() + ChatColor.RESET + ") ";
 		List<Power> powers = Lists.newArrayList(list);
 		Collections.sort(powers);
@@ -152,7 +136,7 @@ public abstract class ComAbstract {
 		return list.isEmpty() ? LocaleString.NONE.toString() : tmp;
 	}
 
-	protected String getPowers(PowerGroup group) {
+	protected final String getPowers(PowerGroup group) {
 		String tmp = "";
 		List<Power> pList = Lists.newArrayList(group.getPowers());
 		Collections.sort(pList);
@@ -166,7 +150,7 @@ public abstract class ComAbstract {
 		return tmp.equalsIgnoreCase("") ? LocaleString.NONE.toString() : tmp;
 	}
 
-	protected String getPowers(UserContainer user) {
+	protected final String getPowers(UserContainer user) {
 		String tmp = "";
 		List<Power> pList = Lists.newArrayList(user.getPowers());
 		Collections.sort(pList);
@@ -187,9 +171,25 @@ public abstract class ComAbstract {
 		}
 		return tmp.equalsIgnoreCase("") ? LocaleString.NONE.toString() : tmp;
 	}
+	
+	protected final Power getRandomPower(PowerGroup group) {
+		List<Power> powers = Lists.newArrayList(config.getPowers());
+		powers.removeAll(config.getPowersByType(PowerType.UTILITY));
+		powers.removeAll(group.getPowers());
+		Collections.shuffle(powers);
+		return !powers.isEmpty() ? powers.get(0) : null;
+	}
+	
+	protected final Power getRandomPower(UserContainer user) {
+		List<Power> powers = Lists.newArrayList(config.getPowers());
+		powers.removeAll(config.getPowersByType(PowerType.UTILITY));
+		powers.removeAll(user.getAssignedPowers());
+		Collections.shuffle(powers);
+		return !powers.isEmpty() ? powers.get(0) : null;
+	}
 
-	protected String getRegions() {
-		List<NeutralRegion> regions = Lists.newArrayList(plugin.getConfigManager().getRegions());
+	protected final String getRegions() {
+		List<NeutralRegion> regions = Lists.newArrayList(S86Powers.getConfigManager().getRegions());
 		Collections.sort(regions);
 		String tmp = "";
 		for (int i = 0; i < regions.size(); i ++) {
@@ -202,7 +202,7 @@ public abstract class ComAbstract {
 		return tmp == "" ? LocaleString.NONE.toString() : tmp;
 	}
 
-	protected String getStats(PowerContainer power) {
+	protected final String getStats(PowerContainer power) {
 		List<PowerStat> stats = Lists.newArrayList(power.getStats().keySet());
 		Collections.sort(stats);
 		String tmp = "";
@@ -217,10 +217,10 @@ public abstract class ComAbstract {
 		return tmp == "" ? LocaleString.NONE.toString() : tmp;
 	}
 	
-	protected String getSupplies(PowerContainer power) {
+	protected final String getSupplies(PowerContainer power) {
 		String tmp = "";
 		for (int i = 0; i < power.getSupplies().size(); i ++) {
-			tmp = tmp + ChatColor.GREEN + i + ChatColor.RESET + ": " + ChatColor.GRAY + getItemName(power.getSupplies().get(i)) + " x" + power.getSupplies().get(i).getAmount() + "\n";
+			tmp = tmp + ChatColor.GREEN + i + ChatColor.RESET + ": " + ChatColor.GRAY + PowerTools.getItemName(power.getSupplies().get(i)) + " x" + power.getSupplies().get(i).getAmount() + "\n";
 		}
 		if (tmp.equalsIgnoreCase("")) {
 			return LocaleString.NONE.toString();
@@ -229,7 +229,7 @@ public abstract class ComAbstract {
 		return tmp;
 	}
 
-	protected String getUserName(UserContainer user) {
+	protected final String getUserName(UserContainer user) {
 		ChatColor color = ChatColor.GREEN;
 		if (user.isAdmin()) {
 			color = ChatColor.GOLD;
@@ -240,8 +240,8 @@ public abstract class ComAbstract {
 		return color + (user.getUser().getName() != null ? user.getUser().getName() : "NULL") + ChatColor.RESET;
 	}
 
-	protected String getUsers() {
-		List<PowerUser> users = Lists.newArrayList(plugin.getConfigManager().getUserList());
+	protected final String getUsers() {
+		List<PowerUser> users = Lists.newArrayList(S86Powers.getConfigManager().getUserList());
 		Collections.sort(users);
 		String tmp = "";
 		for (int i = 0; i < users.size(); i ++) {
@@ -254,7 +254,7 @@ public abstract class ComAbstract {
 		return tmp == "" ? LocaleString.NONE.toString() : tmp;
 	}
 
-	protected String getUsers(PowerContainer power) {
+	protected final String getUsers(PowerContainer power) {
 		List<PowerUser> users = Lists.newArrayList(power.getUsers());
 		Collections.sort(users);
 		String tmp = "";
@@ -268,7 +268,7 @@ public abstract class ComAbstract {
 		return tmp == "" ? LocaleString.NONE.toString() : tmp;
 	}
 
-	protected String getUsers(PowerGroup group) {
+	protected final String getUsers(PowerGroup group) {
 		List<PowerUser> users = Lists.newArrayList(group.getMembers());
 		Collections.sort(users);
 		String tmp = "";
@@ -282,7 +282,7 @@ public abstract class ComAbstract {
 		return tmp == "" ? LocaleString.NONE.toString() : tmp;
 	}
 
-	protected void killPower(Power power) {
+	protected final void killPower(Power power) {
 		Set<Field> fields = Sets.newHashSet(Power.class.getDeclaredFields());
 		fields.addAll(Sets.newHashSet(power.getClass().getDeclaredFields()));
 		for (Field field : fields) {
@@ -297,11 +297,11 @@ public abstract class ComAbstract {
 
 	protected final String optList() {
 		String tmp = "";
-		List<String> options = Lists.newArrayList(plugin.getConfigManager().getOptions().keySet());
+		List<String> options = Lists.newArrayList(S86Powers.getConfigManager().getOptions().keySet());
 		Collections.sort(options);
 		for (int i = 0; i < options.size(); i ++) {
 			String option = options.get(i);
-			Field field = plugin.getConfigManager().getOptions().get(option);
+			Field field = S86Powers.getConfigManager().getOptions().get(option);
 			try {
 				tmp = tmp + ChatColor.GREEN + option + ChatColor.RESET + ": " + field.get(null).toString() + "\n";
 			} catch (Exception e) {
@@ -314,11 +314,11 @@ public abstract class ComAbstract {
 		return tmp;
 	}
 
-	protected void supply(UserContainer user, Power power) {
+	protected final void supply(UserContainer user, Power power) {
 		user.supply(power);
 	}
 
-	protected Object validate(PowerOption option, String value) {
+	protected final Object validate(PowerOption option, String value) {
 		if (option.getDefaultValue() instanceof Boolean
 				&& (value.equalsIgnoreCase("false") || value.equalsIgnoreCase("true"))) {
 			return Boolean.parseBoolean(value);
@@ -353,7 +353,7 @@ public abstract class ComAbstract {
 		return null;
 	}
 	
-	protected int validate(PowerStat stat, String value) {
+	protected final int validate(PowerStat stat, String value) {
 		try {
 			return Integer.parseInt(value);
 		} catch (NumberFormatException e) {

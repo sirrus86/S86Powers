@@ -7,6 +7,7 @@ import java.util.Map;
 
 import org.bukkit.ChatColor;
 
+import me.sirrus86.s86powers.S86Powers;
 import me.sirrus86.s86powers.localization.LocaleString;
 import me.sirrus86.s86powers.permissions.S86Permission;
 import me.sirrus86.s86powers.powers.PowerType;
@@ -29,7 +30,7 @@ public class GUIGroup extends GUIAbstract {
 	
 	@Override
 	void refresh() {
-		GROUP_LIST_GUI = GUIAbstractList.createLists(GUIGroupList.class, plugin.getConfigManager().getGroups());
+		GROUP_LIST_GUI = GUIAbstractList.createLists(GUIGroupList.class, S86Powers.getConfigManager().getGroups());
 		for (int i = 0; i < GROUP_LIST_GUI.size(); i ++) {
 			GROUP_LIST_GUI.get(i).setSourceList(GROUP_LIST_GUI);
 		}
@@ -40,7 +41,7 @@ public class GUIGroup extends GUIAbstract {
 		setItem(0, PLAYER, LocaleString.ADD_PLAYER.toString(), PowerTools.wordSplit(ChatColor.RESET.toString() + ChatColor.GRAY.toString(), LocaleString.GROUP_ASSIGN_HELP.toString(), 30), player -> {
 			if (player.hasPermission(S86Permission.GROUP_ASSIGN)) {
 				PowerGroup group = selectedGroup.get(player.getUniqueId());
-				groupAddPlayerList.put(group, GUIAbstractList.createLists(GUIPlayerList.class, plugin.getConfigManager().getUserList(), group.getMembers()));
+				groupAddPlayerList.put(group, GUIAbstractList.createLists(GUIPlayerList.class, S86Powers.getConfigManager().getUserList(), group.getMembers()));
 				for (int i = 0; i < groupAddPlayerList.get(group).size(); i ++) {
 					groupAddPlayerList.get(group).get(i).setSourceList(groupAddPlayerList.get(group));
 				}
@@ -68,8 +69,8 @@ public class GUIGroup extends GUIAbstract {
 		setItem(3, POWER, LocaleString.ADD_POWER.toString(), PowerTools.wordSplit(ChatColor.RESET.toString() + ChatColor.GRAY.toString(), LocaleString.GROUP_ADD_HELP.toString(), 30), player -> {
 			if (player.hasPermission(S86Permission.GROUP_ADD)) {
 				PowerGroup group = selectedGroup.get(player.getUniqueId());
-				groupAddPowerList.put(group, GUIAbstractList.createLists(GUIPowerList.class, plugin.getConfigManager().getPowers(),
-						plugin.getConfigManager().getPowersByType(PowerType.UTILITY), group.getPowers()));
+				groupAddPowerList.put(group, GUIAbstractList.createLists(GUIPowerList.class, S86Powers.getConfigManager().getPowers(),
+						S86Powers.getConfigManager().getPowersByType(PowerType.UTILITY), group.getPowers()));
 				for (int i = 0; i < groupAddPowerList.get(group).size(); i ++) {
 					groupAddPowerList.get(group).get(i).setSourceList(groupAddPowerList.get(group));
 				}

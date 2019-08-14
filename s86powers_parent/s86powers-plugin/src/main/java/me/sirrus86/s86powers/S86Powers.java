@@ -34,17 +34,17 @@ import org.bukkit.plugin.java.JavaPlugin;
 /**
  * 
  * @author sirrus86
- * @version 5.1.6
+ * @version '${project.version}'
  */
 public final class S86Powers extends JavaPlugin {
 
 	private static final double MIN_PROTOCOLLIB_VERSION = 4.5D;
 	
-	private BlockListener bList;
-	private PowerComExecutor comExec;
-	private ConfigManager configManager;
-	private File groupDir, powerDir, userDir;
-	private PowerTabCompleter pTC;
+	private static BlockListener bList;
+	private static PowerComExecutor comExec;
+	private static ConfigManager configManager;
+	private static File groupDir, powerDir, userDir;
+	private static PowerTabCompleter pTC;
 	
 	@Override
 	public void onEnable() {
@@ -125,7 +125,7 @@ public final class S86Powers extends JavaPlugin {
 	}
 	
 	// TODO
-	public ConfigManager getConfigManager() {
+	public static final ConfigManager getConfigManager() {
 		return configManager;
 	}
 	
@@ -177,7 +177,7 @@ public final class S86Powers extends JavaPlugin {
 		return userDir;
 	}
 	
-	private void initCommands() {
+	private final void initCommands() {
 		comExec = new PowerComExecutor();
 		pTC = new PowerTabCompleter();
 		PluginCommand cmd = getCommand("powers");
@@ -185,7 +185,7 @@ public final class S86Powers extends JavaPlugin {
 		cmd.setExecutor(comExec);
 	}
 	
-	public void log(Level level, String string) {
+	public final void log(Level level, String string) {
 		if (ConfigOption.Plugin.SHOW_COLORS_IN_CONSOLE) {
 			getServer().getConsoleSender().sendMessage("[S86Powers] " + string);
 		}
@@ -195,7 +195,7 @@ public final class S86Powers extends JavaPlugin {
 	}
 	
 	@Deprecated
-	public void showDebug(String message) {
+	public final void showDebug(String message) {
 		if (ConfigOption.Plugin.SHOW_DEBUG_MESSAGES) {
 			log(Level.INFO, message);
 		}

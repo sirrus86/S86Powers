@@ -274,7 +274,7 @@ public abstract class Power implements Comparable<Power>, Listener {
 	 * @return The PowerUser instance for this player
 	 */
 	protected final PowerUser getUser(OfflinePlayer player) {
-		return plugin.getConfigManager().getUser(player.getUniqueId());
+		return S86Powers.getConfigManager().getUser(player.getUniqueId());
 	}
 
 	/**
@@ -287,7 +287,7 @@ public abstract class Power implements Comparable<Power>, Listener {
 	 * @return The PowerUser instance for this player
 	 */
 	protected final PowerUser getUser(String name) {
-		return plugin.getConfigManager().getUser(name);
+		return S86Powers.getConfigManager().getUser(name);
 	}
 
 	/**
@@ -297,7 +297,7 @@ public abstract class Power implements Comparable<Power>, Listener {
 	 * @return The PowerUser instance for this player
 	 */
 	protected final PowerUser getUser(UUID uuid) {
-		return plugin.getConfigManager().getUser(uuid);
+		return S86Powers.getConfigManager().getUser(uuid);
 	}
 
 	public Set<PowerUser> getUsers() {
@@ -483,7 +483,7 @@ public abstract class Power implements Comparable<Power>, Listener {
 				users.remove(user);
 			}
 		}
-		for (PowerUser user : plugin.getConfigManager().getUserList()) {
+		for (PowerUser user : S86Powers.getConfigManager().getUserList()) {
 			if (UserContainer.getContainer(user).hasPower(this)
 					&& !users.contains(user)) {
 				users.add(user);

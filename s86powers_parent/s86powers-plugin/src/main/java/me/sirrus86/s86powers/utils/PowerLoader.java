@@ -159,13 +159,13 @@ public class PowerLoader {
 	
 	private void load(Class<?> clazz) throws InstantiationException, IllegalAccessException {
 		if (clazz.getSuperclass().equals(Power.class)) {
-			if (!plugin.getConfigManager().isBlocked(clazz.getSimpleName())) {
+			if (!S86Powers.getConfigManager().isBlocked(clazz.getSimpleName())) {
 				Power power = clazz.asSubclass(Power.class).newInstance();
 				if (ConfigOption.Plugin.SHOW_CONFIG_STATUS) {
 					plugin.log(Level.INFO, LocaleString.POWER_LOAD_SUCCESS.build(power));
 				}
 				PowerContainer.getContainer(power).setEnabled(true);
-				plugin.getConfigManager().addPower(power);
+				S86Powers.getConfigManager().addPower(power);
 			}
 			else {
 				plugin.log(Level.WARNING, LocaleString.POWER_LOAD_BLOCKED.build(clazz));

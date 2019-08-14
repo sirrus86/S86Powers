@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.bukkit.ChatColor;
 
+import me.sirrus86.s86powers.S86Powers;
 import me.sirrus86.s86powers.localization.LocaleString;
 import me.sirrus86.s86powers.tools.PowerTools;
 
@@ -20,8 +21,8 @@ public class GUIConfigList extends GUIAbstractList<String> {
 			int index = page * 45 - 45;
 			for (int i = index; i < Math.min(list.size(), index + 45); i ++) {
 				String configOption = list.get(i);
-				String configDesc = LocaleString.getString(plugin.getConfigManager().getOptions().get(configOption).getName() + "_CONFIG");
-				String configValue = plugin.getConfigManager().getConfigValue(configOption).toString();
+				String configDesc = LocaleString.getString(S86Powers.getConfigManager().getOptions().get(configOption).getName() + "_CONFIG");
+				String configValue = S86Powers.getConfigManager().getConfigValue(configOption).toString();
 				List<String> lore = PowerTools.wordSplit(ChatColor.RESET.toString() + ChatColor.GRAY.toString(), configDesc, 30);
 				lore.add(ChatColor.RESET + LocaleString.VALUE.toString() + ": " + ChatColor.GRAY + configValue);
 				setItem(i - index, LIST, configOption, lore, null);

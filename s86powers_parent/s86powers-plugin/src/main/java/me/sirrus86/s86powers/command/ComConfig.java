@@ -8,7 +8,7 @@ import org.bukkit.command.CommandSender;
 import me.sirrus86.s86powers.localization.LocaleString;
 import me.sirrus86.s86powers.permissions.S86Permission;
 
-public class ComConfig extends ComAbstract {
+public final class ComConfig extends ComAbstract {
 
 	private boolean save = false;
 	
@@ -41,7 +41,7 @@ public class ComConfig extends ComAbstract {
 		}
 	}
 	
-	private void comConfigHelp(String page) {
+	private final void comConfigHelp(String page) {
 		if (sender.hasPermission(S86Permission.CONFIG_HELP)) {
 			int i = 1;
 			if (page != null) {
@@ -59,7 +59,7 @@ public class ComConfig extends ComAbstract {
 		}
 	}
 	
-	private void comConfigInfo(String option) {
+	private final void comConfigInfo(String option) {
 		if (sender.hasPermission(S86Permission.CONFIG_INFO)) {
 			if (option != null
 					&& config.getOptions().containsKey(option)) {
@@ -83,7 +83,7 @@ public class ComConfig extends ComAbstract {
 		}
 	}
 	
-	private void comConfigList(String page) {
+	private final void comConfigList(String page) {
 		if (sender.hasPermission(S86Permission.CONFIG_LIST)) {
 			int i = 1;
 			if (page != null) {
@@ -101,7 +101,7 @@ public class ComConfig extends ComAbstract {
 		}
 	}
 	
-	private void comConfigReload() {
+	private final void comConfigReload() {
 		if (sender.hasPermission(S86Permission.CONFIG_RELOAD)) {
 			config.loadPluginConfig();
 			sender.sendMessage(SUCCESS + LocaleString.CONFIG_RELOADED);
@@ -111,7 +111,7 @@ public class ComConfig extends ComAbstract {
 		}
 	}
 	
-	private void comConfigSave() {
+	private final void comConfigSave() {
 		if (sender.hasPermission(S86Permission.CONFIG_SAVE)) {
 			config.savePluginConfig();
 			sender.sendMessage(SUCCESS + LocaleString.CONFIG_SAVED);
@@ -121,7 +121,7 @@ public class ComConfig extends ComAbstract {
 		}
 	}
 	
-	private void comConfigSet(String option, Object value) {
+	private final void comConfigSet(String option, Object value) {
 		if (sender.hasPermission(S86Permission.CONFIG_SET)) {
 			if (option != null
 					&& config.getOptions().containsKey(option)) {

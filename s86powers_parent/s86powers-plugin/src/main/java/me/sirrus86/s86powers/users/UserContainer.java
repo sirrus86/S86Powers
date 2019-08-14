@@ -33,7 +33,7 @@ public class UserContainer {
 	}
 	
 	public static UserContainer getContainer(PowerUser user) {
-		return plugin.getConfigManager().getContainer(user);
+		return S86Powers.getConfigManager().getContainer(user);
 	}
 	
 	public void addBeacon(Beacon beacon) {
@@ -172,7 +172,7 @@ public class UserContainer {
 		Set<PowerGroup> tmp = new HashSet<PowerGroup>();
 		if (user.isOnline()
 				&& ConfigOption.Plugin.ENABLE_PERMISSION_ASSIGNMENTS) {
-			for (PowerGroup group : plugin.getConfigManager().getGroups()) {
+			for (PowerGroup group : S86Powers.getConfigManager().getGroups()) {
 				if (user.getPlayer().hasPermission(group.getRequiredPermission())) {
 					tmp.add(group);
 				}
@@ -185,7 +185,7 @@ public class UserContainer {
 		Set<Power> tmp = new HashSet<Power>();
 		if (user.isOnline()
 				&& ConfigOption.Plugin.ENABLE_PERMISSION_ASSIGNMENTS) {
-			for (Power power : plugin.getConfigManager().getPowers()) {
+			for (Power power : S86Powers.getConfigManager().getPowers()) {
 				if (user.getPlayer().hasPermission(PowerContainer.getContainer(power).getUsePermission())) {
 					tmp.add(power);
 				}
@@ -201,7 +201,7 @@ public class UserContainer {
 	public Set<Power> getPowers(boolean includeUtility) {
 		Set<Power> tmp = new HashSet<Power>();
 		if (includeUtility) {
-			tmp.addAll(plugin.getConfigManager().getPowersByType(PowerType.UTILITY));
+			tmp.addAll(S86Powers.getConfigManager().getPowersByType(PowerType.UTILITY));
 		}
 		tmp.addAll(getAssignedPowers());
 		tmp.addAll(getGroupPowers());
@@ -238,7 +238,7 @@ public class UserContainer {
 	}
 	
 	public boolean hasPowerEnabled(Power power) {
-		return user.powers.containsKey(power) ? user.powers.get(power) : true;
+		return user.powers.containsKey(power) ? user.powers.get(power) : (user.isOnline() && user.getPlayer().hasPermission(PowerContainer.getContainer(power).getAssignPermission()));
 	}
 	
 	public boolean hasPowersEnabled() {
@@ -268,7 +268,7 @@ public class UserContainer {
 			user.config = YamlConfiguration.loadConfiguration(user.cFile);
 			if (user.config.contains("powers")) {
 				for (String pwr : user.config.getConfigurationSection("powers").getKeys(false)) {
-					Power power = plugin.getConfigManager().getPower(pwr);
+					Power power = S86Powers.getConfigManager().getPower(pwr);
 					if (power != null) {
 						if (user.config.contains("powers." + pwr + ".active", false)) {
 							addPowerWithoutSaving(power, user.config.getBoolean("powers." + pwr + ".active", false));
@@ -286,7 +286,7 @@ public class UserContainer {
 			}
 			if (user.config.contains("groups")) {
 				for (String grp : user.config.getStringList("groups")) {
-					PowerGroup group = plugin.getConfigManager().getGroup(grp);
+					PowerGroup group = S86Powers.getConfigManager().getGroup(grp);
 					if (group != null) {
 						addGroupWithoutSaving(group);
 					}

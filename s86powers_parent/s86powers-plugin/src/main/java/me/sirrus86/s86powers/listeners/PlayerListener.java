@@ -22,10 +22,8 @@ import com.google.common.collect.Lists;
 
 public class PlayerListener implements Listener {
 
-	private final S86Powers plugin;
 	
 	public PlayerListener(S86Powers plugin) {
-		this.plugin = plugin;
 		plugin.getServer().getPluginManager().registerEvents(this, plugin);
 	}
 	
@@ -37,15 +35,15 @@ public class PlayerListener implements Listener {
 	
 	@EventHandler
 	private void onJoin(PlayerJoinEvent event) {
-		if (!plugin.getConfigManager().hasUser(event.getPlayer().getUniqueId())) {
-			PowerUser user = plugin.getConfigManager().getUser(event.getPlayer().getUniqueId());
+		if (!S86Powers.getConfigManager().hasUser(event.getPlayer().getUniqueId())) {
+			PowerUser user = S86Powers.getConfigManager().getUser(event.getPlayer().getUniqueId());
 			if (user != null) {
 				UserContainer uCont = UserContainer.getContainer(user);
 				if (ConfigOption.Users.AUTO_ASSIGN) {
 					for (PowerType type : PowerType.values()) {
 						if (type != PowerType.UTILITY
 								&& uCont.getAssignedPowersByType(type).isEmpty()) {
-							List<Power> tempList = Lists.newArrayList(plugin.getConfigManager().getPowersByType(type));
+							List<Power> tempList = Lists.newArrayList(S86Powers.getConfigManager().getPowersByType(type));
 							Collections.shuffle(tempList); 
 							uCont.addPower(tempList.get(0));
 						}
@@ -53,7 +51,7 @@ public class PlayerListener implements Listener {
 				}
 			}
 		}
-		PowerUser user = plugin.getConfigManager().getUser(event.getPlayer().getUniqueId());
+		PowerUser user = S86Powers.getConfigManager().getUser(event.getPlayer().getUniqueId());
 		if (user != null) {
 			UserContainer uCont = UserContainer.getContainer(user);
 			for (Power power : uCont.getPowers(true)) {
@@ -67,7 +65,7 @@ public class PlayerListener implements Listener {
 	
 	@EventHandler
 	private void onQuit(PlayerQuitEvent event) {
-		PowerUser user = plugin.getConfigManager().getUser(event.getPlayer().getUniqueId());
+		PowerUser user = S86Powers.getConfigManager().getUser(event.getPlayer().getUniqueId());
 		UserContainer uCont = UserContainer.getContainer(user);
 		uCont.save();
 		for (Power power : uCont.getPowers(true)) {

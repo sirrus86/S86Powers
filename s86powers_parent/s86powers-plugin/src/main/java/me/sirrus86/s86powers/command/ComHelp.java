@@ -6,14 +6,14 @@ import org.bukkit.command.CommandSender;
 import me.sirrus86.s86powers.localization.LocaleString;
 import me.sirrus86.s86powers.permissions.S86Permission;
 
-public class ComHelp extends ComAbstract {
+public final class ComHelp extends ComAbstract {
 	
 	public ComHelp(CommandSender sender, String... args) {
 		super(sender, args);
 		comHelp(args.length > 1 ? args[1] : null, args.length > 2 ? args[2] : args.length > 1 ? args[1] : null);
 	}
 	
-	private void comHelp(String topic, String page) {
+	private final void comHelp(String topic, String page) {
 		if (sender.hasPermission(S86Permission.HELP)) {
 			int i = 1, j = 0;
 			if (page != null) {
@@ -31,7 +31,8 @@ public class ComHelp extends ComAbstract {
 				}
 				if (j != 0) topic = null;
 			}
-			PageMaker pm = new PageMaker(HELP + ChatColor.GREEN + (topic != null && topic != page ? topic : ""), HelpTopic.showHelp(sender, topic != null && topic != page ? topic.toUpperCase() : ""), i);
+			PageMaker pm = new PageMaker(HELP + ChatColor.GREEN + (topic != null && topic != page ? topic : ""),
+					HelpTopic.showHelp(sender, topic != null && topic != page ? topic.toUpperCase() : ""), i);
 			pm.send(sender);
 		}
 		else {

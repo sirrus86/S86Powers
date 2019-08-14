@@ -24,8 +24,8 @@ import me.sirrus86.s86powers.users.PowerUser;
 
 public abstract class GUIAbstract {
 
-	static final S86Powers plugin = JavaPlugin.getPlugin(S86Powers.class);
-	private final static String GUIHEADER = ChatColor.BOLD + "" + ChatColor.GOLD + "S86 Powers" + ChatColor.RESET + " v" + plugin.getDescription().getVersion();
+	private static final S86Powers plugin = JavaPlugin.getPlugin(S86Powers.class);
+	private final static String GUIHEADER = ChatColor.BOLD.toString() + ChatColor.GOLD + "S86 Powers" + ChatColor.RESET + " v" + plugin.getDescription().getVersion() + " by sirrus86";
 	
 	@SuppressWarnings("deprecation")
 	static final Material BACK = Material.LEGACY_SIGN, CONFIG = Material.CRAFTING_TABLE, DELETE = Material.BARRIER, ENABLE = Material.REDSTONE_TORCH,

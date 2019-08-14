@@ -92,7 +92,7 @@ public class NeutralRegion implements Comparable<NeutralRegion>, ConfigurationSe
 	
 	@EventHandler(ignoreCancelled = true)
 	private void onMove(PlayerMoveEvent event) {
-		PowerUser user = plugin.getConfigManager().getUser(event.getPlayer().getUniqueId());
+		PowerUser user = S86Powers.getConfigManager().getUser(event.getPlayer().getUniqueId());
 		if (event.getPlayer().getWorld() == this.world
 				&& isInside(event.getPlayer().getLocation().clone().add(0.5D, 0.0D, 0.5D))
 				&& this.active) {
