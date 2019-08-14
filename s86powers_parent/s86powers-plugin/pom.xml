@@ -9,7 +9,7 @@
 		<version>parent</version>
 	</parent>
 	<artifactId>s86powers-plugin</artifactId>
-	<version>5.1.6</version>
+	<version>5.1.7</version>
 	<name>Plugin</name>
 
 	<dependencies>
@@ -25,13 +25,6 @@
 			<artifactId>json-simple</artifactId>
 			<version>1.1.1</version>
 			<scope>provided</scope>
-		</dependency>
-		<dependency>
-			<groupId>me.sirrus86</groupId>
-			<artifactId>s86powers-version</artifactId>
-			<version>version</version>
-			<scope>compile</scope>
-			<optional>true</optional>
 		</dependency>
 		<dependency>
 			<groupId>me.sirrus86</groupId>
