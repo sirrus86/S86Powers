@@ -9,6 +9,8 @@ public final class ConfigOption {
 		
 		private final static String PARENT = "admin.";
 		
+		public static boolean BYPASS_COOLDOWN = S86Powers.getConfigManager().getConfig().getBoolean(PARENT + "bypass-cooldown", false);
+		
 		public static boolean BYPASS_PERMISSION = S86Powers.getConfigManager().getConfig().getBoolean(PARENT + "bypass-permission", false);
 		
 	}

@@ -421,10 +421,13 @@ public class PowerUser implements Comparable<PowerUser> {
 	}
 	
 	public void setCooldown(Power power, long time) {
-		cooldowns.put(power, System.currentTimeMillis() + time);
-		if (ConfigOption.Powers.SHOW_COOLDOWN_ON_ITEM
-				&& PowerContainer.getContainer(power).getRequiredItem() != null) {
-			PowerTools.showItemCooldown(getPlayer(), PowerContainer.getContainer(power).getRequiredItem(), time);
+		if (!UserContainer.getContainer(this).isAdmin()
+				|| !ConfigOption.Admin.BYPASS_COOLDOWN) {
+			cooldowns.put(power, System.currentTimeMillis() + time);
+			if (ConfigOption.Powers.SHOW_COOLDOWN_ON_ITEM
+					&& PowerContainer.getContainer(power).getRequiredItem() != null) {
+				PowerTools.showItemCooldown(getPlayer(), PowerContainer.getContainer(power).getRequiredItem(), time);
+			}
 		}
 	}
 	
