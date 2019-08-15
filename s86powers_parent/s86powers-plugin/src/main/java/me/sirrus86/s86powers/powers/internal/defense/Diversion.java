@@ -7,6 +7,7 @@ import java.util.Set;
 
 import org.bukkit.Material;
 import org.bukkit.attribute.Attribute;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Mob;
 import org.bukkit.entity.Player;
@@ -66,7 +67,8 @@ public class Diversion extends Power {
 			if (user.allowPower(this)
 					&& user.getCooldown(this) <= 0L) {
 				LivingEntity damager = PowerTools.getEntitySource(event.getDamager());
-				if (damager != null) {
+				if (damager != null
+						&& damager != user.getPlayer()) {
 					if (!decoys.containsKey(user)
 							|| decoys.get(user) == null) {
 						decoys.put(user, new HashSet<>());
@@ -74,11 +76,12 @@ public class Diversion extends Power {
 					if (decoys.get(user).size() < (user.hasStatMaxed(decoysMade) ? maxDecoys : 1)) {
 						for (int i = 0; i < (user.hasStatMaxed(decoysMade) ? maxDecoys : 1); i ++) {
 							Vindicator pz = user.getPlayer().getWorld().spawn(user.getPlayer().getLocation(), Vindicator.class);
-							PowerTools.copyEquipment(user.getPlayer(), pz);
+							pz.setPatrolLeader(false);
 							runTask(new BukkitRunnable() {
 								@Override
 								public void run() {
-									PowerTools.addDisguise(pz, user.getPlayer());
+									PowerTools.addDisguise(pz, EntityType.PLAYER, null, user.getPlayer().getUniqueId());
+									PowerTools.addEquipmentDisguise(pz, user.getPlayer());
 									PowerTools.addGhost(user.getPlayer());
 								}
 							});
