@@ -1,7 +1,5 @@
 package me.sirrus86.s86powers.command;
 
-import java.lang.reflect.Field;
-
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 
@@ -62,12 +60,12 @@ public final class ComConfig extends ComAbstract {
 	private final void comConfigInfo(String option) {
 		if (sender.hasPermission(S86Permission.CONFIG_INFO)) {
 			if (option != null
-					&& config.getOptions().containsKey(option)) {
-				Field field = config.getOptions().get(option);
+					&& config.getConfigOptions().containsKey(option)) {
+				Object value = config.getConfigValue(option);
 				sender.sendMessage(INFO + ChatColor.GREEN + option);
-				sender.sendMessage(LocaleString.DESCRIPTION + ": " + ChatColor.GRAY + LocaleString.getString(field.getName().toUpperCase() + "_CONFIG"));
+				sender.sendMessage(LocaleString.DESCRIPTION + ": " + ChatColor.GRAY + LocaleString.getString(option.substring(option.indexOf(".") + 1).toUpperCase().replaceAll("-", "_") + "_CONFIG"));
 				try {
-					sender.sendMessage(LocaleString.VALUE + ": " + ChatColor.BLUE + field.get(null).toString());
+					sender.sendMessage(LocaleString.VALUE + ": " + ChatColor.BLUE + value.toString());
 				} catch (Exception e) {
 					sender.sendMessage(LocaleString.VALUE + ": " + ChatColor.GRAY + LocaleString.VIEW_VALUE_FAIL);
 					e.printStackTrace();
@@ -124,14 +122,14 @@ public final class ComConfig extends ComAbstract {
 	private final void comConfigSet(String option, Object value) {
 		if (sender.hasPermission(S86Permission.CONFIG_SET)) {
 			if (option != null
-					&& config.getOptions().containsKey(option)) {
+					&& config.getConfigOptions().containsKey(option)) {
 				if (value != null) {
 					if (config.setConfigValue(option, value)) {
 						sender.sendMessage(SUCCESS + LocaleString.SET_OPTION_SUCCESS.build(option, value));
 					}
 					else {
-						Field field = config.getOptions().get(option);
-						sender.sendMessage(ERROR + LocaleString.VALUE_WRONG_TYPE.build(field.getType().getSimpleName()));
+						Object oldValue = config.getConfigValue(option);
+						sender.sendMessage(ERROR + LocaleString.VALUE_WRONG_TYPE.build(oldValue.getClass().getSimpleName()));
 					}
 				}
 				else {

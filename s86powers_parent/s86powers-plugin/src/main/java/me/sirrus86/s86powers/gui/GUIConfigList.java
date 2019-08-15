@@ -21,7 +21,7 @@ public class GUIConfigList extends GUIAbstractList<String> {
 			int index = page * 45 - 45;
 			for (int i = index; i < Math.min(list.size(), index + 45); i ++) {
 				String configOption = list.get(i);
-				String configDesc = LocaleString.getString(S86Powers.getConfigManager().getOptions().get(configOption).getName() + "_CONFIG");
+				String configDesc = LocaleString.getString(configOption.substring(configOption.indexOf(".") + 1).toUpperCase().replaceAll("-", "_") + "_CONFIG");
 				String configValue = S86Powers.getConfigManager().getConfigValue(configOption).toString();
 				List<String> lore = PowerTools.wordSplit(ChatColor.RESET.toString() + ChatColor.GRAY.toString(), configDesc, 30);
 				lore.add(ChatColor.RESET + LocaleString.VALUE.toString() + ": " + ChatColor.GRAY + configValue);

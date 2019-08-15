@@ -49,7 +49,7 @@ public final class PowerTabCompleter implements TabCompleter {
 					else if (args.length > 2) {
 						if ((args[1].equalsIgnoreCase("info") && sender.hasPermission(S86Permission.CONFIG_INFO))
 								|| (args[1].equalsIgnoreCase("set") && sender.hasPermission(S86Permission.CONFIG_SET))) {
-							return StringUtil.copyPartialMatches(args[2], Lists.newArrayList(S86Powers.getConfigManager().getOptions().keySet()), new ArrayList<>());
+							return StringUtil.copyPartialMatches(args[2], Lists.newArrayList(S86Powers.getConfigManager().getConfigOptions().keySet()), new ArrayList<>());
 						}
 					}
 					else {

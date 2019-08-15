@@ -16,7 +16,7 @@ public final class GUIConfig extends GUIAbstract {
 	
 	public GUIConfig() {
 		super(2, LocaleString.CONFIG.toString());
-		CONFIG_LIST_GUI = GUIAbstractList.createLists(GUIConfigList.class, S86Powers.getConfigManager().getOptions().keySet());
+		CONFIG_LIST_GUI = GUIAbstractList.createLists(GUIConfigList.class, S86Powers.getConfigManager().getConfigOptions().keySet());
 		setItems();
 	}
 	

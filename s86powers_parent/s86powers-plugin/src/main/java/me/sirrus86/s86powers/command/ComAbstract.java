@@ -108,7 +108,8 @@ public abstract class ComAbstract {
 		String tmp = "";
 		for (int i = 0; i < options.size(); i ++) {
 			PowerOption option = options.get(i);
-			tmp = tmp + ChatColor.GREEN + option.getPath() + ChatColor.GRAY + ": " + ChatColor.WHITE + (pCont.getOptionValue(option) instanceof ItemStack ? PowerTools.getItemName((ItemStack) pCont.getOptionValue(option)) : pCont.getOptionValue(option).toString()) + "\n";
+			tmp = tmp + ChatColor.GREEN + option.getPath() + ChatColor.GRAY + ": " + ChatColor.WHITE
+					+ (pCont.getOptionValue(option) instanceof ItemStack ? PowerTools.getItemName((ItemStack) pCont.getOptionValue(option)) : pCont.getOptionValue(option).toString()) + "\n";
 		}
 		if (tmp.endsWith("\n")) {
 			tmp = tmp.substring(0, tmp.lastIndexOf("\n"));
@@ -297,16 +298,12 @@ public abstract class ComAbstract {
 
 	protected final String optList() {
 		String tmp = "";
-		List<String> options = Lists.newArrayList(S86Powers.getConfigManager().getOptions().keySet());
+		List<String> options = Lists.newArrayList(S86Powers.getConfigManager().getConfigOptions().keySet());
 		Collections.sort(options);
 		for (int i = 0; i < options.size(); i ++) {
 			String option = options.get(i);
-			Field field = S86Powers.getConfigManager().getOptions().get(option);
-			try {
-				tmp = tmp + ChatColor.GREEN + option + ChatColor.RESET + ": " + field.get(null).toString() + "\n";
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
+			Object value = S86Powers.getConfigManager().getConfigValue(option);
+			tmp = tmp + ChatColor.GREEN + option + ChatColor.RESET + ": " + value.toString() + "\n";
 		}
 		if (tmp.endsWith("\n")) {
 			tmp = tmp.substring(0, tmp.lastIndexOf("\n"));

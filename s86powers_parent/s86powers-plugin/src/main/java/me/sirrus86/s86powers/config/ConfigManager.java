@@ -36,7 +36,7 @@ public class ConfigManager {
 	private final Set<String> blocked = new HashSet<>();
 	private final Set<PowerGroup> groups = new HashSet<>();
 	private final Map<String, NeutralRegion> regions = new HashMap<>();
-	private final Map<String, Field> options = new HashMap<>();
+	private final Map<String, Object> options = new HashMap<>();
 	private final Map<String, PowerContainer> pwrConts = new HashMap<>();
 	private final Set<Power> powers = new HashSet<>();
 	private final Map<UUID, PowerUser> users = new HashMap<>();
@@ -97,16 +97,12 @@ public class ConfigManager {
 		return plgConfig;
 	}
 	
+	public Map<String, Object> getConfigOptions() {
+		return options;
+	}
+	
 	public Object getConfigValue(String option) {
-		Field field = options.get(option);
-		if (field != null) {
-			try {
-				return field.get(null);
-			} catch (IllegalArgumentException | IllegalAccessException e) {
-				e.printStackTrace();
-			}
-		}
-		return null;
+		return options.get(option);
 	}
 	
 	public PowerContainer getContainer(Power power) {
@@ -136,10 +132,6 @@ public class ConfigManager {
 	
 	public Set<PowerGroup> getGroups() {
 		return groups;
-	}
-	
-	public Map<String, Field> getOptions() {
-		return options;
 	}
 	
 	public Power getPower(String name) {
@@ -255,15 +247,15 @@ public class ConfigManager {
 		for (Class<?> clazz : ConfigOption.class.getClasses()) {
 			for (Field field : clazz.getFields()) {
 				String path = clazz.getSimpleName().toLowerCase() + "." + field.getName().replace("_", "-").toLowerCase();
-				if (!options.containsKey(path)) {
-					options.put(path, field);
-				}
-				if (!plgConfig.contains(path)) {
-					try {
-						plgConfig.set(path, field.get(null));
-					} catch (Exception e) {
-						e.printStackTrace();
+				try {
+					if (!options.containsKey(path)) {
+						options.put(path, field.get(null));
 					}
+					if (!plgConfig.contains(path)) {
+						plgConfig.set(path, field.get(null));
+					}
+				} catch (Exception e) {
+					e.printStackTrace();
 				}
 			}
 		}
@@ -334,6 +326,9 @@ public class ConfigManager {
 	}
 	
 	public void savePluginConfig() {
+		for (String option : options.keySet()) {
+			plgConfig.set(option, options.get(option));
+		}
 		save(plgConfig, plgFile);
 	}
 	
@@ -344,10 +339,10 @@ public class ConfigManager {
 	
 	public boolean setConfigValue(String option, Object value) {
 		if (options.containsKey(option)) {
-			Class<?> clazz = options.get(option).getType();
+			Class<?> clazz = options.get(option).getClass();
 			Object obj = validate(clazz, value);
 			if (obj != null) {
-				plgConfig.set(option, obj);
+				options.put(option, obj);
 				if (ConfigOption.Plugin.AUTO_SAVE) {
 					savePluginConfig();
 				}
