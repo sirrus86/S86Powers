@@ -537,15 +537,18 @@ public final class PowerTools {
 	}
 
 	public static final boolean isAxe(ItemStack item) {
-		return item.getType().toString().endsWith("_AXE");
+		return item != null
+				&& item.getType().name().endsWith("_AXE");
 	}
 
 	public static final boolean isBoots(ItemStack item) {
-		return item.getType().toString().endsWith("_BOOTS");
+		return item != null
+				&& item.getType().name().endsWith("_BOOTS");
 	}
 
 	public static final boolean isChestplate(ItemStack item) {
-		return item.getType().toString().endsWith("_CHESTPLATE");
+		return item != null
+				&& item.getType().name().endsWith("_CHESTPLATE");
 	}
 
 	public static boolean isGhost(Player player) {
@@ -553,15 +556,18 @@ public final class PowerTools {
 	}
 
 	public static final boolean isHelmet(ItemStack item) {
-		return item.getType().toString().endsWith("_HELMET");
+		return item != null
+				&& item.getType().name().endsWith("_HELMET");
 	}
 
 	public static final boolean isHoe(ItemStack item) {
-		return item.getType().toString().endsWith("_HOE");
+		return item != null
+				&& item.getType().name().endsWith("_HOE");
 	}
 
 	public static final boolean isLeggings(ItemStack item) {
-		return item.getType().toString().endsWith("_LEGGINGS");
+		return item != null
+				&& item.getType().name().endsWith("_LEGGINGS");
 	}
 
 	public static boolean isOutside(Location loc) {
@@ -569,7 +575,8 @@ public final class PowerTools {
 	}
 
 	public static final boolean isPickaxe(ItemStack item) {
-		return item.getType().toString().endsWith("_PICKAXE");
+		return item != null
+				&& item.getType().name().endsWith("_PICKAXE");
 	}
 
 	public static final boolean isProjectile(ItemStack item) {
@@ -579,11 +586,13 @@ public final class PowerTools {
 	}
 
 	public static final boolean isShovel(ItemStack item) {
-		return item.getType().toString().endsWith("_SPADE");
+		return item != null
+				&& item.getType().name().endsWith("_SPADE");
 	}
 
 	public static final boolean isSword(ItemStack item) {
-		return item.getType().toString().endsWith("_SWORD");
+		return item != null
+				&& item.getType().name().endsWith("_SWORD");
 	}
 	
 	public static boolean isTamed(Entity entity) {
@@ -591,14 +600,15 @@ public final class PowerTools {
 	}
 
 	public static final boolean isTool(ItemStack item) {
-		return item.getType() == Material.BOW
-				|| item.getType() == Material.FISHING_ROD
-				|| item.getType() == Material.FLINT_AND_STEEL
-				|| item.getType() == Material.SHEARS
-				|| isAxe(item)
-				|| isHoe(item)
-				|| isPickaxe(item)
-				|| isShovel(item);
+		return item != null
+				&& (item.getType() == Material.BOW
+						|| item.getType() == Material.FISHING_ROD
+						|| item.getType() == Material.FLINT_AND_STEEL
+						|| item.getType() == Material.SHEARS
+						|| isAxe(item)
+						|| isHoe(item)
+						|| isPickaxe(item)
+						|| isShovel(item));
 	}
 	
 	public static void playParticleEffect(Location loc, Particle particle) {
