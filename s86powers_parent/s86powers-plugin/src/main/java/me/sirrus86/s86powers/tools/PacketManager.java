@@ -223,11 +223,11 @@ public final class PacketManager {
 	}
 	
 	protected void addDisguise(Entity entity, EntityType type) {
-		addDisguise(entity, type, (Map<Integer, Object>) null, null);
+		createEntityPacket(entity, type, (WrappedDataWatcher) null, null);
 	}
 	
 	protected void addDisguise(Entity entity, EntityType type, Map<Integer, Object> meta) {
-		addDisguise(entity, type, meta, null);
+		createEntityPacket(entity, type, meta != null ? createWrappedDataWatcher(null, meta) : null, null);
 	}
 	
 	protected void addDisguise(Entity entity, EntityType type, Map<Integer, Object> meta, Object data) {
