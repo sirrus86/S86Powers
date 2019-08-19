@@ -170,7 +170,8 @@ public class BlockListener implements Listener {
 				for (BlockFace face : fireData.getAllowedFaces()) {
 					fireData.setFace(face, false);
 				}
-				if (fireData.getAllowedFaces().contains(event.getBlockFace().getOppositeFace())) {
+				if (event.getBlockFace() != null
+						&& fireData.getAllowedFaces().contains(event.getBlockFace().getOppositeFace())) {
 					fireData.setFace(event.getBlockFace().getOppositeFace(), true);
 				}
 				if (!fireData.getFaces().isEmpty()) {
@@ -180,6 +181,7 @@ public class BlockListener implements Listener {
 			}
 		}
 		else if (event.getEntity() != null) {
+			event.getEntity().setFireTicks(10);
 			burnList.put(event.getEntity(), new PowerFire(event.getPower(), event.getUser()));
 		}
 	}
