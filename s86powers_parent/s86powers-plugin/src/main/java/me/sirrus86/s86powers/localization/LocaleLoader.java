@@ -9,7 +9,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import me.sirrus86.s86powers.S86Powers;
 import me.sirrus86.s86powers.config.ConfigOption;
 
-public class LocaleLoader {
+public final class LocaleLoader {
 	
 	private final YamlConfiguration defYaml;
 	private final File locDir;

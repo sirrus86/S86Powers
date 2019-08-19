@@ -32,7 +32,6 @@ import me.sirrus86.s86powers.powers.PowerType;
 import me.sirrus86.s86powers.tools.PowerTools;
 import me.sirrus86.s86powers.tools.version.MCVersion;
 import me.sirrus86.s86powers.users.PowerUser;
-import me.sirrus86.s86powers.users.UserContainer;
 
 @PowerManifest(name = "Lycanthropy", type = PowerType.PASSIVE, author = "sirrus86", concept = "vashvhexx", icon=Material.RABBIT_HIDE,
 	description = "[control]By [act:item]ing while holding [item][/control][noControl]At night during a full moon [/noControl]you change into a wolf. As a wolf[speed] sprinting speed increases,[/speed][nv] you gain night vision,[/nv][either] and[/either] unarmed damage increases by [dmgIncr]%, but you take [ironDmg]% damage from iron tools and weapons, and are unable to wear any armor.[noControl] Effect ends at sunrise.[/noControl]")
@@ -47,15 +46,11 @@ public final class Lycanthropy extends Power {
 	private boolean control, either, infect, noControl, nv, speed;
 	private int moonEnd, moonStart, spdIncr;
 	private PowerStat transforms;
+	private String infected, noArmor, turnToHuman, turnToWolf;
 	
 	@Override
 	protected void onEnable() {
-		if (MCVersion.isLessThan(MCVersion.v1_14)) {
-			angryMeta.put(13, (byte) 0x02);
-		}
-		else {
-			angryMeta.put(15, (byte) 0x02);
-		}
+		angryMeta.put(MCVersion.isLessThan(MCVersion.v1_14) ? 13 : 15, (byte) 0x02);
 		isWolf = new HashSet<>();
 		runTaskTimer(manage, 0L, 0L);
 	}
@@ -81,6 +76,10 @@ public final class Lycanthropy extends Power {
 		spdIncr = option("speed-amplifier", 3, "Amplifier for increased speed potion effect.");
 		speed = option("increase-speed", true, "Whether speed should increase while transformed.");
 		transforms = stat("transformations", 10, "Transformations", "[act:item]ing while holding [item] at night allows you to transform into a werewolf at will.");
+		infected = locale("message.been-infected", ChatColor.RED + "You've been infected with [power]!");
+		noArmor = locale("message.cant-wear-armor", ChatColor.RED + "Your power prevents you from wearing armor.");
+		turnToHuman = locale("message.turn-to-human", ChatColor.YELLOW + "You return to human form.");
+		turnToWolf = locale("message.turn-to-wolf", ChatColor.GREEN + "You transform into a wolf.");
 		noControl = !control;
 		either = nv || speed;
 	}
@@ -102,7 +101,7 @@ public final class Lycanthropy extends Power {
 								}
 							}
 							if (hadArmor) {
-								user.sendMessage(ChatColor.RED + "Your power prevents you from wearing armor.");
+								user.sendMessage(noArmor);
 							}
 							user.getPlayer().getInventory().setArmorContents(null);
 						}
@@ -144,7 +143,7 @@ public final class Lycanthropy extends Power {
 			user.removePotionEffect(PotionEffectType.SPEED);
 			user.getPlayer().playEffect(EntityEffect.ENTITY_POOF);
 			PowerTools.removeDisguise(user.getPlayer());
-			user.sendMessage(ChatColor.RED + "You return to human form.");
+			user.sendMessage(turnToHuman);
 			isWolf.remove(user);
 		}
 	}
@@ -157,7 +156,7 @@ public final class Lycanthropy extends Power {
 			user.getPlayer().getWorld().playSound(user.getPlayer().getEyeLocation(), Sound.ENTITY_WOLF_HOWL, 1.0F, 1.0F);
 			user.getPlayer().playEffect(EntityEffect.ENTITY_POOF);
 			PowerTools.addDisguise(user.getPlayer(), EntityType.WOLF, angryMeta);
-			user.sendMessage(ChatColor.GREEN + "You transform into a wolf.");
+			user.sendMessage(turnToWolf);
 			if (noControl) {
 				user.increaseStat(transforms, 1);
 			}
@@ -188,12 +187,11 @@ public final class Lycanthropy extends Power {
 				if (event.getEntity() instanceof Player
 						&& infect) {
 					PowerUser victim = getUser((Player) event.getEntity());
-					UserContainer vCont = UserContainer.getContainer(victim);
-					if (!vCont.hasPower(this)
-							&& !vCont.hasPower("Vampirism")
+					if (!victim.hasPower(this)
+							&& !victim.hasPower("Vampirism")
 							&& random.nextDouble() < (infectChance / 100.0D)) {
-						victim.sendMessage(ChatColor.RED + "You've been infected with Lycanthropy!");
-						vCont.addPower(this, true);
+						victim.sendMessage(infected.replace("[power]", this.getName()));
+						victim.addPower(this, true);
 					}
 				}
 			}
