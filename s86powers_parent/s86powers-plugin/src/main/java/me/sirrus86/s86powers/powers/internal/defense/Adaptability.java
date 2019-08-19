@@ -20,12 +20,13 @@ import me.sirrus86.s86powers.utils.PowerTime;
 
 @PowerManifest(name = "Adaptability", type = PowerType.DEFENSE, author = "sirrus86", concept = "diamondmario", icon=Material.LEATHER_CHESTPLATE,
 	description = "When damaged, develop resistance to that damage type, reducing all following damage of the same type starting at [initAmt]%, increasing up to [maxAmt]%. While resistant to one type, damage from all other types increased to [dmgIncr]%. [cooldown] cooldown.[noArmor] Power prevents you from wearing armor.[/noArmor]")
-public class Adaptability extends Power {
+public final class Adaptability extends Power {
 
 	private Map<PowerUser, AdaptUser> aUsers;
 	
 	private boolean noArmor;
 	private double dmgIncr, incrAmt, initAmt, maxAmt;
+	private String nowAdapting, resistIncrease, preventArmor;
 	private int steps;
 	
 	@Override
@@ -46,6 +47,9 @@ public class Adaptability extends Power {
 		maxAmt = option("maximum-adapt", 100.0D, "Maximum percent of damage mitigation for a given adapt type.");
 		noArmor = option("prevent-armor", true, "Prevents users from wearing armor.");
 		steps = option("adapt-increment-steps", 10, "Number of increments it takes to reach maximum adapt from initial.");
+		nowAdapting = locale("message.now-adapting", ChatColor.YELLOW + "Now adapting to [type] damage.");
+		preventArmor = locale("message.prevents-armor", ChatColor.RED + "Your power prevents you from wearing armor.");
+		resistIncrease = locale("message.resistance-increase", ChatColor.YELLOW + "Resistance to [type] increased to [amount]%.");
 		incrAmt = (maxAmt - initAmt) / steps;
 	}
 	
@@ -54,7 +58,7 @@ public class Adaptability extends Power {
 		if (aUsers.get(user).getType() != type) {
 			amt = dmgIncr;
 			if (user.getCooldown(this) <= 0L) {
-				user.sendMessage(ChatColor.YELLOW + "Now adapting to " + type.toString().toLowerCase() + " damage.");
+				user.sendMessage(nowAdapting.replace("[type]", type.name().toLowerCase()));
 				aUsers.get(user).setType(type).setAmount(initAmt);
 				user.setCooldown(this, cooldown);
 			}
@@ -64,7 +68,7 @@ public class Adaptability extends Power {
 			if (user.getCooldown(this) <= 0L
 					&& aUsers.get(user).getAmount() < maxAmt) {
 				aUsers.get(user).increaseAmount(incrAmt);
-				user.sendMessage(ChatColor.YELLOW + "Resistance to " + type.toString().toLowerCase() + " increased to " + aUsers.get(user).getAmount() + "%.");
+				user.sendMessage(resistIncrease.replace("[type]", type.name().toLowerCase()).replace("[amount]", Double.toString(aUsers.get(user).getAmount())));
 				user.setCooldown(this, cooldown);
 			}
 		}
@@ -87,7 +91,7 @@ public class Adaptability extends Power {
 					}
 				}
 				if (hadArmor) {
-					user.sendMessage(ChatColor.RED + "Your power prevents you from wearing armor.");
+					user.sendMessage(preventArmor);
 				}
 				user.getPlayer().getInventory().setArmorContents(null);
 			}
@@ -125,7 +129,7 @@ public class Adaptability extends Power {
 				case MAGIC: return MAGIC;
 				case POISON: case WITHER: return POISON;
 				case PROJECTILE: return PROJECTILE;
-				case DRAGON_BREATH: case VOID: return SHADOW;
+				case DRAGON_BREATH: return SHADOW;
 				default: return null;
 			}
 		}
