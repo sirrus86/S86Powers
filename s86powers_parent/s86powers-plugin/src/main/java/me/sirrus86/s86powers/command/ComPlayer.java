@@ -4,11 +4,12 @@ import me.sirrus86.s86powers.config.ConfigOption;
 import me.sirrus86.s86powers.localization.LocaleString;
 import me.sirrus86.s86powers.permissions.S86Permission;
 import me.sirrus86.s86powers.powers.Power;
-import me.sirrus86.s86powers.powers.PowerContainer;
+import me.sirrus86.s86powers.powers.PowerAdapter;
 import me.sirrus86.s86powers.powers.PowerStat;
 import me.sirrus86.s86powers.powers.PowerType;
+import me.sirrus86.s86powers.tools.PowerTools;
 import me.sirrus86.s86powers.users.PowerUser;
-import me.sirrus86.s86powers.users.UserContainer;
+import me.sirrus86.s86powers.users.PowerUserAdapter;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -34,7 +35,7 @@ public class ComPlayer extends ComAbstract {
 			else {
 				PowerUser user = config.getUser(args[1]);
 				if (user != null) {
-					UserContainer uCont = UserContainer.getContainer(user);
+					PowerUserAdapter uCont = PowerUserAdapter.getAdapter(user);
 					if (args.length == 2
 							|| args[2].equalsIgnoreCase("info")) {
 						comUserInfo(uCont);
@@ -48,7 +49,7 @@ public class ComPlayer extends ComAbstract {
 					else if (args[2].equalsIgnoreCase("stat")
 							|| args[2].equalsIgnoreCase("stats")) {
 						comUserStats(uCont, args.length > 3 ? config.getPower(args[3]) : null,
-								args.length > 2 ? PowerContainer.getContainer(config.getPower(args[1])).getStat(args[2]) : null,
+								args.length > 2 ? PowerAdapter.getAdapter(config.getPower(args[1])).getStat(args[2]) : null,
 								args.length > 3 && StringUtils.isNumeric(args[3]) ? Integer.parseInt(args[3]) : -1);
 					}
 					else if (args[2].equalsIgnoreCase("supply")) {
@@ -71,7 +72,7 @@ public class ComPlayer extends ComAbstract {
 		}
 	}
 	
-	private void comUserAdd(UserContainer user, Power power) {
+	private void comUserAdd(PowerUserAdapter user, Power power) {
 		if (sender.hasPermission(S86Permission.PLAYER_ADD)) {
 			if (power != null) {
 				if (user.getAssignedPowers().contains(power)) {
@@ -123,7 +124,7 @@ public class ComPlayer extends ComAbstract {
 		}
 	}
 	
-	private void comUserInfo(UserContainer user) {
+	private void comUserInfo(PowerUserAdapter user) {
 		if (sender.hasPermission(S86Permission.PLAYER_INFO)) {
 			sender.sendMessage(INFO + getUserName(user));
 			sender.sendMessage(LocaleString.POWERS + ": " + getPowers(user));
@@ -151,7 +152,7 @@ public class ComPlayer extends ComAbstract {
 		}
 	}
 	
-	private void comUserRemove(UserContainer user, Power power) {
+	private void comUserRemove(PowerUserAdapter user, Power power) {
 		if (sender.hasPermission(S86Permission.PLAYER_REMOVE)) {
 			if (power != null) {
 				if (!user.getAssignedPowers().contains(power)) {
@@ -171,7 +172,7 @@ public class ComPlayer extends ComAbstract {
 		}
 	}
 	
-	private void comUserStats(UserContainer user, Power power, PowerStat stat, int value) {
+	private void comUserStats(PowerUserAdapter user, Power power, PowerStat stat, int value) {
 		if (sender.hasPermission(S86Permission.PLAYER_STATS)) {
 			if (power == null
 					|| user.hasPower(power)) {
@@ -198,13 +199,13 @@ public class ComPlayer extends ComAbstract {
 					String tmp = "";
 					for (int i = 0; i < powers.size(); i ++) {
 						Power nextPower = powers.get(i);
-						List<PowerStat> stats = new ArrayList<PowerStat>(PowerContainer.getContainer(nextPower).getStats().keySet());
+						List<PowerStat> stats = new ArrayList<PowerStat>(PowerAdapter.getAdapter(nextPower).getStats().keySet());
 						Collections.sort(stats);
 						if (!stats.isEmpty()) {
 							tmp += nextPower.getType().getColor() + nextPower.getName() + "\n";
 							for (int j = 0; j < stats.size(); j ++) {
 								tmp += ChatColor.RESET + " " + stats.get(j).getDescription() + ": " + user.getUser().getStatCount(stats.get(j)) + "/" + nextPower.getStatValue(stats.get(j)) + "\n";
-								tmp += "  " + LocaleString.REWARD + ": " + (!user.getUser().hasStatMaxed(stats.get(j)) ? ChatColor.GRAY : "") + PowerContainer.getContainer(nextPower).getFilteredText(stats.get(j).getReward()) + "\n";
+								tmp += "  " + LocaleString.REWARD + ": " + (!user.getUser().hasStatMaxed(stats.get(j)) ? ChatColor.GRAY : "") + PowerTools.getFilteredText(nextPower, stats.get(j).getReward()) + "\n";
 							}
 						}
 					}
@@ -226,7 +227,7 @@ public class ComPlayer extends ComAbstract {
 		}
 	}
 	
-	private void comUserSupply(UserContainer user, Power power) {
+	private void comUserSupply(PowerUserAdapter user, Power power) {
 		if (sender.hasPermission(S86Permission.PLAYER_SUPPLY)) {
 			if (user.getUser().isOnline()) {
 				if (power != null) {
@@ -248,7 +249,7 @@ public class ComPlayer extends ComAbstract {
 		}
 	}
 	
-	private void comUserToggle(UserContainer user, Power power) {
+	private void comUserToggle(PowerUserAdapter user, Power power) {
 		if (sender.hasPermission(S86Permission.PLAYER_TOGGLE)) {
 			if (power != null) {
 				if (user.hasPowerAssigned(power)) {

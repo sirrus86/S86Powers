@@ -4,10 +4,11 @@ import me.sirrus86.s86powers.config.ConfigOption;
 import me.sirrus86.s86powers.localization.LocaleString;
 import me.sirrus86.s86powers.permissions.S86Permission;
 import me.sirrus86.s86powers.powers.Power;
-import me.sirrus86.s86powers.powers.PowerContainer;
+import me.sirrus86.s86powers.powers.PowerAdapter;
 import me.sirrus86.s86powers.powers.PowerStat;
 import me.sirrus86.s86powers.powers.PowerType;
-import me.sirrus86.s86powers.users.UserContainer;
+import me.sirrus86.s86powers.tools.PowerTools;
+import me.sirrus86.s86powers.users.PowerUserAdapter;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -22,12 +23,12 @@ import com.google.common.collect.Lists;
 
 public class ComSelf extends ComAbstract {
 	
-	private UserContainer uCont;
+	private PowerUserAdapter uCont;
 
 	public ComSelf(CommandSender sender, String... args) {
 		super(sender, args);
 		if (sUser != null) {
-			uCont = UserContainer.getContainer(sUser);
+			uCont = PowerUserAdapter.getAdapter(sUser);
 			if (args.length > 0) {
 				if (args[0].equalsIgnoreCase("add")) {
 					comSelfAdd(args.length > 1 ? (args[1].equalsIgnoreCase("random") ? getRandomPower(uCont) : config.getPower(args[1])) : null);
@@ -40,7 +41,7 @@ public class ComSelf extends ComAbstract {
 				}
 				else if (args[0].equalsIgnoreCase("stats")) {
 					comSelfStats(args.length > 1 ? config.getPower(args[1]) : null,
-							args.length > 2 ? PowerContainer.getContainer(config.getPower(args[1])).getStat(args[2]) : null,
+							args.length > 2 ? PowerAdapter.getAdapter(config.getPower(args[1])).getStat(args[2]) : null,
 							args.length > 3 && StringUtils.isNumeric(args[3]) ? Integer.parseInt(args[3]) : -1);
 				}
 				else if (args[0].equalsIgnoreCase("supply")) {
@@ -151,7 +152,7 @@ public class ComSelf extends ComAbstract {
 					String tmp = "";
 					for (int i = 0; i < powers.size(); i ++) {
 						Power nextPower = powers.get(i);
-						PowerContainer pCont = PowerContainer.getContainer(nextPower);
+						PowerAdapter pCont = PowerAdapter.getAdapter(nextPower);
 						List<PowerStat> stats = new ArrayList<PowerStat>(pCont.getStats().keySet());
 						Collections.sort(stats);
 						if (!stats.isEmpty()) {
@@ -160,7 +161,7 @@ public class ComSelf extends ComAbstract {
 								tmp += ChatColor.RESET + " " + stats.get(j).getDescription() + ": " + sUser.getStatCount(stats.get(j)) + "/" + nextPower.getStatValue(stats.get(j)) + "\n";
 								if (ConfigOption.Users.VIEW_INCOMPLETE_STAT_REWARDS
 										|| sUser.hasStatMaxed(stats.get(j))) {
-									tmp += "  " + LocaleString.REWARD + ": " + (!sUser.hasStatMaxed(stats.get(j)) ? ChatColor.GRAY : "") + pCont.getFilteredText(stats.get(j).getReward()) + "\n";
+									tmp += "  " + LocaleString.REWARD + ": " + (!sUser.hasStatMaxed(stats.get(j)) ? ChatColor.GRAY : "") + PowerTools.getFilteredText(nextPower, stats.get(j).getReward()) + "\n";
 								}
 								else {
 									tmp += "  " + LocaleString.REWARD + ": " + ChatColor.GRAY + "???\n";

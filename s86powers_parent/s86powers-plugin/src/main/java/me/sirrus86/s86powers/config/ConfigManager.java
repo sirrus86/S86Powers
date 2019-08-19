@@ -21,12 +21,12 @@ import com.google.common.collect.Lists;
 import me.sirrus86.s86powers.S86Powers;
 import me.sirrus86.s86powers.localization.LocaleString;
 import me.sirrus86.s86powers.powers.Power;
-import me.sirrus86.s86powers.powers.PowerContainer;
+import me.sirrus86.s86powers.powers.PowerAdapter;
 import me.sirrus86.s86powers.powers.PowerType;
 import me.sirrus86.s86powers.regions.NeutralRegion;
 import me.sirrus86.s86powers.users.PowerGroup;
 import me.sirrus86.s86powers.users.PowerUser;
-import me.sirrus86.s86powers.users.UserContainer;
+import me.sirrus86.s86powers.users.PowerUserAdapter;
 import me.sirrus86.s86powers.utils.UUIDFetcher;
 
 public class ConfigManager {
@@ -37,10 +37,10 @@ public class ConfigManager {
 	private final Set<PowerGroup> groups = new HashSet<>();
 	private final Map<String, NeutralRegion> regions = new HashMap<>();
 	private final Map<String, Object> options = new HashMap<>();
-	private final Map<String, PowerContainer> pwrConts = new HashMap<>();
+	private final Map<String, PowerAdapter> pwrConts = new HashMap<>();
 	private final Set<Power> powers = new HashSet<>();
 	private final Map<UUID, PowerUser> users = new HashMap<>();
-	private final Map<UUID, UserContainer> usrConts = new HashMap<>();
+	private final Map<UUID, PowerUserAdapter> usrConts = new HashMap<>();
 	private final YamlConfiguration rgnConfig, plgConfig, pwrConfig;
 	private final File rgnFile, plgFile, pwrFile;
 	private final S86Powers plugin;
@@ -70,7 +70,7 @@ public class ConfigManager {
 	}
 	
 	public boolean blockPower(Power power) {
-		getContainer(power).disable();
+		getAdapter(power).disable();
 		return blocked.add(power.getClass().getSimpleName());
 	}
 	
@@ -89,7 +89,7 @@ public class ConfigManager {
 	
 	public void disablePowers() {
 		for (Power power : powers) {
-			getContainer(power).disable();
+			getAdapter(power).disable();
 		}
 	}
 	
@@ -105,18 +105,18 @@ public class ConfigManager {
 		return options.get(option);
 	}
 	
-	public PowerContainer getContainer(Power power) {
+	public PowerAdapter getAdapter(Power power) {
 		String tag = power.getClass().getSimpleName();
 		if (!pwrConts.containsKey(tag)) {
-			pwrConts.put(tag, new PowerContainer(power));
+			pwrConts.put(tag, new PowerAdapter(power));
 		}
 		return pwrConts.get(tag);
 	}
 	
-	public UserContainer getContainer(PowerUser user) {
+	public PowerUserAdapter getAdapter(PowerUser user) {
 		UUID uuid = user.getUUID();
 		if (!usrConts.containsKey(uuid)) {
-			usrConts.put(uuid, new UserContainer(user));
+			usrConts.put(uuid, new PowerUserAdapter(user));
 		}
 		return usrConts.get(uuid);
 	}
@@ -136,7 +136,7 @@ public class ConfigManager {
 	
 	public Power getPower(String name) {
 		for (Power power : powers) {
-			if (getContainer(power).getTag().equalsIgnoreCase(name)
+			if (getAdapter(power).getTag().equalsIgnoreCase(name)
 					|| power.getName().replace("_", " ").equalsIgnoreCase(name)) {
 				return power;
 			}
@@ -188,7 +188,7 @@ public class ConfigManager {
 		else if (uuid != null){
 			PowerUser user = new PowerUser(uuid);
 			users.put(uuid, user);
-			getContainer(user).load();
+			getAdapter(user).load();
 			return user;
 		}
 		else {
@@ -279,7 +279,7 @@ public class ConfigManager {
 			else {
 				user = users.get(player.getUniqueId());
 			}
-			getContainer(user).load();
+			getAdapter(user).load();
 		}
 	}
 	
@@ -319,7 +319,7 @@ public class ConfigManager {
 			group.save();
 		}
 		for (PowerUser user : users.values()) {
-			getContainer(user).save();
+			getAdapter(user).save();
 		}
 		savePluginConfig();
 		savePowerConfig();

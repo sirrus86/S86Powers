@@ -11,7 +11,7 @@ import me.sirrus86.s86powers.S86Powers;
 import me.sirrus86.s86powers.localization.LocaleString;
 import me.sirrus86.s86powers.permissions.S86Permission;
 import me.sirrus86.s86powers.powers.Power;
-import me.sirrus86.s86powers.powers.PowerContainer;
+import me.sirrus86.s86powers.powers.PowerAdapter;
 import me.sirrus86.s86powers.tools.PowerTools;
 
 public final class GUIPower extends GUIAbstract {
@@ -37,13 +37,13 @@ public final class GUIPower extends GUIAbstract {
 	void setItems() {
 		setItem(0, LIST, LocaleString.INFO.toString(), PowerTools.wordSplit(ChatColor.RESET.toString() + ChatColor.GRAY.toString(), LocaleString.POWER_INFO_HELP.toString(), 30), player -> {
 			Power power = selectedPower.get(player.getUniqueId());
-			PowerContainer pCont = PowerContainer.getContainer(power);
+			PowerAdapter pCont = PowerAdapter.getAdapter(power);
 			player.closeInventory();
 			player.performCommand("powers power " + pCont.getTag() + " info");
 		});
 		setItem(2, LIST, LocaleString.OPTIONS.toString(), PowerTools.wordSplit(ChatColor.RESET.toString() + ChatColor.GRAY.toString(), LocaleString.POWER_OPTION_HELP.toString(), 30), player -> {
 			Power power = selectedPower.get(player.getUniqueId());
-			PowerContainer pCont = PowerContainer.getContainer(power);
+			PowerAdapter pCont = PowerAdapter.getAdapter(power);
 			if (player.hasPermission(S86Permission.POWER_OPTION)) {
 				powerOptionList.put(power, GUIAbstractList.createLists(GUIOptionList.class, pCont.getOptions().keySet()));
 				for (int i = 0; i < powerOptionList.get(power).size(); i ++) {
@@ -58,13 +58,13 @@ public final class GUIPower extends GUIAbstract {
 		});
 		setItem(7, ENABLE, LocaleString.ENABLE.toString(), PowerTools.wordSplit(ChatColor.RESET.toString() + ChatColor.GRAY.toString(), LocaleString.POWER_ENABLE_HELP.toString(), 30), player -> {
 			Power power = selectedPower.get(player.getUniqueId());
-			PowerContainer pCont = PowerContainer.getContainer(power);
+			PowerAdapter pCont = PowerAdapter.getAdapter(power);
 			player.closeInventory();
 			player.performCommand("powers power " + pCont.getTag() + " enable");
 		});
 		setItem(8, DELETE, LocaleString.DISABLE.toString(), PowerTools.wordSplit(ChatColor.RESET.toString() + ChatColor.GRAY.toString(), LocaleString.POWER_DISABLE_HELP.toString(), 30), player -> {
 			Power power = selectedPower.get(player.getUniqueId());
-			PowerContainer pCont = PowerContainer.getContainer(power);
+			PowerAdapter pCont = PowerAdapter.getAdapter(power);
 			player.closeInventory();
 			player.performCommand("powers power " + pCont.getTag() + " disable");
 		});

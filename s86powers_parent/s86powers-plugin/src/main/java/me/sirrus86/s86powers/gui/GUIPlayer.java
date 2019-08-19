@@ -13,7 +13,7 @@ import me.sirrus86.s86powers.permissions.S86Permission;
 import me.sirrus86.s86powers.powers.PowerType;
 import me.sirrus86.s86powers.tools.PowerTools;
 import me.sirrus86.s86powers.users.PowerUser;
-import me.sirrus86.s86powers.users.UserContainer;
+import me.sirrus86.s86powers.users.PowerUserAdapter;
 
 public class GUIPlayer extends GUIAbstract {
 	
@@ -39,7 +39,7 @@ public class GUIPlayer extends GUIAbstract {
 	void setItems() {
 		setItem(0, POWER, LocaleString.ADD_POWER.toString(), PowerTools.wordSplit(ChatColor.RESET.toString() + ChatColor.GRAY.toString(), LocaleString.PLAYER_ADD_HELP.toString(), 30), player -> {
 			PowerUser user = selectedUser.get(player.getUniqueId());
-			UserContainer uCont = UserContainer.getContainer(user);
+			PowerUserAdapter uCont = PowerUserAdapter.getAdapter(user);
 			if (player.hasPermission(S86Permission.PLAYER_ADD)) {
 				userAddPowerList.put(user, GUIAbstractList.createLists(GUIPowerList.class, S86Powers.getConfigManager().getPowers(),
 						S86Powers.getConfigManager().getPowersByType(PowerType.UTILITY), uCont.getPowers()));
@@ -55,7 +55,7 @@ public class GUIPlayer extends GUIAbstract {
 		});
 		setItem(1, POWER, LocaleString.REMOVE_POWER.toString(), PowerTools.wordSplit(ChatColor.RESET.toString() + ChatColor.GRAY.toString(), LocaleString.PLAYER_REMOVE_HELP.toString(), 30), player -> {
 			PowerUser user = selectedUser.get(player.getUniqueId());
-			UserContainer uCont = UserContainer.getContainer(user);
+			PowerUserAdapter uCont = PowerUserAdapter.getAdapter(user);
 			if (player.hasPermission(S86Permission.PLAYER_REMOVE)) {
 				userRemovePowerList.put(user, GUIAbstractList.createLists(GUIPowerList.class, uCont.getPowers()));
 				for (int i = 0; i < userRemovePowerList.get(user).size(); i ++) {

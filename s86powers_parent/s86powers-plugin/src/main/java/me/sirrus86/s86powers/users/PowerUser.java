@@ -2,6 +2,7 @@ package me.sirrus86.s86powers.users;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -17,8 +18,9 @@ import me.sirrus86.s86powers.config.ConfigOption;
 import me.sirrus86.s86powers.events.PowerDamageEvent;
 import me.sirrus86.s86powers.events.UserMaxedStatEvent;
 import me.sirrus86.s86powers.localization.LocaleString;
+import me.sirrus86.s86powers.permissions.S86Permission;
 import me.sirrus86.s86powers.powers.Power;
-import me.sirrus86.s86powers.powers.PowerContainer;
+import me.sirrus86.s86powers.powers.PowerAdapter;
 import me.sirrus86.s86powers.powers.PowerFire;
 import me.sirrus86.s86powers.powers.PowerStat;
 import me.sirrus86.s86powers.powers.PowerType;
@@ -29,6 +31,7 @@ import me.sirrus86.s86powers.utils.PowerTime;
 
 import org.bukkit.ChatColor;
 import org.bukkit.Effect;
+import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
@@ -53,22 +56,22 @@ import org.bukkit.util.Vector;
  * <p>
  * S86 Powers ultimately considers every player a PowerUser, regardless of whether they have or use powers.
  */
-public class PowerUser implements Comparable<PowerUser> {
+public final class PowerUser implements Comparable<PowerUser> {
 
-	Set<Beacon> beacons = new HashSet<>();
-	Map<Power, Long> cooldowns = new HashMap<>();
-	Set<PowerGroup> groups = new HashSet<>();
-	Map<Power, Boolean> powers = new HashMap<>();
-	Set<NeutralRegion> regions = new HashSet<>();
-	Map<PowerStat, Integer> stats = new HashMap<>();
+	private Set<Beacon> beacons = new HashSet<>();
+	private Map<Power, Long> cooldowns = new HashMap<>();
+	private Set<PowerGroup> groups = new HashSet<>();
+	private Map<Power, Boolean> powers = new HashMap<>();
+	private Set<NeutralRegion> regions = new HashSet<>();
+	private Map<PowerStat, Integer> stats = new HashMap<>();
 	
-	final File cFile;
-	YamlConfiguration config;
-	boolean enabled = true;
+	private final File cFile;
+	private YamlConfiguration config;
+	private boolean enabled = true;
 	private String name;
-	int nTask = -1;
+	private int nTask = -1;
 	private long nTimer = 0L;
-	long saveTimer = 0L;
+	private long saveTimer = 0L;
 	private OfflinePlayer oPlayer;
 	private final UUID uuid;
 	private static final S86Powers plugin = JavaPlugin.getPlugin(S86Powers.class);
@@ -81,8 +84,8 @@ public class PowerUser implements Comparable<PowerUser> {
 	 */
 	public PowerUser(UUID uuid) {
 		this.uuid = uuid;
-		name = getOfflinePlayer().getName();
-		cFile = new File(plugin.getUserDirectory(), uuid.toString() + ".yml");
+		this.name = getOfflinePlayer().getName();
+		this.cFile = new File(plugin.getUserDirectory(), uuid.toString() + ".yml");
 		if (!cFile.exists()) {
 			try {
 				cFile.createNewFile();
@@ -90,6 +93,28 @@ public class PowerUser implements Comparable<PowerUser> {
 				plugin.getLogger().severe(LocaleString.FILE_CREATE_FAIL.build(cFile));
 				e.printStackTrace();
 			}
+		}
+	}
+	
+	public void addBeacon(Beacon beacon) {
+		if (beacons.isEmpty()) {
+			neutralize(LocaleString.NEUTRALIZED_BY_BEACON.toString());
+		}
+		beacons.add(beacon);
+	}
+	
+	void addGroup(PowerGroup group) {
+		groups.add(group);
+		if (!group.hasMember(this)) {
+			group.addMember(this);
+		}
+		autosave();
+	}
+	
+	private void addGroupWithoutSaving(PowerGroup group) {
+		groups.add(group);
+		if (!group.hasMember(this)) {
+			group.addMember(this);
 		}
 	}
 	
@@ -110,22 +135,37 @@ public class PowerUser implements Comparable<PowerUser> {
 	 * Note: If the player is offline this will silently fail.
 	 * @param effect - {@link PotionEffect} to apply to this user
 	 */
-	public void addPotionEffect(PotionEffect effect) {
+	public boolean addPotionEffect(PotionEffect effect) {
 		if (isOnline()) {
-			getPlayer().addPotionEffect(new PotionEffect(effect.getType(), effect.getDuration(), effect.getAmplifier(), false, false, false), true);
+			return getPlayer().addPotionEffect(new PotionEffect(effect.getType(), effect.getDuration(), effect.getAmplifier(), false, false, false), true);
+		}
+		return false;
+	}
+	
+	public void addPower(Power power) {
+		addPower(power, true);
+	}
+	
+	public void addPower(Power power, boolean enable) {
+		if (power != null
+				&& !powers.containsKey(power)) {
+			powers.put(power, enable);
 		}
 	}
 	
-	/**
-	 * Shortcut method to remove a potion effect from the user.
-	 * <p>
-	 * Note: If the player is offline this will silently fail.
-	 * @param effect - {@link PotionEffectType} to remove from this user
-	 */
-	public void removePotionEffect(PotionEffectType effect) {
-		if (isOnline()) {
-			getPlayer().removePotionEffect(effect);
+	private void addPowerWithoutSaving(Power power, boolean enable) {
+		if (!powers.containsKey(power)) {
+			powers.put(power, enable);
 		}
+		PowerAdapter.getAdapter(power).addUser(this);
+		PowerAdapter.getAdapter(power).enable(this);
+	}
+	
+	void addRegion(NeutralRegion region) {
+		if (regions.isEmpty()) {
+			neutralize(LocaleString.NEUTRALIZED_BY_REGION.toString());
+		}
+		regions.add(region);
 	}
 	
 	/**
@@ -138,10 +178,18 @@ public class PowerUser implements Comparable<PowerUser> {
 	 * @return <b>true</b> if player is online, power is assigned, power is enabled, and user is not neutralized
 	 */
 	public boolean allowPower(Power power) {
-		return power.getType() == PowerType.UTILITY ? true : UserContainer.getContainer(this).hasPower(power)
-				&& UserContainer.getContainer(this).hasPowerEnabled(power)
-				&& UserContainer.getContainer(this).hasPowersEnabled()
-				&& !UserContainer.getContainer(this).isNeutralized();
+		return power.getType() == PowerType.UTILITY ? true :
+			PowerUserAdapter.getAdapter(this).hasPower(power)
+					&& PowerUserAdapter.getAdapter(this).hasPowerEnabled(power)
+					&& PowerUserAdapter.getAdapter(this).hasPowersEnabled()
+					&& !PowerUserAdapter.getAdapter(this).isNeutralized();
+	}
+	
+	private void autosave() {
+		if (ConfigOption.Plugin.AUTO_SAVE
+				&& System.currentTimeMillis() >= saveTimer) {
+			save();
+		}
 	}
 	
 	/**
@@ -219,7 +267,7 @@ public class PowerUser implements Comparable<PowerUser> {
 		}
 		if (ConfigOption.Plugin.AUTO_SAVE
 				&& System.currentTimeMillis() >= saveTimer) {
-			UserContainer.getContainer(this).save();
+			PowerUserAdapter.getAdapter(this).save();
 		}
 	}
 
@@ -239,7 +287,7 @@ public class PowerUser implements Comparable<PowerUser> {
 	}
 	
 	void deneutralize(boolean force) {
-		if (!UserContainer.getContainer(this).isNeutralized()
+		if (!PowerUserAdapter.getAdapter(this).isNeutralized()
 				|| force) {
 			if (isOnline()) {
 				sendMessage(ChatColor.GREEN + LocaleString.POWERS_RETURN.toString());
@@ -255,13 +303,35 @@ public class PowerUser implements Comparable<PowerUser> {
 	}
 	
 	void neutralize(String message) {
-		if (!UserContainer.getContainer(this).isNeutralized()) {
+		if (!PowerUserAdapter.getAdapter(this).isNeutralized()) {
 			this.getPlayer().getWorld().playEffect(this.getPlayer().getEyeLocation(), Effect.STEP_SOUND, Material.BLUE_STAINED_GLASS);
 			this.sendMessage(ChatColor.BLUE + message);
 			for (Power power : powers.keySet()) {
-				PowerContainer.getContainer(power).disable(this);
+				PowerAdapter.getAdapter(power).disable(this);
 			}
 		}
+	}
+	
+	Set<PowerGroup> getAssignedGroups() {
+		return groups;
+	}
+	
+	public Set<Power> getAssignedPowers() {
+		return powers.keySet();
+	}
+	
+	public Set<Power> getAssignedPowersByType(PowerType type) {
+		Set<Power> tmp = new HashSet<Power>();
+		for (Power power : powers.keySet()) {
+			if (power.getType() == type) {
+				tmp.add(power);
+			}
+		}
+		return tmp;
+	}
+	
+	Set<Beacon> getBeaconsInhabited() {
+		return beacons;
 	}
 	
 	/**
@@ -279,6 +349,47 @@ public class PowerUser implements Comparable<PowerUser> {
 	
 	public ItemStack getEquipment(EquipmentSlot slot) {
 		return PowerTools.getEquipment(getPlayer(), slot);
+	}
+	
+	Set<Power> getGroupPowers() {
+		Set<Power> tmp = new HashSet<Power>();
+		for (PowerGroup group : getGroups()) {
+			tmp.addAll(group.getPowers());
+		}
+		return tmp;
+	}
+	
+	Set<PowerGroup> getGroups() {
+		Set<PowerGroup> tmp = new HashSet<PowerGroup>();
+		tmp.addAll(getAssignedGroups());
+		tmp.addAll(getPermissibleGroups());
+		return tmp;
+	}
+	
+	Set<PowerGroup> getPermissibleGroups() {
+		Set<PowerGroup> tmp = new HashSet<PowerGroup>();
+		if (isOnline()
+				&& ConfigOption.Plugin.ENABLE_PERMISSION_ASSIGNMENTS) {
+			for (PowerGroup group : S86Powers.getConfigManager().getGroups()) {
+				if (getPlayer().hasPermission(group.getRequiredPermission())) {
+					tmp.add(group);
+				}
+			}
+		}
+		return tmp;
+	}
+	
+	Set<Power> getPermissiblePowers() {
+		Set<Power> tmp = new HashSet<Power>();
+		if (isOnline()
+				&& ConfigOption.Plugin.ENABLE_PERMISSION_ASSIGNMENTS) {
+			for (Power power : S86Powers.getConfigManager().getPowers()) {
+				if (getPlayer().hasPermission(PowerAdapter.getAdapter(power).getUsePermission())) {
+					tmp.add(power);
+				}
+			}
+		}
+		return tmp;
 	}
 	
 	/**
@@ -303,13 +414,28 @@ public class PowerUser implements Comparable<PowerUser> {
 		return getOfflinePlayer().getPlayer();
 	}
 	
+	Set<Power> getPowers() {
+		return getPowers(false);
+	}
+	
+	Set<Power> getPowers(boolean includeUtility) {
+		Set<Power> tmp = new HashSet<Power>();
+		if (includeUtility) {
+			tmp.addAll(S86Powers.getConfigManager().getPowersByType(PowerType.UTILITY));
+		}
+		tmp.addAll(getAssignedPowers());
+		tmp.addAll(getGroupPowers());
+		tmp.addAll(getPermissiblePowers());
+		return tmp;
+	}
+	
+	Set<NeutralRegion> getRegionsInhabited() {
+		return regions;
+	}
+	
 	public int getStatCount(PowerStat stat) {
 		return stats.containsKey(stat) ? stats.get(stat) : 0;
 	}
-	
-//	private String getStatReward(PowerStat stat) {
-//		return plugin.getPowerTools().getPowerDesc(stat.getPower(), stat.getReward());
-//	}
 	
 	/**
 	 * Gets the entity in the user's line of sight.
@@ -357,6 +483,38 @@ public class PowerUser implements Comparable<PowerUser> {
 		return uuid;
 	}
 	
+	boolean hasEnablePermission() {
+		if (isOnline()) {
+			return isAdmin() ? ConfigOption.Admin.BYPASS_PERMISSION : getPlayer().hasPermission(S86Permission.ENABLE);
+		}
+		return false;
+	}
+	
+	public boolean hasPower(Power power) {
+		return getPowers(true).contains(power);
+	}
+	
+	public boolean hasPower(String name) {
+		for (Power power : getPowers(true)) {
+			if (power.getClass().getSimpleName().equalsIgnoreCase(name)) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	boolean hasPowerAssigned(Power power) {
+		return powers.containsKey(power);
+	}
+	
+	boolean hasPowerEnabled(Power power) {
+		return powers.containsKey(power) ? powers.get(power) : (isOnline() && getPlayer().hasPermission(PowerAdapter.getAdapter(power).getAssignPermission()));
+	}
+	
+	boolean hasPowersEnabled() {
+		return enabled;
+	}
+	
 	public boolean hasStatMaxed(PowerStat stat) {
 		return stats.containsKey(stat)
 				&& stats.get(stat) >= stat.getPower().getStatValue(stat);
@@ -384,15 +542,24 @@ public class PowerUser implements Comparable<PowerUser> {
 					UserMaxedStatEvent event = new UserMaxedStatEvent(this, stat);
 					plugin.getServer().getPluginManager().callEvent(event);
 					sendMessage(power.getType().getColor() + power.getName() + ChatColor.RESET + " > " + ChatColor.YELLOW +
-							PowerContainer.getContainer(power).getFilteredText(stat.getReward()));
+							PowerTools.getFilteredText(power, stat.getReward()));
 				}
 			}
 			if (ConfigOption.Plugin.AUTO_SAVE
 					&& System.currentTimeMillis() >= saveTimer) {
-				UserContainer.getContainer(this).save();
+				PowerUserAdapter.getAdapter(this).save();
 				saveTimer = System.currentTimeMillis() + ConfigOption.Plugin.AUTO_SAVE_COOLDOWN;
 			}
 		}
+	}
+	
+	boolean inGroup(PowerGroup group) {
+		return groups.contains(group);
+	}
+	
+	boolean isAdmin() {
+		return isOnline()
+				&& getPlayer().hasPermission(S86Permission.ADMIN);
 	}
 	
 	public boolean isHoldingItem(ItemStack item) {
@@ -404,10 +571,160 @@ public class PowerUser implements Comparable<PowerUser> {
 		return getOfflinePlayer().isOnline();
 	}
 	
+	public boolean isNeutralized() {
+		return !beacons.isEmpty()
+				|| !regions.isEmpty()
+				|| nTask > -1;
+	}
+	
+	void load() {
+		if (ConfigOption.Plugin.SHOW_CONFIG_STATUS) {
+			plugin.getLogger().info(LocaleString.LOAD_ATTEMPT.build(cFile));
+		}
+		if (cFile != null) {
+			config = YamlConfiguration.loadConfiguration(cFile);
+			if (config.contains("powers")) {
+				for (String pwr : config.getConfigurationSection("powers").getKeys(false)) {
+					Power power = S86Powers.getConfigManager().getPower(pwr);
+					if (power != null) {
+						if (config.contains("powers." + pwr + ".active", false)) {
+							addPowerWithoutSaving(power, config.getBoolean("powers." + pwr + ".active", false));
+						}
+						if (config.contains("powers." + pwr + ".stats")) {
+							for (String statName : config.getConfigurationSection("powers." + pwr + ".stats").getKeys(false)) {
+								PowerStat stat = PowerAdapter.getAdapter(power).getStat(statName);
+								if (stat != null) {
+									stats.put(stat, config.getInt("powers." + pwr + ".stats." + statName, 0));
+								}
+							}
+						}
+					}
+				}
+			}
+			if (config.contains("groups")) {
+				for (String grp : config.getStringList("groups")) {
+					PowerGroup group = S86Powers.getConfigManager().getGroup(grp);
+					if (group != null) {
+						addGroupWithoutSaving(group);
+					}
+				}
+			}
+			if (ConfigOption.Plugin.SHOW_CONFIG_STATUS) {
+				plugin.getLogger().info(LocaleString.LOAD_SUCCESS.build(cFile));
+			}
+		}
+		else {
+			if (ConfigOption.Plugin.SHOW_CONFIG_STATUS) {
+				plugin.getLogger().info(LocaleString.LOAD_FAIL.build(cFile));
+			}
+			throw new NullPointerException();
+		}
+	}
+	
+	void purge() {
+		beacons = new HashSet<>();
+		cooldowns = new HashMap<>();
+		groups = new HashSet<>();
+		powers = new HashMap<>();
+		regions = new HashSet<>();
+		stats = new HashMap<>();
+	}
+	
 	public void regenHunger(int amt) {
 		if (isOnline()) {
 			amt = 20 - getPlayer().getFoodLevel() < amt ? 20 - getPlayer().getFoodLevel() : amt;
 			getPlayer().setFoodLevel(getPlayer().getFoodLevel() + amt);
+		}
+	}
+	
+	public void removeBeacon(Beacon beacon) {
+		if (beacons.contains(beacon)) {
+			beacons.remove(beacon);
+			deneutralize(false);
+		}
+	}
+	
+	void removeGroup(PowerGroup group) {
+		groups.remove(group);
+		if (group.hasMember(this)) {
+			group.removeMember(this);
+		}
+		autosave();
+	}
+	
+	/**
+	 * Shortcut method to remove a potion effect from the user.
+	 * <p>
+	 * Note: If the player is offline this will silently fail.
+	 * @param effect - {@link PotionEffectType} to remove from this user
+	 */
+	public void removePotionEffect(PotionEffectType effect) {
+		if (isOnline()) {
+			getPlayer().removePotionEffect(effect);
+		}
+	}
+	
+	void removePower(Power power) {
+		if (powers.containsKey(power)) {
+			powers.remove(power);
+		}
+		PowerAdapter.getAdapter(power).removeUser(this);
+		PowerAdapter.getAdapter(power).disable(this);
+		autosave();
+	}
+	
+	void removeRegion(NeutralRegion region) {
+		if (regions.contains(region)) {
+			regions.remove(region);
+			deneutralize(false);
+		}
+	}
+	
+	void save() {
+		if (ConfigOption.Plugin.SHOW_CONFIG_STATUS) {
+			plugin.getLogger().info(LocaleString.SAVE_ATTEMPT.build(cFile));
+		}
+		if (cFile != null) {
+			if (config == null) {
+				config = YamlConfiguration.loadConfiguration(cFile);
+			}
+			config.set("groups", null);
+			if (!getAssignedGroups().isEmpty()) {
+				List<String> gList = new ArrayList<String>();
+				for (PowerGroup group : getAssignedGroups()) {
+					gList.add(group.getName());
+				}
+				config.set("groups", gList);
+			}
+			config.set("powers", null);
+			if (!getAssignedPowers().isEmpty()) {
+				for (Power power : getAssignedPowers()) {
+					config.set("powers." + power.getClass().getSimpleName() + ".active", hasPowerEnabled(power));
+				}
+			}
+			if (!stats.isEmpty()) {
+				for (PowerStat stat : stats.keySet()) {
+					config.set("powers." + stat.getPower().getClass().getSimpleName() + ".stats." + stat.getPath(), stats.get(stat));
+				}
+			}
+			try {
+				config.save(cFile);
+				if (ConfigOption.Plugin.SHOW_CONFIG_STATUS) {
+					plugin.getLogger().info(LocaleString.SAVE_SUCCESS.build(cFile));
+				}
+				saveTimer = System.currentTimeMillis() + ConfigOption.Plugin.AUTO_SAVE_COOLDOWN;
+			} catch (IOException e) {
+				if (ConfigOption.Plugin.SHOW_CONFIG_STATUS) {
+					plugin.getLogger().info(LocaleString.SAVE_FAIL.build(cFile));
+				}
+				e.printStackTrace();
+			}
+		}
+		else {
+			if (ConfigOption.Plugin.SHOW_CONFIG_STATUS) {
+				plugin.getLogger().info(LocaleString.SAVE_FAIL.build(cFile));
+			}
+			throw new NullPointerException();
 		}
 	}
 	
@@ -420,13 +737,21 @@ public class PowerUser implements Comparable<PowerUser> {
 		}
 	}
 	
+	public void setAllowFlight(boolean allow) {
+		if (isOnline()
+				&& (getPlayer().getGameMode() == GameMode.ADVENTURE
+						|| getPlayer().getGameMode() == GameMode.SURVIVAL)) {
+			getPlayer().setAllowFlight(allow);
+		}
+	}
+	
 	public void setCooldown(Power power, long time) {
-		if (!UserContainer.getContainer(this).isAdmin()
+		if (!PowerUserAdapter.getAdapter(this).isAdmin()
 				|| !ConfigOption.Admin.BYPASS_COOLDOWN) {
 			cooldowns.put(power, System.currentTimeMillis() + time);
 			if (ConfigOption.Powers.SHOW_COOLDOWN_ON_ITEM
-					&& PowerContainer.getContainer(power).getRequiredItem() != null) {
-				PowerTools.showItemCooldown(getPlayer(), PowerContainer.getContainer(power).getRequiredItem(), time);
+					&& PowerAdapter.getAdapter(power).getRequiredItem() != null) {
+				PowerTools.showItemCooldown(getPlayer(), PowerAdapter.getAdapter(power).getRequiredItem(), time);
 			}
 		}
 	}
@@ -449,9 +774,59 @@ public class PowerUser implements Comparable<PowerUser> {
 		}
 	}
 	
+	void setPowerEnabled(Power power, boolean newState) {
+		if (powers.containsKey(power)) {
+			powers.put(power, newState);
+			if (!newState) {
+				PowerAdapter.getAdapter(power).disable(this);
+			}
+		}
+		if (ConfigOption.Plugin.AUTO_SAVE
+				&& System.currentTimeMillis() >= saveTimer) {
+			save();
+		}
+	}
+	
+	void setPowersEnabled(boolean newState) {
+		enabled = newState;
+	}
+	
 	public void showCooldown(Power power) {
 		if (isOnline()) {
 			sendMessage(ChatColor.RED + LocaleString.POWER_ON_COOLDOWN.build(getCooldown(power), power));
+		}
+	}
+	
+	@SuppressWarnings("deprecation")
+	void supply(Power power) {
+		if (isOnline()) {
+			PowerAdapter pCont = PowerAdapter.getAdapter(power);
+			for (int i = 0; i < pCont.getSupplies().size(); i ++) {
+				ItemStack item = pCont.getSupplies().get(i);
+				for (ItemStack stack : getPlayer().getInventory().getContents()) {
+					if (stack != null) {
+						if (PowerTools.usesDurability(item)
+								&& item.getType() == stack.getType()) {
+							stack.setDurability((short) 0);
+							return;
+						}
+						else if (item.getType() == stack.getType()
+								&& item.getDurability() == stack.getDurability()) {
+							if (stack.getAmount() < item.getAmount()) {
+								stack.setAmount(item.getAmount());
+							}
+							return;
+						}
+					}
+				}
+				int j = getPlayer().getInventory().firstEmpty();
+				if (j > -1) {
+					getPlayer().getInventory().setItem(j, item);
+				}
+				else {
+					getPlayer().getWorld().dropItem(getPlayer().getLocation(), item);
+				}
+			}
 		}
 	}
 	

@@ -19,7 +19,7 @@ import org.bukkit.util.Vector;
 
 import me.sirrus86.s86powers.S86Powers;
 import me.sirrus86.s86powers.users.PowerUser;
-import me.sirrus86.s86powers.users.UserContainer;
+import me.sirrus86.s86powers.users.PowerUserAdapter;
 
 public class NeutralRegion implements Comparable<NeutralRegion>, ConfigurationSerializable, Listener {
 
@@ -96,10 +96,10 @@ public class NeutralRegion implements Comparable<NeutralRegion>, ConfigurationSe
 		if (event.getPlayer().getWorld() == this.world
 				&& isInside(event.getPlayer().getLocation().clone().add(0.5D, 0.0D, 0.5D))
 				&& this.active) {
-			UserContainer.getContainer(user).addRegion(this);
+			PowerUserAdapter.getAdapter(user).addRegion(this);
 		}
 		else {
-			UserContainer.getContainer(user).removeRegion(this);
+			PowerUserAdapter.getAdapter(user).removeRegion(this);
 		}
 	}
 	

@@ -17,14 +17,14 @@ import com.google.common.collect.Lists;
 import me.sirrus86.s86powers.S86Powers;
 import me.sirrus86.s86powers.permissions.S86Permission;
 import me.sirrus86.s86powers.powers.Power;
-import me.sirrus86.s86powers.powers.PowerContainer;
+import me.sirrus86.s86powers.powers.PowerAdapter;
 import me.sirrus86.s86powers.powers.PowerOption;
 import me.sirrus86.s86powers.powers.PowerStat;
 import me.sirrus86.s86powers.powers.PowerType;
 import me.sirrus86.s86powers.regions.NeutralRegion;
 import me.sirrus86.s86powers.users.PowerGroup;
 import me.sirrus86.s86powers.users.PowerUser;
-import me.sirrus86.s86powers.users.UserContainer;
+import me.sirrus86.s86powers.users.PowerUserAdapter;
 
 public final class PowerTabCompleter implements TabCompleter {
 
@@ -235,7 +235,7 @@ public final class PowerTabCompleter implements TabCompleter {
 		List<String> pList = new ArrayList<>();
 		if (group != null) {
 			for (Power power : group.getPowers()) {
-				pList.add(PowerContainer.getContainer(power).getTag());
+				pList.add(PowerAdapter.getAdapter(power).getTag());
 			}
 			Collections.sort(pList);
 		}
@@ -275,8 +275,8 @@ public final class PowerTabCompleter implements TabCompleter {
 		PowerUser user = S86Powers.getConfigManager().getUser(player);
 		List<String> pList = new ArrayList<>();
 		if (user != null) {
-			for (Power power : UserContainer.getContainer(user).getPowers()) {
-				pList.add(PowerContainer.getContainer(power).getTag());
+			for (Power power : PowerUserAdapter.getAdapter(user).getPowers()) {
+				pList.add(PowerAdapter.getAdapter(power).getTag());
 			}
 			Collections.sort(pList);
 		}
@@ -289,8 +289,8 @@ public final class PowerTabCompleter implements TabCompleter {
 		List<String> statList = new ArrayList<>();
 		if (user != null
 				&& power != null
-				&& UserContainer.getContainer(user).hasPower(power)) {
-			for (PowerStat stat : PowerContainer.getContainer(power).getStats().keySet()) {
+				&& PowerUserAdapter.getAdapter(user).hasPower(power)) {
+			for (PowerStat stat : PowerAdapter.getAdapter(power).getStats().keySet()) {
 				statList.add(stat.getPath());
 			}
 		}
@@ -301,7 +301,7 @@ public final class PowerTabCompleter implements TabCompleter {
 		List<String> optionList = new ArrayList<>();
 		Power power = S86Powers.getConfigManager().getPower(name);
 		if (power != null) {
-			for (PowerOption option : PowerContainer.getContainer(power).getOptions().keySet()) {
+			for (PowerOption option : PowerAdapter.getAdapter(power).getOptions().keySet()) {
 				optionList.add(option.getPath());
 			}
 		}
@@ -313,7 +313,7 @@ public final class PowerTabCompleter implements TabCompleter {
 		for (Power power : S86Powers.getConfigManager().getPowers()) {
 			if (power.getType() != PowerType.UTILITY
 					|| isPowerCommand) {
-				newList.add(PowerContainer.getContainer(power).getTag());
+				newList.add(PowerAdapter.getAdapter(power).getTag());
 			}
 		}
 		Collections.sort(newList);
@@ -331,7 +331,7 @@ public final class PowerTabCompleter implements TabCompleter {
 		List<String> statList = new ArrayList<>();
 		Power power = S86Powers.getConfigManager().getPower(name);
 		if (power != null) {
-			for (PowerStat stat : PowerContainer.getContainer(power).getStats().keySet()) {
+			for (PowerStat stat : PowerAdapter.getAdapter(power).getStats().keySet()) {
 				statList.add(stat.getPath());
 			}
 		}

@@ -5,7 +5,7 @@ import java.util.Set;
 import me.sirrus86.s86powers.localization.LocaleString;
 import me.sirrus86.s86powers.permissions.S86Permission;
 import me.sirrus86.s86powers.powers.Power;
-import me.sirrus86.s86powers.powers.PowerContainer;
+import me.sirrus86.s86powers.powers.PowerAdapter;
 import me.sirrus86.s86powers.powers.PowerOption;
 import me.sirrus86.s86powers.powers.PowerStat;
 import me.sirrus86.s86powers.powers.PowerType;
@@ -30,7 +30,7 @@ public final class ComPower extends ComAbstract {
 		else {
 			Power power = config.getPower(args[1]);
 			if (power != null) {
-				PowerContainer pCont = PowerContainer.getContainer(power);
+				PowerAdapter pCont = PowerAdapter.getAdapter(power);
 				if (args.length <= 2
 						|| args[2].equalsIgnoreCase("info")) {
 					comPowerInfo(pCont);
@@ -81,7 +81,7 @@ public final class ComPower extends ComAbstract {
 		}
 	}
 	
-	private final void comPowerBlock(PowerContainer power, boolean isBlock) {
+	private final void comPowerBlock(PowerAdapter power, boolean isBlock) {
 		if (isBlock) {
 			if (sender.hasPermission(S86Permission.POWER_BLOCK)) {
 				if (config.blockPower(power.getPower())) {
@@ -110,7 +110,7 @@ public final class ComPower extends ComAbstract {
 		}
 	}
 	
-	private final void comPowerEnable(PowerContainer power, boolean isEnable) {
+	private final void comPowerEnable(PowerAdapter power, boolean isEnable) {
 		if (isEnable) {
 			if (sender.hasPermission(S86Permission.POWER_ENABLE)) {
 				if (!power.isEnabled()) {
@@ -168,7 +168,7 @@ public final class ComPower extends ComAbstract {
 		}
 	}
 	
-	private final void comPowerInfo(PowerContainer power) {
+	private final void comPowerInfo(PowerAdapter power) {
 		if (sender.hasPermission(S86Permission.POWER_INFO)) {
 			sender.sendMessage(ChatColor.GREEN + power.getPower().getName() + ChatColor.RESET + " (" + ChatColor.GRAY + power.getTag() + ChatColor.RESET + ")");
 			sender.sendMessage(LocaleString.TYPE + ": " + power.getPower().getType().getColor() + power.getPower().getType().getName() + ChatColor.RESET + ".");
@@ -182,7 +182,7 @@ public final class ComPower extends ComAbstract {
 		}
 	}
 	
-	private final void comPowerKill(PowerContainer power) {
+	private final void comPowerKill(PowerAdapter power) {
 		if (sender.hasPermission(S86Permission.POWER_KILL)) {
 			String pName = power.getPower().getName();
 			config.removePower(power.getPower());
@@ -224,7 +224,7 @@ public final class ComPower extends ComAbstract {
 		}
 	}
 	
-	private final void comPowerLock(PowerContainer power, boolean isLock) {
+	private final void comPowerLock(PowerAdapter power, boolean isLock) {
 		if (isLock) {
 			if (sender.hasPermission(S86Permission.POWER_LOCK)) {
 				if (!power.isLocked()) {
@@ -255,7 +255,7 @@ public final class ComPower extends ComAbstract {
 		}
 	}
 	
-	private final void comPowerOption(PowerContainer power, String page, PowerOption option, String valueStr) {
+	private final void comPowerOption(PowerAdapter power, String page, PowerOption option, String valueStr) {
 		if (sender.hasPermission(S86Permission.POWER_OPTION)) {
 			if (option != null) {
 				if (valueStr != null) {
@@ -281,7 +281,7 @@ public final class ComPower extends ComAbstract {
 					PageMaker pm = new PageMaker(HELP + ChatColor.GREEN + power.getPower().getName() + " " + LocaleString.OPTIONS, getOptions(power), i);
 					pm.send(sender);
 				} catch (NumberFormatException e) {
-					sender.sendMessage(ERROR + LocaleString.POWER_MISSING_OPTION.build(power, page));
+					sender.sendMessage(ERROR + LocaleString.POWER_MISSING_OPTION.build(power.getPower(), page));
 				}
 			}
 			else {
@@ -294,7 +294,7 @@ public final class ComPower extends ComAbstract {
 		}
 	}
 	
-	private final void comPowerReload(PowerContainer power) {
+	private final void comPowerReload(PowerAdapter power) {
 		if (sender.hasPermission(S86Permission.POWER_RELOAD)) {
 			power.reload();
 			sender.sendMessage(SUCCESS + LocaleString.POWER_RELOAD_SUCCESS.build(power.getPower()));
@@ -304,7 +304,7 @@ public final class ComPower extends ComAbstract {
 		}
 	}
 	
-	private final void comPowerSave(PowerContainer power) {
+	private final void comPowerSave(PowerAdapter power) {
 		if (sender.hasPermission(S86Permission.POWER_SAVE)) {
 			power.getPower().saveConfig();
 			sender.sendMessage(SUCCESS + LocaleString.POWER_SAVE_SUCCESS.build(power.getPower()));
@@ -314,7 +314,7 @@ public final class ComPower extends ComAbstract {
 		}
 	}
 	
-	private final void comPowerStats(PowerContainer power, String page, PowerStat stat, String valueStr) {
+	private final void comPowerStats(PowerAdapter power, String page, PowerStat stat, String valueStr) {
 		if (sender.hasPermission(S86Permission.POWER_STATS)) {
 			if (stat != null) {
 				if (valueStr != null) {
@@ -347,7 +347,7 @@ public final class ComPower extends ComAbstract {
 		}
 	}
 	
-	private final void comPowerSupply(PowerContainer power, String index, String value, String quantity) {
+	private final void comPowerSupply(PowerAdapter power, String index, String value, String quantity) {
 		if (sender.hasPermission(S86Permission.POWER_SUPPLY)) {
 			if (index != null) {
 				int i = -1;

@@ -19,7 +19,7 @@ import me.sirrus86.s86powers.localization.LocaleLoader;
 import me.sirrus86.s86powers.localization.LocaleString;
 import me.sirrus86.s86powers.permissions.PermissionHandler;
 import me.sirrus86.s86powers.powers.Power;
-import me.sirrus86.s86powers.powers.PowerContainer;
+import me.sirrus86.s86powers.powers.PowerAdapter;
 import me.sirrus86.s86powers.powers.PowerType;
 import me.sirrus86.s86powers.tools.version.MCVersion;
 import me.sirrus86.s86powers.utils.Metrics;
@@ -104,7 +104,7 @@ public final class S86Powers extends JavaPlugin {
 				Map<String, Integer> valueMap = new HashMap<>();
 				for (Power power : configManager.getPowers()) {
 					if (power.getType() != PowerType.UTILITY) {
-						PowerContainer pCont = PowerContainer.getContainer(power);
+						PowerAdapter pCont = PowerAdapter.getAdapter(power);
 						valueMap.put(power.getName(), pCont.getUsers().size());
 					}
 				}

@@ -15,10 +15,13 @@ import java.util.function.Predicate;
 
 import me.sirrus86.s86powers.S86Powers;
 import me.sirrus86.s86powers.config.ConfigOption;
+import me.sirrus86.s86powers.powers.Power;
+import me.sirrus86.s86powers.powers.PowerAdapter;
 import me.sirrus86.s86powers.tools.nms.NMSLibrary;
 import me.sirrus86.s86powers.tools.version.MCVersion;
 import me.sirrus86.s86powers.tools.version.VersionTools;
 import me.sirrus86.s86powers.users.PowerUser;
+import me.sirrus86.s86powers.utils.PowerTime;
 
 import org.apache.commons.lang.WordUtils;
 
@@ -357,6 +360,53 @@ public final class PowerTools {
 		}
 		return null;
 	}
+	
+	public static String getFilteredText(Power power, String text) {
+		PowerAdapter adapter = PowerAdapter.getAdapter(power);
+		String tmp = text;
+		while(tmp.indexOf("[") != -1 && tmp.indexOf("]") != -1) {
+			int i = tmp.indexOf("["),
+					j = tmp.indexOf("]");
+			String tag = tmp.substring(i, j + 1);
+			String field = tmp.substring(i + 1, j);
+			if (field.startsWith("act:")) {
+				ItemStack item = (ItemStack) adapter.getFieldValue(field.substring(4));
+				if (item != null) {
+					tmp = tmp.replace(tag, PowerTools.getActionString(item));
+				}
+			}
+			else {
+				Object object = adapter.getFieldValue(field);
+				if (object != null) {
+					if (object instanceof Boolean) {
+						String endTag = "[/" + field + "]";
+						if (!Boolean.parseBoolean(object.toString())) {
+							tmp = tmp.substring(0, tmp.indexOf(tag)) + tmp.substring(tmp.indexOf(endTag) + endTag.length());
+						}
+						else {
+							tmp = tmp.replace(tag, "").replace(endTag, "");
+						}
+					}
+					else if (object instanceof ItemStack) {
+						tmp = tmp.replace(tag, PowerTools.getItemName((ItemStack)object));
+					}
+					else if (object instanceof Long) {
+						tmp = tmp.replace(tag, PowerTime.asLongString((Long)object));
+					}
+					else {
+						tmp = tmp.replace(tag, object.toString());
+					}
+				}
+			}
+		}
+		char[] chars = tmp.toCharArray();
+		Character.toUpperCase(chars[0]);
+		for (int i = 2; i < chars.length; i ++) {
+			if (chars[i - 2] == '.') Character.toUpperCase(chars[i]);
+		}
+		tmp = new String(chars);
+		return tmp;
+	}
 
 	public static Block getHighestAirBlock(Location loc, int range) {
 		Location newLoc = loc.clone();
@@ -517,6 +567,11 @@ public final class PowerTools {
 
 	public static boolean hasDisguise(Entity entity) {
 		return pm.hasDisguise(entity);
+	}
+	
+	public static boolean hasDurability(ItemStack item) {
+		return isSword(item)
+				|| isTool(item);
 	}
 
 	public static void hide(Entity entity) {

@@ -9,10 +9,10 @@ import me.sirrus86.s86powers.localization.LocaleString;
 import me.sirrus86.s86powers.events.PowerUseEvent;
 import me.sirrus86.s86powers.events.PowerUseOnEntityEvent;
 import me.sirrus86.s86powers.powers.Power;
-import me.sirrus86.s86powers.powers.PowerContainer;
+import me.sirrus86.s86powers.powers.PowerAdapter;
 import me.sirrus86.s86powers.tools.PowerTools;
 import me.sirrus86.s86powers.users.PowerUser;
-import me.sirrus86.s86powers.users.UserContainer;
+import me.sirrus86.s86powers.users.PowerUserAdapter;
 
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Damageable;
@@ -39,7 +39,7 @@ public class PowerListener implements Listener {
 	private boolean hasCorrectItem(Power power, ItemStack item) {
 		if (power.canUseSpecificItem()
 				&& item != null
-				&& item.getType() == PowerContainer.getContainer(power).getRequiredItem().getType()) {
+				&& item.getType() == PowerAdapter.getAdapter(power).getRequiredItem().getType()) {
 			return true;
 		}
 		else if (power.canUseAnyAxe()
@@ -73,9 +73,9 @@ public class PowerListener implements Listener {
 	@EventHandler
 	private void onInteract(PlayerInteractEvent event) {
 		PowerUser user = S86Powers.getConfigManager().getUser(event.getPlayer().getUniqueId());
-		for (Power power : UserContainer.getContainer(user).getPowers(true)) {
+		for (Power power : PowerUserAdapter.getAdapter(user).getPowers(true)) {
 			if (user.allowPower(power)
-					&& PowerContainer.getContainer(power).getRequiredItem() != null
+					&& PowerAdapter.getAdapter(power).getRequiredItem() != null
 					&& hasCorrectItem(power, event.getItem())
 					&& !(event.getAction() == Action.RIGHT_CLICK_BLOCK && event.getItem().getType().isBlock())) {
 				Bukkit.getServer().getPluginManager().callEvent(new PowerUseEvent(user, power, event.getItem(), event.getHand(), event.getClickedBlock(), event.getBlockFace()));
@@ -90,9 +90,9 @@ public class PowerListener implements Listener {
 		}
 		else {
 			PowerUser user = S86Powers.getConfigManager().getUser(event.getPlayer().getUniqueId());
-			for (Power power : UserContainer.getContainer(user).getPowers(true)) {
+			for (Power power : PowerUserAdapter.getAdapter(user).getPowers(true)) {
 				if (user.allowPower(power)
-						&& PowerContainer.getContainer(power).getRequiredItem() != null
+						&& PowerAdapter.getAdapter(power).getRequiredItem() != null
 						&& hasCorrectItem(power, event.getHand() == EquipmentSlot.HAND ? event.getPlayer().getInventory().getItemInMainHand() : event.getPlayer().getInventory().getItemInOffHand())) {
 					Bukkit.getServer().getPluginManager().callEvent(new PowerUseOnEntityEvent(user, power, event.getRightClicked()));
 				}

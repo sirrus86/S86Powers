@@ -7,11 +7,11 @@ import org.bukkit.ChatColor;
 
 import me.sirrus86.s86powers.localization.LocaleString;
 import me.sirrus86.s86powers.powers.Power;
-import me.sirrus86.s86powers.powers.PowerContainer;
+import me.sirrus86.s86powers.powers.PowerAdapter;
 import me.sirrus86.s86powers.tools.PowerTools;
 import me.sirrus86.s86powers.users.PowerGroup;
 import me.sirrus86.s86powers.users.PowerUser;
-import me.sirrus86.s86powers.users.UserContainer;
+import me.sirrus86.s86powers.users.PowerUserAdapter;
 
 public class GUIPowerList extends GUIAbstractList<Power> {
 	
@@ -25,9 +25,9 @@ public class GUIPowerList extends GUIAbstractList<Power> {
 			int index = page * 45 - 45;
 			for (int i = index; i < Math.min(list.size(), index + 45); i ++) {
 				Power power = list.get(i);
-				PowerContainer pCont = PowerContainer.getContainer(power);
+				PowerAdapter pCont = PowerAdapter.getAdapter(power);
 				String powerName = power.getType().getColor() + power.getName();
-				String powerDesc = pCont.getFilteredText(pCont.getDescription());
+				String powerDesc = PowerTools.getFilteredText(power, pCont.getDescription());
 				List<String> lore = PowerTools.wordSplit(ChatColor.RESET.toString() + ChatColor.GRAY.toString(), powerDesc, 30);
 				setItem(i - index, pCont.getIcon(), ChatColor.RESET + powerName, lore, player -> {
 					if (selectedGroup.containsKey(player.getUniqueId())) {
@@ -43,7 +43,7 @@ public class GUIPowerList extends GUIAbstractList<Power> {
 					}
 					else if (selectedUser.containsKey(player.getUniqueId())) {
 						PowerUser user = selectedUser.get(player.getUniqueId());
-						UserContainer uCont = UserContainer.getContainer(user);
+						PowerUserAdapter uCont = PowerUserAdapter.getAdapter(user);
 						if (uCont.hasPower(power)) {
 							player.closeInventory();
 							player.performCommand("powers player " + (user.getName() != null ? user.getName() : "!NULL") + " remove " + pCont.getTag());

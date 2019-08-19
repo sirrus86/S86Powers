@@ -2,6 +2,7 @@ package me.sirrus86.s86powers.powers;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -12,20 +13,24 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 import java.util.UUID;
+import java.util.logging.Level;
 
 import me.sirrus86.s86powers.S86Powers;
 import me.sirrus86.s86powers.config.ConfigOption;
 import me.sirrus86.s86powers.localization.LocaleString;
 import me.sirrus86.s86powers.users.PowerUser;
-import me.sirrus86.s86powers.users.UserContainer;
+import me.sirrus86.s86powers.users.PowerUserAdapter;
 
+import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Explosive;
 import org.bukkit.event.Event;
+import org.bukkit.event.EventHandler;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
+import org.bukkit.event.server.ServerLoadEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.permissions.Permission;
 import org.bukkit.permissions.PermissionDefault;
@@ -33,23 +38,24 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitTask;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 
 /**
  * Abstract class for a power class in S86 Powers. All power classes must extend this class in order to be loaded.
  */
 public abstract class Power implements Comparable<Power>, Listener {
 	
-	Map<PowerOption, Object> options = new HashMap<>();
-	List<ItemStack> supplies = new ArrayList<>();
-	Map<PowerStat, Integer> stats = new HashMap<>();
-	Set<Integer> tasks = new HashSet<>();
-	Set<PowerUser> users = new HashSet<>();
+	private Map<PowerOption, Object> options = new HashMap<>();
+	private List<ItemStack> supplies = new ArrayList<>();
+	private Map<PowerStat, Integer> stats = new HashMap<>();
+	private Set<Integer> tasks = new HashSet<>();
+	private Set<PowerUser> users = new HashSet<>();
 	
-	final File cFile;
-	final YamlConfiguration config;
-	boolean enabled = true,
+	private final File cFile, defLocFile, locFile;
+	private final YamlConfiguration config, defLocConfig, locConfig;
+	private boolean enabled = true,
 			locked = false;
-	final Permission aPerm, perm;
+	private final Permission aPerm, perm;
 	@Deprecated
 	protected boolean incomplete = false;
 	private final PowerManifest manifest = getClass().getAnnotation(PowerManifest.class);
@@ -126,19 +132,33 @@ public abstract class Power implements Comparable<Power>, Listener {
 	public Power() {
 		plugin = JavaPlugin.getPlugin(S86Powers.class);
 		plugin.getServer().getPluginManager().registerEvents(this, plugin);
+		File locFolder = new File(plugin.getPowerDirectory(), "localization");
+		if (!locFolder.exists()) {
+			locFolder.mkdirs();
+		}
 		cFile = new File(plugin.getPowerDirectory(), tag + ".yml");
-		if (!cFile.exists()) {
-			try {
-				cFile.createNewFile();
-			} catch (IOException e) {
-				plugin.getLogger().severe(LocaleString.FILE_CREATE_FAIL.build(cFile));
-				e.printStackTrace();
+		defLocFile = new File(locFolder, tag + "-enUS.yml");
+		File[] files = new File[] {cFile, defLocFile};
+		for (File file : files) {
+			if (!file.exists()) {
+				try {
+					file.createNewFile();
+				} catch (IOException e) {
+					plugin.getLogger().severe(LocaleString.FILE_CREATE_FAIL.build(file));
+					e.printStackTrace();
+				}
 			}
 		}
 		config = YamlConfiguration.loadConfiguration(cFile);
 		if (ConfigOption.Plugin.SHOW_CONFIG_STATUS) {
 			plugin.getLogger().info(LocaleString.LOAD_SUCCESS.build(cFile));
 		}
+		defLocConfig = YamlConfiguration.loadConfiguration(defLocFile);
+		if (ConfigOption.Plugin.SHOW_CONFIG_STATUS) {
+			plugin.getLogger().info(LocaleString.LOAD_SUCCESS.build(defLocFile));
+		}
+		locFile = new File(locFolder, tag + "-" + ConfigOption.Plugin.LOCALIZATION + ".yml");
+		locConfig = locFile.exists() ? YamlConfiguration.loadConfiguration(locFile) : defLocConfig;
 		aPerm = new Permission("s86powers.assign." + tag, "Allows player to assign " + getName() + ".", PermissionDefault.TRUE);
 		perm = new Permission("s86powers.power." + tag, "Allows player to use  " + getName() + " regardless if assigned or not.", PermissionDefault.FALSE);
 		if (!plugin.getServer().getPluginManager().getPermissions().contains(aPerm)) {
@@ -147,6 +167,14 @@ public abstract class Power implements Comparable<Power>, Listener {
 		if (!plugin.getServer().getPluginManager().getPermissions().contains(perm)) {
 			plugin.getServer().getPluginManager().addPermission(perm);
 		}
+		// Force localization file to populate
+		getTag();
+		getName();
+		getDescription();
+	}
+
+	void addUser(PowerUser user) {
+		users.add(user);
 	}
 	
 	/**
@@ -210,6 +238,63 @@ public abstract class Power implements Comparable<Power>, Listener {
 	protected NamespacedKey createNamespacedKey(String key) {
 		return new NamespacedKey(plugin, tag.toLowerCase() + "." + key);
 	}
+	
+	void disable() {
+		for (PowerUser user : getUsers()) {
+			disable(user);
+		}
+		onDisable();
+		if (Arrays.asList(getClass().getInterfaces()).contains(Listener.class)) {
+			HandlerList.unregisterAll(this);
+		}
+		for (int i : tasks) {
+			if (plugin.getServer().getScheduler().isCurrentlyRunning(i)
+					|| plugin.getServer().getScheduler().isQueued(i)) {
+				plugin.getServer().getScheduler().cancelTask(i);
+			}
+		}
+		tasks.clear();
+		enabled = false;
+	}
+	
+	void disable(PowerUser user) {
+		onDisable(user);
+	}
+	
+	public void enable() {
+		if (Arrays.asList(getClass().getInterfaces()).contains(Listener.class)) {
+			plugin.getServer().getPluginManager().registerEvents(this, plugin);
+		}
+		reload();
+		enabled = true;
+		for (PowerUser user : getUsers()) {
+			enable(user);
+		}
+	}
+	
+	public void enable(PowerUser user) {
+		onEnable(user);
+	}
+	
+	final Permission getAssignPermission() {
+		return aPerm;
+	}
+	
+	String getAuthor() {
+		return manifest.author();
+	}
+	
+	String getConcept() {
+		return manifest.concept();
+	}
+	
+	ItemStack getConsumable() {
+		return consumable;
+	}
+	
+	long getCooldown() {
+		return cooldown;
+	}
 
 	/**
 	 * Gets the config file used by this power to hold info on options and stats.
@@ -218,6 +303,37 @@ public abstract class Power implements Comparable<Power>, Listener {
 	 */
 	public final YamlConfiguration getConfig() {
 		return config;
+	}
+	
+	String getDescription() {
+		return locale("manifest.description", manifest.description());
+	}
+	
+	Object getFieldValue(String option) {
+		Field field = null;
+		Object object = null;
+		try {
+			field = getClass().getDeclaredField(option);
+			field.setAccessible(true);
+			object = field.get(this);
+		} catch (NoSuchFieldException e) {
+			try {
+				field = getClass().getSuperclass().getDeclaredField(option);
+				field.setAccessible(true);
+				object = field.get(this);
+			} catch (NoSuchFieldException e1) { 
+				return null;
+			} catch(IllegalArgumentException | IllegalAccessException e1) {
+				e1.printStackTrace();
+			}
+		} catch (IllegalAccessException | IllegalArgumentException e) {
+			e.printStackTrace();
+		}
+		return object;
+	}
+	
+	Material getIcon() {
+		return manifest.icon();
 	}
 
 	/**
@@ -228,20 +344,16 @@ public abstract class Power implements Comparable<Power>, Listener {
 	protected Power getInstance() {
 		return this;
 	}
-	
-	PowerManifest getManifest() {
-		return manifest;
-	}
 
 	/**
 	 * Gets the proper name of this power, as it appears in the {@link PowerManifest} annotation.
 	 * @return This power's name
 	 */
 	public final String getName() {
-		return manifest.name();
+		return locale("manifest.name", manifest.name());
 	}
-
-	private PowerOption getOption(String path) {
+	
+	PowerOption getOption(String path) {
 		for (PowerOption option : options.keySet()) {
 			if (option.getPath().equalsIgnoreCase(path)) {
 				return option;
@@ -250,7 +362,19 @@ public abstract class Power implements Comparable<Power>, Listener {
 		return null;
 	}
 	
-	private PowerStat getStat(String name) {
+	Map<PowerOption, Object> getOptions() {
+		return options;
+	}
+	
+	Object getOptionValue(PowerOption option) {
+		return options.containsKey(option) ? options.get(option) : null;
+	}
+	
+	ItemStack getRequiredItem() {
+		return item;
+	}
+	
+	PowerStat getStat(String name) {
 		for (PowerStat stat : stats.keySet()) {
 			if (stat.getPath().equalsIgnoreCase(name)) {
 				return stat;
@@ -259,12 +383,28 @@ public abstract class Power implements Comparable<Power>, Listener {
 		return null;
 	}
 	
+	Map<PowerStat, Integer> getStats() {
+		return stats;
+	}
+	
 	public int getStatValue(PowerStat stat) {
 		return stats.containsKey(stat) ? stats.get(stat) : 0;
+	}
+	
+	List<ItemStack> getSupplies() {
+		return supplies;
+	}
+	
+	String getTag() {
+		return locale("manifest.tag", getClass().getSimpleName());
 	}
 
 	public final PowerType getType() {
 		return manifest.type();
+	}
+	
+	 final Permission getUsePermission() {
+		return perm;
 	}
 
 	/**
@@ -305,9 +445,40 @@ public abstract class Power implements Comparable<Power>, Listener {
 		return users;
 	}
 	
+	boolean hasSupply(final int index) {
+		return index >= 0 && index < supplies.size();
+	}
+	
+	boolean isEnabled() {
+		return enabled;
+	}
+	
+	boolean isLocked() {
+		return locked;
+	}
+	
 	protected boolean isTaskLive(int taskId) {
 		return plugin.getServer().getScheduler().isCurrentlyRunning(taskId)
 				|| plugin.getServer().getScheduler().isQueued(taskId);
+	}
+	
+	protected String locale(String path, String defValue) {
+		if (!defLocConfig.contains(path)
+				|| !defLocConfig.getString(path).equals(defValue)) {
+			defLocConfig.set(path, defValue);
+			try {
+				defLocConfig.save(defLocFile);
+				if (ConfigOption.Plugin.SHOW_CONFIG_STATUS) {
+					plugin.log(Level.INFO, LocaleString.SAVE_SUCCESS.build(defLocFile));
+				}
+			} catch (IOException e) {
+				if (ConfigOption.Plugin.SHOW_CONFIG_STATUS) {
+					plugin.log(Level.SEVERE, LocaleString.SAVE_FAIL.build(defLocFile));
+				}
+				e.printStackTrace();
+			}
+		}
+		return locConfig.getString(path, defLocConfig.getString(path));
 	}
 
 	/**
@@ -335,7 +506,7 @@ public abstract class Power implements Comparable<Power>, Listener {
 	protected <O> O option(final String path, final O defValue, final String desc) {
 		PowerOption option = getOption(path);
 		if (option == null) {
-			option = new PowerOption(this, path, defValue, desc);
+			option = new PowerOption(this, path, defValue, locale("options." + path + ".description", desc));
 		}
 		if (!options.containsKey(option)) {
 			if (!config.contains("options." + option.getPath())) {
@@ -347,6 +518,10 @@ public abstract class Power implements Comparable<Power>, Listener {
 		return (O) options.get(option);
 	}
 	
+	void refreshOptions() {
+		options();
+	}
+	
 	/**
 	 * Shortcut method to Register the events of the specified Listener.
 	 * Useful for nested classes with their own events.
@@ -354,6 +529,20 @@ public abstract class Power implements Comparable<Power>, Listener {
 	 */
 	public void registerEvents(Listener listener) {
 		plugin.getServer().getPluginManager().registerEvents(listener, plugin);
+	}
+	
+	void reload() {
+		onEnable();
+		options();
+	}
+	
+	void removeUser(PowerUser user) {
+		onDisable(user);
+		users.remove(user);
+	}
+	
+	void removeSupply(final int index) {
+		supplies.remove(index);
 	}
 	
 	/**
@@ -425,6 +614,51 @@ public abstract class Power implements Comparable<Power>, Listener {
 		}
 	}
 	
+	boolean setEnabled(final boolean enable) {
+		if (!locked) {
+			if (enable) {
+				enable();
+				return true;
+			}
+			else {
+				disable();
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	void setLocked(boolean lock) {
+		locked = lock;
+	}
+	
+	void setOption(PowerOption option, Object value) {
+		options.put(option, value);
+		if (ConfigOption.Plugin.AUTO_SAVE) {
+			saveConfig();
+		}
+		refreshOptions();
+	}
+	
+	void setStatValue(PowerStat stat, int value) {
+		if (stats.containsKey(stat)) {
+			stats.put(stat, value);
+		}
+	}
+	
+	void setSupply(int index, ItemStack stack) {
+		if (index >= supplies.size()) {
+			supplies.add(stack);
+		}
+		else {
+			supplies.set(index, stack);
+		}
+		if (ConfigOption.Plugin.AUTO_SAVE) {
+			saveConfig();
+		}
+		refreshOptions();
+	}
+	
 	/**
 	 * Shortcut method to create debug messages that will show up in the console.
 	 * Messages are prefixed with the power's class name, for easier identification.
@@ -446,7 +680,8 @@ public abstract class Power implements Comparable<Power>, Listener {
 	protected PowerStat stat(String path, int defValue, String description, String reward) {
 		PowerStat stat = getStat(path);
 		if (stat == null) {
-			stat = new PowerStat(this, path, defValue, description, reward);
+			stat = new PowerStat(this, path, defValue, locale("stats." + path + ".description", description),
+					locale("stats." + path + ".reward", reward));
 		}
 		if (!stats.containsKey(stat)) {
 			if (!config.contains("stats." + stat.getPath())) {
@@ -478,16 +713,23 @@ public abstract class Power implements Comparable<Power>, Listener {
 	}
 
 	private void updateUsers() {
-		for (PowerUser user : users) {
-			if (!UserContainer.getContainer(user).hasPower(this)) {
+		for (PowerUser user : Sets.newHashSet(users)) {
+			if (!PowerUserAdapter.getAdapter(user).hasPower(this)) {
 				users.remove(user);
 			}
 		}
 		for (PowerUser user : S86Powers.getConfigManager().getUserList()) {
-			if (UserContainer.getContainer(user).hasPower(this)
+			if (PowerUserAdapter.getAdapter(user).hasPower(this)
 					&& !users.contains(user)) {
 				users.add(user);
 			}
+		}
+	}
+	
+	@EventHandler
+	private void onLoad(ServerLoadEvent event) {
+		for (PowerUser user : getUsers()) {
+			onEnable(user);
 		}
 	}
 

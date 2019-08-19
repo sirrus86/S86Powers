@@ -14,7 +14,7 @@ import me.sirrus86.s86powers.S86Powers;
 import me.sirrus86.s86powers.config.ConfigOption;
 import me.sirrus86.s86powers.localization.LocaleString;
 import me.sirrus86.s86powers.powers.Power;
-import me.sirrus86.s86powers.powers.PowerContainer;
+import me.sirrus86.s86powers.powers.PowerAdapter;
 
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.permissions.Permission;
@@ -45,8 +45,8 @@ public class PowerGroup implements Comparable<PowerGroup> {
 	
 	public void addMember(PowerUser user) {
 		members.add(user);
-		if (!UserContainer.getContainer(user).inGroup(this)) {
-			UserContainer.getContainer(user).addGroup(this);
+		if (!PowerUserAdapter.getAdapter(user).inGroup(this)) {
+			PowerUserAdapter.getAdapter(user).addGroup(this);
 		}
 	}
 	
@@ -71,7 +71,7 @@ public class PowerGroup implements Comparable<PowerGroup> {
 	public void disband() {
 		List<PowerUser> members = Lists.newArrayList(getMembers());
 		for (int i = 0; i < members.size(); i ++) {
-			UserContainer.getContainer(members.get(i)).removeGroup(this);
+			PowerUserAdapter.getAdapter(members.get(i)).removeGroup(this);
 		}
 		cFile.delete();
 	}
@@ -136,12 +136,12 @@ public class PowerGroup implements Comparable<PowerGroup> {
 	
 	public void removeMember(PowerUser user) {
 		members.remove(user);
-		if (UserContainer.getContainer(user).inGroup(this)) {
-			UserContainer.getContainer(user).removeGroup(this);
+		if (PowerUserAdapter.getAdapter(user).inGroup(this)) {
+			PowerUserAdapter.getAdapter(user).removeGroup(this);
 		}
 		for (Power power : powers) {
-			if (!UserContainer.getContainer(user).hasPowerAssigned(power)) {
-				PowerContainer.getContainer(power).disable(user);
+			if (!PowerUserAdapter.getAdapter(user).hasPowerAssigned(power)) {
+				PowerAdapter.getAdapter(power).disable(user);
 			}
 		}
 	}
@@ -149,8 +149,8 @@ public class PowerGroup implements Comparable<PowerGroup> {
 	public void removePower(Power power) {
 		powers.remove(power);
 		for (PowerUser user : members) {
-			if (!UserContainer.getContainer(user).hasPowerAssigned(power)) {
-				PowerContainer.getContainer(power).disable(user);
+			if (!PowerUserAdapter.getAdapter(user).hasPowerAssigned(power)) {
+				PowerAdapter.getAdapter(power).disable(user);
 			}
 		}
 	}
@@ -175,7 +175,7 @@ public class PowerGroup implements Comparable<PowerGroup> {
 			if (!powers.isEmpty()) {
 				List<String> pList = new ArrayList<>();
 				for (Power power : powers) {
-					pList.add(PowerContainer.getContainer(power).getTag());
+					pList.add(PowerAdapter.getAdapter(power).getTag());
 				}
 				config.set("powers", pList);
 			}

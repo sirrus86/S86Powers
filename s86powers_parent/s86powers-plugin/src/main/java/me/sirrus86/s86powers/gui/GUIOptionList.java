@@ -6,7 +6,7 @@ import java.util.List;
 import org.bukkit.ChatColor;
 
 import me.sirrus86.s86powers.localization.LocaleString;
-import me.sirrus86.s86powers.powers.PowerContainer;
+import me.sirrus86.s86powers.powers.PowerAdapter;
 import me.sirrus86.s86powers.powers.PowerOption;
 import me.sirrus86.s86powers.tools.PowerTools;
 
@@ -22,7 +22,7 @@ public class GUIOptionList extends GUIAbstractList<PowerOption> {
 			int index = page * 45 - 45;
 			for (int i = index; i < Math.min(list.size(), index + 45); i ++) {
 				PowerOption option = list.get(i);
-				PowerContainer pCont = PowerContainer.getContainer(option.getPower());
+				PowerAdapter pCont = PowerAdapter.getAdapter(option.getPower());
 				String optionName = option.getPath();
 				String optionDesc = option.getDescription();
 				String optionValue = ChatColor.RESET + LocaleString.VALUE.toString() + ": " + ChatColor.GRAY + pCont.getOptionValue(option).toString();
