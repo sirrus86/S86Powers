@@ -32,6 +32,7 @@ public final class Aquaphile extends Power {
 	private Set<PowerUser> isDolphin, nvList;
 	
 	private boolean canDolphin, heal, nv;
+	private String dolphinOnLand, turnToDolphin, turnToHuman;
 	
 	@Override
 	protected void onEnable() {
@@ -62,6 +63,9 @@ public final class Aquaphile extends Power {
 		canDolphin = option("enable-dolphin-form", true, "Whether dolphin form should be enabled.");
 		heal = option("heal-underwater", true, "Whether users should be healed while underwater.");
 		nv = option("night-vision", true, "Whether users should get night-vision underwater.");
+		dolphinOnLand = locale("message.dolphin-on-land", ChatColor.RED + "You can't become a dolphin on land.");
+		turnToDolphin = locale("message.turn-to-dolphin", ChatColor.GREEN + "You transform into a dolphin.");
+		turnToHuman = locale("message.turn-to-human", ChatColor.YELLOW + "You return to human form.");
 		supplies(item);
 	}
 	
@@ -77,17 +81,17 @@ public final class Aquaphile extends Power {
 				user.getPlayer().playEffect(EntityEffect.ENTITY_POOF);
 				isDolphin.add(user);
 				PowerTools.addDisguise(user.getPlayer(), EntityType.DOLPHIN);
-				user.sendMessage(ChatColor.GREEN + "You transform into a dolphin.");
+				user.sendMessage(turnToDolphin);
 			}
 			else {
-				user.sendMessage(ChatColor.RED + "You can't become a dolphin on land.");
+				user.sendMessage(dolphinOnLand);
 			}
 		}
 		else if (isDolphin.contains(user)) {
 			if (user.isOnline()) {
 				user.getPlayer().playEffect(EntityEffect.ENTITY_POOF);
 				PowerTools.removeDisguise(user.getPlayer());
-				user.sendMessage(ChatColor.YELLOW + "You return to human form.");
+				user.sendMessage(turnToHuman);
 			}
 			isDolphin.remove(user);
 		}
