@@ -32,11 +32,12 @@ import me.sirrus86.s86powers.utils.PowerTime;
 
 @PowerManifest(name = "Polar Blade", type = PowerType.OFFENSE, author = "sirrus86", concept = "bobby16may", version=MCVersion.v1_14, icon=Material.IRON_SWORD,
 	description = "Able to craft Polar Blades. Polar Blades require a sword and snow materials. When crafted, comes equipped with a Sharpness enchant. Attacks with a Polar Blade also slow enemies.")
-public class PolarBlade extends Power {
+public final class PolarBlade extends Power {
 
 	private final EnumSet<Material> snowMats = EnumSet.of(Material.ICE, Material.SNOWBALL, Material.SNOW_BLOCK);
 	private int maxSharp;
 	private long slowDur;
+	private String slowDesc;
 	
 	private final NamespacedKey isPolar = createNamespacedKey("is-polar-blade"),
 			slowFactor = createNamespacedKey("slow-factor");
@@ -45,6 +46,7 @@ public class PolarBlade extends Power {
 	protected void options() {
 		maxSharp = option("maximum-sharpness", 8, "Maximum sharpness enchant that can be applied to a Polar Blade.");
 		slowDur = option("slowness-duration", PowerTime.toMillis(5, 0), "Amount of time slowness effect lasts.");
+		slowDesc = locale("message.slowness-descriptor", ChatColor.RED + "Slowness [power] ([time])");
 		supplies(new ItemStack(Material.IRON_SWORD), new ItemStack(Material.ICE, 16), new ItemStack(Material.SNOW_BLOCK, 16));
 	}
 	
@@ -72,11 +74,11 @@ public class PolarBlade extends Power {
 		}
 		if (sword != null) {
 			ItemMeta meta = sword.hasItemMeta() ? item.getItemMeta() : Bukkit.getServer().getItemFactory().getItemMeta(sword.getType());
-			meta.setDisplayName(ChatColor.RESET + "Polar Blade");
+			meta.setDisplayName(ChatColor.RESET + this.getName());
 			meta.getPersistentDataContainer().set(isPolar, PersistentDataType.BYTE, (byte) 0x1);
 			if (slow > 0) {
 				meta.getPersistentDataContainer().set(slowFactor, PersistentDataType.INTEGER, slow - 1);
-				String slowing = ChatColor.RED + "Slowness " + PowerTools.getRomanNumeral(slow) + " (" + PowerTime.asClock(slowDur, false, false, true, true, false) + ")";
+				String slowing = slowDesc.replace("[power]", PowerTools.getRomanNumeral(slow)).replace("[time]", PowerTime.asClock(slowDur, false, false, true, true, false));
 				meta.setLore(Lists.newArrayList(slowing));
 			}
 			if (sharp > 0) {

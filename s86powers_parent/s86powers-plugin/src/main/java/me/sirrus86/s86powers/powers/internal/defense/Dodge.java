@@ -21,12 +21,13 @@ import me.sirrus86.s86powers.users.PowerUser;
 
 @PowerManifest(name = "Dodge", type = PowerType.DEFENSE, author = "sirrus86", concept = "n33dy1", icon=Material.ENDER_EYE,
 	description = "Always have a [base]% chance to dodge melee attacks. Chance to dodge increases as you fail to dodge attacks, up to a maximum of [max]%. Upon death your dodge chance resets back to [base]%.")
-public class Dodge extends Power {
+public final class Dodge extends Power {
 
 	private Map<PowerUser, Double> dodge;
 	
 	private double base, dpl, max;
 	private int steps;
+	private String chanceDecrease, chanceIncrease, playerDodged, youDodged;
 	
 	@Override
 	protected void onEnable() {
@@ -45,6 +46,10 @@ public class Dodge extends Power {
 		base = option("base-dodge-chance", 15.0D, "Minimum dodge chance while using this power.");
 		max = option("maximum-dodge-chance", 75.0D, "Maximum dodge chance while using this power.");
 		steps = option("increment-steps", 15, "Number of times dodge chance can increment.");
+		chanceDecrease = locale("message.dodge-chance-decrease", ChatColor.RED + "Dodge chance decreased to [amount]%.");
+		chanceIncrease = locale("message.dodge-chance-increase", ChatColor.GREEN + "Dodge chance increased to [amount]%.");
+		playerDodged = locale("message.player-dodged", ChatColor.RED + "[player] dodged your attack.");
+		youDodged = locale("message.you-dodged", ChatColor.GREEN + "You dodged [name]'s attack!");
 		dpl = (max - base) / steps;
 	}
 	
@@ -61,10 +66,10 @@ public class Dodge extends Power {
 				if (chance < dodge.get(user) / 100.0D) {
 					String name = event.getDamager().getCustomName() != null ? event.getDamager().getCustomName() : event.getDamager().getClass().getSimpleName().replace("Craft", "");
 					if (event.getDamager() instanceof Player) {
-						getUser(((Player)event.getDamager())).sendMessage(ChatColor.RED + user.getPlayer().getName() + " dodged your attack.");
+						getUser(((Player)event.getDamager())).sendMessage(playerDodged.replace("[player]", user.getPlayer().getName()));
 						name = ((Player) event.getDamager()).getDisplayName() + ChatColor.GREEN;
 					}
-					user.sendMessage(ChatColor.GREEN + "You dodged " + name + "'s attack!");
+					user.sendMessage(youDodged.replace("[name]", name));
 					PowerTools.playParticleEffect(user.getPlayer().getLocation(), Particle.CLOUD);
 					Vector difference = user.getPlayer().getLocation().clone().subtract(event.getDamager().getLocation()).toVector();
 					user.getPlayer().setVelocity(difference);
@@ -73,7 +78,7 @@ public class Dodge extends Power {
 				else if (dodge.get(user) < max) {
 					double newDodge = dodge.get(user) + dpl;
 					dodge.put(user, newDodge <= max ? newDodge : max);
-					user.sendMessage(ChatColor.GREEN + "Dodge chance increased to " + dodge.get(user) + "%.");
+					user.sendMessage(chanceIncrease.replace("[amount]", Double.toString(dodge.get(user))));
 				}
 			}
 		}
@@ -84,7 +89,7 @@ public class Dodge extends Power {
 		PowerUser user = getUser(event.getEntity());
 		if (user.allowPower(this)) {
 			dodge.put(user, base);
-			user.sendMessage(ChatColor.RED + "Dodge chance decreased to " + dodge.get(user) + "%.");
+			user.sendMessage(chanceDecrease.replace("[amount]", Double.toString(dodge.get(user))));
 		}
 	}
 

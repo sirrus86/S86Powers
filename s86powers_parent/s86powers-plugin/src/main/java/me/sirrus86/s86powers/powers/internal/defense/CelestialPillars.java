@@ -33,7 +33,7 @@ import me.sirrus86.s86powers.utils.PowerTime;
 
 @PowerManifest(name = "Celestial Pillars", type = PowerType.DEFENSE, author = "sirrus86", concept = "TotalPotato", icon=Material.SEA_LANTERN,
 	description = "[act:item]ing the top of a block while holding [item][consume] consumes it, then[/consume] creates a circle of pillars around you. Entities within the circle are trapped inside, while entities outside the pillar cannot enter. You may pass beyond your own pillars. Pillars last for [pDur]. [cooldown] cooldown.")
-public class CelestialPillars extends Power {
+public final class CelestialPillars extends Power {
 
 	private Map<PowerUser, Pillar> pillars, sPillars;
 	private Map<FallingBlock, PowerUser> falling;

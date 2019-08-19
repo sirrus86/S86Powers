@@ -30,11 +30,12 @@ import me.sirrus86.s86powers.utils.PowerTime;
 
 @PowerManifest(name = "Phasewalk", type = PowerType.DEFENSE, author = "sirrus86", concept = "FSCarver", icon=Material.PHANTOM_MEMBRANE,
 	description = "[act:item]ing while holding [item] phases you into another reality, becoming invisible to all nearby enemies[consume], consuming the [item] in the process[/consume]. While phased you're immune to damage, your speed increases, and you can move through walls one block deep. [act:item]ing [item] again unphases you, mildly damaging nearby enemies.[destabilize] Your Phasewalk will begin destabilizing if you don't unphase within [destabTimer], consuming held [item] every [destabFreq] thereafter.[/destabilize] [cooldown] cooldown.")
-public class Phasewalk extends Power {
+public final class Phasewalk extends Power {
 
 	private Set<PowerUser> destabilizing;
 	private Map<PowerUser, Integer> tasks;
 	
+	private String beginDestab, phaseBack, phaseOut;
 	private boolean consume, destabilize;
 	private long destabFreq, destabTimer;
 	private int speedDegree;
@@ -61,6 +62,9 @@ public class Phasewalk extends Power {
 		destabTimer = option("destabilize.duration", PowerTime.toMillis(30, 0), "How long before destabilization should occur after power is first used.");
 		item = option("item", new ItemStack(Material.PHANTOM_MEMBRANE, 1), "Item used to trigger phasewalking, as well as the item consumed if it destabilizes.");
 		speedDegree = option("run-speed", 1, "Level of speed increase while power is active.");
+		beginDestab = locale("message.begin-destabilizing", ChatColor.RED + "Phasewalk begins destabilizing.");
+		phaseBack = locale("message.phase-back", ChatColor.RED + "You phase back into reality.");
+		phaseOut = locale("message.phase-out", ChatColor.GREEN + "You phase out of reality...");
 		supplies(new ItemStack(item.getType(), item.getMaxStackSize()));
 	}
 	
@@ -70,7 +74,7 @@ public class Phasewalk extends Power {
 			@Override
 			public void run() {
 				if (!destabilizing.contains(user)) {
-					user.sendMessage(ChatColor.RED + "Phasewalk begins destabilizing.");
+					user.sendMessage(beginDestab);
 					destabilizing.add(user);
 				}
 				if (user.getPlayer().getInventory().containsAtLeast(item, 1)) {
@@ -87,7 +91,7 @@ public class Phasewalk extends Power {
 	}
 	
 	private void unphase(PowerUser user) {
-		user.sendMessage(ChatColor.RED + "You phase back into reality.");
+		user.sendMessage(phaseBack);
 		user.removePotionEffect(PotionEffectType.NIGHT_VISION);
 		user.removePotionEffect(PotionEffectType.SPEED);
 		destabilizing.remove(user);
@@ -137,7 +141,7 @@ public class Phasewalk extends Power {
 					user.addPotionEffect(new PotionEffect(PotionEffectType.NIGHT_VISION, Integer.MAX_VALUE, 0));
 					user.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, Integer.MAX_VALUE, speedDegree));
 					PowerTools.addGhost(user.getPlayer());
-					user.sendMessage(ChatColor.GREEN + "You phase out of reality...");
+					user.sendMessage(phaseOut);
 					if (consume) {
 						event.consumeItem();
 					}

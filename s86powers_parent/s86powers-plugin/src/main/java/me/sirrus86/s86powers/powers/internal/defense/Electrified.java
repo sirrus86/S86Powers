@@ -19,7 +19,7 @@ import me.sirrus86.s86powers.utils.PowerTime;
 
 @PowerManifest(name = "Electrified", type = PowerType.DEFENSE, author = "sirrus86", concept = "vashvhexx", icon=Material.GLOWSTONE_DUST,
 	description = "Immune to lightning. Enemies who attack you with melee attacks while you are blocking are struck by lightning. [cooldown] cooldown.")
-public class Electrified extends Power {
+public final class Electrified extends Power {
 
 	private double lDmg;
 	

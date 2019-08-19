@@ -55,7 +55,7 @@ import me.sirrus86.s86powers.users.PowerUser;
 
 @PowerManifest(name = "Mob Catcher", type = PowerType.DEFENSE, author = "sirrus86", concept = "kamyarm007", version = MCVersion.v1_14, icon=Material.ZOMBIE_SPAWN_EGG,
 	description = "[act:item]ing while holding [item] throws it. If it hits a capturable entity, it will be stored in the [item] which is returned to you. [act:item]ing a [item] with a stored entity will thorw it, causing it to expel the stored entity on contact.")
-public class MobCatcher extends Power {
+public final class MobCatcher extends Power {
 
 	private final Set<EntityType> capturable = EnumSet.of(EntityType.BAT, EntityType.BLAZE, EntityType.CAT, EntityType.CAVE_SPIDER, EntityType.CHICKEN,
 			EntityType.COW, EntityType.CREEPER, EntityType.DOLPHIN, EntityType.DROWNED, EntityType.ENDERMAN, EntityType.ENDERMITE, EntityType.FOX,
@@ -89,6 +89,7 @@ public class MobCatcher extends Power {
 	private Map<Snowball, PowerUser> eggOwners;
 	private Map<Item, PowerUser> eggsOnGround;
 	
+	private String cantCapTamed;
 	private boolean captureTamed;
 	private PowerStat eggsThrown;
 	
@@ -110,6 +111,7 @@ public class MobCatcher extends Power {
 				allowCapture.add(eType);
 			}
 		}
+		cantCapTamed = locale("message.cant-capture-tamed", ChatColor.RED + "You can't capture entities tamed by other players.");
 		supplies(new ItemStack(item.getType(), item.getMaxStackSize()));
 	}
 	
@@ -288,7 +290,7 @@ public class MobCatcher extends Power {
 							&& entity instanceof Tameable
 							&& ((Tameable)entity).getOwner() != null
 							&& ((Tameable)entity).getOwner() != user.getPlayer()) {
-						user.getPlayer().sendMessage(ChatColor.RED + "You can't capture entities tamed by other players.");
+						user.getPlayer().sendMessage(cantCapTamed);
 					}
 				}
 			}

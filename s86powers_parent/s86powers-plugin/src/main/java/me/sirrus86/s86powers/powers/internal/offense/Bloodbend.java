@@ -29,7 +29,7 @@ import me.sirrus86.s86powers.utils.PowerTime;
 
 @PowerManifest(name = "Bloodbend", type = PowerType.OFFENSE, author = "sirrus86", concept = "TheClownOfCrime", icon=Material.GHAST_TEAR,
 	description = "[act:item]ing an entity while holding [item] allows you to momentarily control them, freezing and levitating them while you drain their blood. This damages them while restoring your own hunger, then health. Does not work on undead. Can only be used against a given entity once every [vCD]. [cooldown] cooldown.")
-public class Bloodbend extends Power {
+public final class Bloodbend extends Power {
 
 	private Map<LivingEntity, Long> vCooldown;
 	private Set<BendTarget> targets;
@@ -37,6 +37,7 @@ public class Bloodbend extends Power {
 	private double dmg, heal, range;
 	private long dur, vCD;
 	private int freq;
+	private String targetRecent;
 	
 	@Override
 	protected void onEnable() {
@@ -63,6 +64,7 @@ public class Bloodbend extends Power {
 		item = option("item", new ItemStack(Material.GHAST_TEAR), "Item required to use power.");
 		range = option("range", 7.5D, "Maximum range which power can be used on targets.");
 		vCD = option("victim-cooldown", PowerTime.toMillis(15, 0), "Amount of time before an entity can be targetted again.");
+		targetRecent = locale("message.target-too-recent", ChatColor.RED + "Entity has been targetted too recently.");
 		supplies(item);
 	}
 	
@@ -77,7 +79,7 @@ public class Bloodbend extends Power {
 				user.setCooldown(this, cooldown);
 			}
 			else {
-				user.sendMessage(ChatColor.RED + "Entity has been targetted too recently.");
+				user.sendMessage(targetRecent);
 			}
 		}
 	}

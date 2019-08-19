@@ -31,11 +31,10 @@ import me.sirrus86.s86powers.powers.PowerManifest;
 import me.sirrus86.s86powers.powers.PowerType;
 import me.sirrus86.s86powers.tools.PowerTools;
 import me.sirrus86.s86powers.users.PowerUser;
-import me.sirrus86.s86powers.users.UserContainer;
 
 @PowerManifest(name = "Neutralizer Beacon", type = PowerType.UTILITY, author = "sirrus86", concept = "sirrus86", icon=Material.LAPIS_BLOCK,
 	description = "Neutralizer beacons can be created by placing a redstone torch on top of a lapis block and a lever on one of the sides. The beacon is active so long as it remains intact and the torch is lit. While active, all players who come within [radius] meters of the beacon are unable to use powers.")
-public class NeutralizerBeacon extends Power {
+public final class NeutralizerBeacon extends Power {
 
 	private Set<Beacon> beacons;
 	
@@ -43,6 +42,7 @@ public class NeutralizerBeacon extends Power {
 	
 	private boolean destructable, immuneToOwn, showAura;
 	private double radius;
+	private String cantDestroy;
 	
 	@Override
 	protected void onEnable() {
@@ -62,6 +62,7 @@ public class NeutralizerBeacon extends Power {
 		immuneToOwn = option("immune-to-own-beacons", false, "Whether users should be immune to their own beacons.");
 		radius = option("radius", 50.0D, "Radius of the neutralizing field from the beacon.");
 		showAura = option("show-aura", false, "Whether to show the aura of an active beacon.");
+		cantDestroy = locale("message.cant-destroy-others", ChatColor.RED + "You can't destroy someone else's beacon.");
 		loadBeacons();
 	}
 	
@@ -211,7 +212,7 @@ public class NeutralizerBeacon extends Power {
 					erase();
 				}
 				else {
-					user.sendMessage(ChatColor.RED + "You can't destroy someone else's beacon.");
+					user.sendMessage(cantDestroy);
 					event.setCancelled(true);
 				}
 			}
@@ -223,17 +224,17 @@ public class NeutralizerBeacon extends Power {
 					&& event.getTo().distanceSquared(event.getFrom()) > 0.0D) {
 				PowerUser user = getUser(event.getPlayer());
 				if (event.getTo().getWorld() != this.lapis.getWorld()) {
-					UserContainer.getContainer(user).removeBeacon(this);
+					user.removeBeacon(this);
 				}
 				else {
 					if (lapis.getLocation().clone().add(0.5D, 0.5D, 0.5D).distanceSquared(event.getTo()) < radius * radius
 							&& active
 							&& (owner != user || !immuneToOwn)) {
-						UserContainer.getContainer(user).addBeacon(this);
+						user.addBeacon(this);
 					}
 					else if (lapis.getLocation().clone().add(0.5D, 0.5D, 0.5D).distanceSquared(event.getTo()) >= radius * radius
 									|| !active) {
-						UserContainer.getContainer(user).removeBeacon(this);
+						user.removeBeacon(this);
 					}
 				}
 			}
@@ -258,10 +259,10 @@ public class NeutralizerBeacon extends Power {
 				PowerUser user = getUser(player);
 				if (this.active
 						&& (this.owner != user || !immuneToOwn)) {
-					UserContainer.getContainer(user).addBeacon(this);
+					user.addBeacon(this);
 				}
 				else {
-					UserContainer.getContainer(user).removeBeacon(this);
+					user.removeBeacon(this);
 				}
 			}
 		}

@@ -46,7 +46,7 @@ import me.sirrus86.s86powers.utils.PowerTime;
 
 @PowerManifest(name = "Auto Gun", type = PowerType.OFFENSE, author = "sirrus86", concept = "sirrus86", icon=Material.DISPENSER,
 	description = "[act:item]ing against a solid block while holding [item] will place a turret against that block. Turrets will search out and fire upon any living targets within [range] blocks.")
-public class AutoGun extends Power {
+public final class AutoGun extends Power {
 
 	private Map<PowerUser, List<Turret>> turrets;
 

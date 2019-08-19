@@ -18,7 +18,7 @@ import me.sirrus86.s86powers.utils.PowerTime;
 
 @PowerManifest(name = "Acid Blood", type = PowerType.PASSIVE, author = "sirrus86", concept = "Gamekills99", icon=Material.EXPERIENCE_BOTTLE,
 	description = "Absorb [absorb]% of incoming poison damage.[afflict] When struck by a melee attack, attacker becomes poisoned for [affDur].[/afflict]")
-public class AcidBlood extends Power {
+public final class AcidBlood extends Power {
 
 	private double absorb;
 	private long affDur;

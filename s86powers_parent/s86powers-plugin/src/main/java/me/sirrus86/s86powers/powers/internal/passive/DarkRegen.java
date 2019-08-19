@@ -25,7 +25,7 @@ import me.sirrus86.s86powers.utils.PowerTime;
 
 @PowerManifest(name = "Dark Regen", type = PowerType.PASSIVE, author = "sirrus86", concept = "sirrus86", icon=Material.END_CRYSTAL,
 	description = "[regenAny]Regenerate [regenHP]health [/regenHP][regenBoth]and [/regenBoth][regenFood]hunger [/regenFood]while in dark areas. [/regenAny][doNV]Gain night vision in dark areas.[/doNV]")
-public class DarkRegen extends Power {
+public final class DarkRegen extends Power {
 
 	private Set<PowerUser> hasNV;
 	private Map<PowerUser, Integer> regenTask;

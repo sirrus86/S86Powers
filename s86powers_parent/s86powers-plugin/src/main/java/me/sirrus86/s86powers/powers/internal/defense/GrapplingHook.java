@@ -31,7 +31,7 @@ import me.sirrus86.s86powers.utils.PowerTime;
 
 @PowerManifest(name = "Grappling Hook", type = PowerType.DEFENSE, author = "sirrus86", concept = "sirrus86", icon=Material.FISHING_ROD,
 	description = "When used on land, the fishing rod works as a grappling hook. Use once to establish a destination, reel in to pull yourself to that location. User has [cooldown] of fall protection after use.[pullHooked] Can also be used to reel in entities.[/pullHooked]")
-public class GrapplingHook extends Power {
+public final class GrapplingHook extends Power {
 
 	private Map<PowerUser, Hook> hooks;
 	private Map<Hook, Integer> tasks;

@@ -41,6 +41,7 @@ public final class Pickpocket extends Power {
 	private double brChance;
 	private boolean dontDrop, goToInv, lookAtThief, repeat;
 	private PowerStat thefts;
+	private String caught, detected, failedToSteal, stealthBroken, triedToSteal;
 	
 	@Override
 	protected void onEnable() {
@@ -64,6 +65,11 @@ public final class Pickpocket extends Power {
 		lookAtThief = option("look-at-thief", true, "Whether players should look at thieves when they are detected.");
 		repeat = option("steal-repeatedly", true, "Whether user can attempt to steal from same non-player target repeatedly.");
 		thefts = stat("items-stolen", 50, "Items stolen", "Stealing items can no longer break stealth.");
+		caught = locale("message.caught-stealing", ChatColor.RED + "You were caught pickpocketing.");
+		detected = locale("message.detected", ChatColor.RED + "You've been detected.");
+		failedToSteal = locale("message.failed-to-steal", ChatColor.RED + "Failed to steal anything.");
+		stealthBroken = locale("message.stealth-broken", ChatColor.RED + "Your stealth was broken.");
+		triedToSteal = locale("message.tried-to-steal", ChatColor.RED + "[name] tried to steal from you!");
 	}
 	
 	private void removeStealth(PowerUser user) {
@@ -106,7 +112,7 @@ public final class Pickpocket extends Power {
 			PowerUser user = getUser((Player) event.getEntity());
 			if (user.allowPower(this)
 					&& stealth.contains(user)) {
-				user.sendMessage(ChatColor.RED + "Your stealth was broken.");
+				user.sendMessage(stealthBroken);
 				removeStealth(user);
 			}
 		}
@@ -126,7 +132,7 @@ public final class Pickpocket extends Power {
 			PowerUser user = getUser((Player) event.getTarget());
 			if (user.allowPower(this)
 					&& stealth.contains(user)) {
-				user.sendMessage(ChatColor.RED + "You've been detected.");
+				user.sendMessage(detected);
 				removeStealth(user);
 			}
 		}
@@ -162,12 +168,12 @@ public final class Pickpocket extends Power {
 							}
 							else if (target instanceof Player) {
 								PowerUser victim = getUser((Player) target);
-								victim.sendMessage(ChatColor.RED + user.getName() + ChatColor.RED + " tried to steal from you!");
+								victim.sendMessage(triedToSteal.replace("[name]", user.getName()));
 								if (lookAtThief) {
 									PowerTools.setLook((Player) target, user.getPlayer().getEyeLocation());
 								}
 							}
-							user.sendMessage(ChatColor.RED + "You were caught pickpocketing.");
+							user.sendMessage(caught);
 							removeStealth(user);
 						}
 						if (!(target instanceof Player)
@@ -178,7 +184,7 @@ public final class Pickpocket extends Power {
 						user.setCooldown(this, cooldown);
 					}
 					else {
-						user.sendMessage(ChatColor.RED + "Failed to steal anything.");
+						user.sendMessage(failedToSteal);
 					}
 				}
 			}

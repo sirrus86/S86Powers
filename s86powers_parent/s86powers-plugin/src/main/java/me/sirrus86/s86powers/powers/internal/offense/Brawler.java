@@ -24,7 +24,7 @@ import me.sirrus86.s86powers.utils.PowerTime;
 
 @PowerManifest(name = "Brawler", type = PowerType.OFFENSE, author = "sirrus86", concept = "diamondmario", icon = Material.DAMAGED_ANVIL,
 	description = "All barehanded attacks deal [dmgIncr]% normal damage. Barehanded attacks while crouching will slow the target for [slowDur], while attacks within [uppercutBuffer] of rising will uppercut them into the air. Falling enemies above you can be juggled for additional damage.")
-public class Brawler extends Power {
+public final class Brawler extends Power {
 
 	private Map<PowerUser, Long> canUppercut;
 	

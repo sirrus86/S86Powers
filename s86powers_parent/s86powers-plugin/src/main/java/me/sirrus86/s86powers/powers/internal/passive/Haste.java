@@ -14,7 +14,7 @@ import me.sirrus86.s86powers.users.PowerUser;
 
 @PowerManifest(name = "Haste", type = PowerType.PASSIVE, author = "sirrus86", concept = "JJoiler", icon=Material.ELYTRA,
 	description = "Perform hand-related tasks (mining, digging, attacking, etc) much faster than other players.")
-public class Haste extends Power {
+public final class Haste extends Power {
 
 	private Set<PowerUser> hasHaste;
 	private int deg;

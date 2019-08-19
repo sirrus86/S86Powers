@@ -31,7 +31,7 @@ import me.sirrus86.s86powers.utils.PowerTime;
 
 @PowerManifest(name = "Ore Detector", type = PowerType.PASSIVE, author = "sirrus86", concept = "sirrus86", icon=Material.COMPASS,
 	description = "While holding [item] in either hand, nearby ore blocks within [range] blocks will become visible.")
-public class OreDetector extends Power {
+public final class OreDetector extends Power {
 
 	private Set<Material> detectable = EnumSet.of(Material.COAL_ORE, Material.DIAMOND_ORE, Material.EMERALD_ORE, Material.GOLD_ORE,
 			Material.IRON_ORE, Material.LAPIS_ORE, Material.NETHER_QUARTZ_ORE, Material.REDSTONE_ORE);

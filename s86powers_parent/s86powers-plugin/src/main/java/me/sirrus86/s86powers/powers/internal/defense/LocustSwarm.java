@@ -37,7 +37,7 @@ import me.sirrus86.s86powers.utils.PowerTime;
 
 @PowerManifest(name = "Locust Swarm", type = PowerType.DEFENSE, author = "sirrus86", concept = "sirrus86", icon=Material.STONE,
 	description = "[act:item]ing while holding [item] will cause Silverfish to break from any nearby [infestOnly]infested [/infestOnly]stone blocks, targeting nearby entities at random. After [lifespan], spawned Silverfish reform into blocks. [cooldown] cooldown.")
-public class LocustSwarm extends Power {
+public final class LocustSwarm extends Power {
 
 	private final EnumSet<Material> sBlocks = EnumSet.of(Material.CHISELED_STONE_BRICKS, Material.COBBLESTONE, Material.CRACKED_STONE_BRICKS,
 			Material.INFESTED_CHISELED_STONE_BRICKS, Material.INFESTED_COBBLESTONE, Material.INFESTED_CRACKED_STONE_BRICKS,
@@ -73,9 +73,10 @@ public class LocustSwarm extends Power {
 		infestOnly = option("infested-only", true, "Whether only infested stone blocks should spawn Silverfish. If false, all nearby stone blocks will spawn them.");
 		item = option("item", new ItemStack(Material.ROTTEN_FLESH, 1), "Item used to summon silverfish.");
 		lifespan = option("silverfish-lifespan", PowerTime.toMillis(15, 0), "How long before silverfish should despawn or reform.");
-		summonCount = stat("summon-count", 100, "Silverfish summoned", "Can now mine infested stone using a Silk Touch pickaxe. Left-clicking while holding a stack of infested stone in your main hand will cause the entire stack to hatch.");
 		summonMax = option("summon-maximum", 15, "Maximum number of silverfish that can be summoned at one time.");
 		summonRad = option("summon-radius", 10.0D, "Radius at which silverfish are summoned.");
+		summonCount = stat("summon-count", 100, "Silverfish summoned",
+				"Can now mine infested stone using a Silk Touch pickaxe. Left-clicking while holding a stack of infested stone in your main hand will cause the entire stack to hatch.");
 		supplies(item);
 	}
 	
