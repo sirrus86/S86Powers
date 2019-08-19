@@ -27,7 +27,7 @@ import me.sirrus86.s86powers.utils.PowerTime;
 
 @PowerManifest(name = "Pyro Bow", type = PowerType.OFFENSE, author = "sirrus86", concept = "FyreCat", icon = Material.BOW,
 	description = "All arrows fired ignite their targets[igniteBlocks], or the block they hit if they miss[/igniteBlocks].[disableIfWet] Cannot use power if you've been in water or rain within the last [cooldown].[/disableIfWet]")
-public class PyroBow extends Power {
+public final class PyroBow extends Power {
 
 	private Map<Arrow, Boolean> arrows;
 	private Map<Arrow, Integer> tasks;

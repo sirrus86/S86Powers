@@ -161,8 +161,9 @@ public class BlockListener implements Listener {
 		if (event.getBlock() != null
 				&& event.getBlock().getType() == Material.AIR) {
 			Block block = event.getBlock();
-			BlockPlaceEvent bEvent = new BlockPlaceEvent(block, block.getState(), block.getRelative(event.getBlockFace().getOppositeFace()), new ItemStack(Material.FIRE),
-					event.getUser().getPlayer(), true, EquipmentSlot.HAND);
+			BlockPlaceEvent bEvent = new BlockPlaceEvent(block, block.getState(),
+					event.getBlockFace() != null ? block.getRelative(event.getBlockFace().getOppositeFace()) : block,
+					new ItemStack(Material.FIRE), event.getUser().getPlayer(), true, EquipmentSlot.HAND);
 			plugin.getServer().getPluginManager().callEvent(bEvent);
 			if (!bEvent.isCancelled()) {
 				block.setType(Material.FIRE);
