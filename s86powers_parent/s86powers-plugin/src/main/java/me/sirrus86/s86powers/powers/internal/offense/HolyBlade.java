@@ -10,10 +10,10 @@ import org.bukkit.entity.Zombie;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
+import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.Vector;
 
-import me.sirrus86.s86powers.events.PowerUseEvent;
 import me.sirrus86.s86powers.powers.Power;
 import me.sirrus86.s86powers.powers.PowerManifest;
 import me.sirrus86.s86powers.powers.PowerType;
@@ -23,7 +23,7 @@ import me.sirrus86.s86powers.utils.PowerTime;
 
 @PowerManifest(name = "Holy Blade", type = PowerType.OFFENSE, author = "sirrus86", concept = "onlycoops", icon=Material.GOLDEN_SWORD,
 	description = "[wItem][act:item]ing while holding [item][/wItem][wMany] or [/wMany][wSword]attacking with any sword[/wSword] creates a beam of light which shoots in the same direction. This beam deals [dmg] damage[killUndead], and will instantly kill Zombies, Skeletons and PigZombies[/killUndead]. [cooldown] cooldown.")
-public class HolyBlade extends Power {
+public final class HolyBlade extends Power {
 
 	private double dmg;
 	private int range;
@@ -45,23 +45,28 @@ public class HolyBlade extends Power {
 		wMany = wItem && wSword;
 		supplies(item);
 	}
-	
+
 	@SuppressWarnings("deprecation")
-	@EventHandler(ignoreCancelled = true)
-	private void onUse(PowerUseEvent event) {
-		if (event.getPower() == this) {
-			PowerUser user = event.getUser();
-			if (user.getCooldown(this) <= 0) {
-				if (!swordWear
-						|| !PowerTools.isSword(event.getItem())
-						|| event.getItem().getDurability() < event.getItem().getType().getMaxDurability()) {
-					if (swordWear
-							&& PowerTools.isSword(event.getItem())) {
-						event.getItem().setDurability((short) (event.getItem().getDurability() + 1));
-					}
-					new Beam(user, range);
-					user.setCooldown(this, cooldown);
+	@EventHandler
+	private void onUse(PlayerInteractEvent event) {
+		PowerUser user = getUser(event.getPlayer());
+		if (user.allowPower(this)
+				&& event.getAction().name().startsWith("LEFT_CLICK")
+				&& ((wSword && event.getItem() != null && PowerTools.isSword(event.getItem()))
+						|| (event.getItem() != null && event.getItem().getType() == item.getType()))) {
+			if (user.getCooldown(this) <= 0L) {
+				if ((!event.getItem().hasItemMeta()
+						|| !event.getItem().getItemMeta().isUnbreakable())
+							&& swordWear
+							&& PowerTools.hasDurability(event.getItem())
+							&& event.getItem().getDurability() < event.getItem().getType().getMaxDurability()) {
+					event.getItem().setDurability((short) (event.getItem().getDurability() + 1));
 				}
+				new Beam(user, range);
+				user.setCooldown(this, cooldown);
+			}
+			else {
+				user.showCooldown(this);
 			}
 		}
 	}
@@ -76,7 +81,7 @@ public class HolyBlade extends Power {
 		
 		protected Beam(PowerUser user, int length) {
 			this.user = user;
-			dir = user.getPlayer().getLocation().getDirection();
+			dir = user.getPlayer().getEyeLocation().getDirection();
 			this.length = length;
 			selected = user.getPlayer().getEyeLocation().clone().add(dir);
 			tick();
