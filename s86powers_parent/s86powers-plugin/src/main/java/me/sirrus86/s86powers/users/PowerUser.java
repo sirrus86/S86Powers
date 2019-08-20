@@ -804,7 +804,8 @@ public final class PowerUser implements Comparable<PowerUser> {
 			for (int i = 0; i < pCont.getSupplies().size(); i ++) {
 				ItemStack item = pCont.getSupplies().get(i);
 				for (ItemStack stack : getPlayer().getInventory().getContents()) {
-					if (stack != null) {
+					if (stack != null
+							&& item != null) {
 						if (PowerTools.usesDurability(item)
 								&& item.getType() == stack.getType()) {
 							stack.setDurability((short) 0);
