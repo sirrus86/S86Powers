@@ -139,6 +139,7 @@ public enum LocaleString {
 	USE_METRICS_CONFIG("config", "Whether to use metrics."),
 	VIEW_INCOMPLETE_STAT_REWARDS_CONFIG("config", "Whether to show the rewards for stats not completed by users."),
 	
+	BAD_PROTOCOLLIB_VERSION("console", "ProtocolLib v&double or higher is required for S86Powers to work properly! Current version: &string"),
 	DEBUG_POWER("console", "&string is marked as a debug power and was not loaded."),
 	FILE_CREATE_FAIL("console", "Unable to create &file."),
 	INCOMPLETE_POWER("console", "&string is marked as incomplete and was not loaded."),
@@ -282,6 +283,11 @@ public enum LocaleString {
 					&& text.contains("&group")) {
 				PowerGroup group = (PowerGroup) objects[i];
 				text = text.replaceAll("&group", group.getName());
+			}
+			else if (objects[i] instanceof Double
+					&& text.contains("&double")) {
+				double j = (double) objects[i];
+				text = text.replaceAll("&double", Double.toString(j));
 			}
 			else if (objects[i] instanceof Integer
 					&& text.contains("&int")) {

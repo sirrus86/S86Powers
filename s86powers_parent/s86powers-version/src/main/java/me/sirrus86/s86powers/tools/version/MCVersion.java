@@ -7,47 +7,47 @@ public enum MCVersion {
 	/**
 	 * Represents server version 1.13.
 	 */
-	v1_13("v1_13_R1"),
+	v1_13("v1_13_R1", 4.4D),
 	
 	/**
 	 * Represents server version 1.13.1.
 	 */
-	v1_13_1("v1_13_R2"),
+	v1_13_1("v1_13_R2", 4.4D),
 	
 	/**
 	 * Represents server version 1.13.2.
 	 */
-	v1_13_2("v1_13_R2"),
+	v1_13_2("v1_13_R2", 4.4D),
 	
 	/**
 	 * Represents server version 1.14.
 	 */
-	v1_14("v1_14_R1"),
+	v1_14("v1_14_R1", 4.5D),
 	
 	/**
 	 * Represents server version 1.14.1.
 	 */
-	v1_14_1("v1_14_R1"),
+	v1_14_1("v1_14_R1", 4.5D),
 	
 	/**
 	 * Represents server version 1.14.2.
 	 */
-	v1_14_2("v1_14_R1"),
+	v1_14_2("v1_14_R1", 4.5D),
 	
 	/**
 	 * Represents server version 1.14.3.
 	 */
-	v1_14_3("v1_14_R1"),
+	v1_14_3("v1_14_R1", 4.5D),
 	
 	/**
 	 * Represents server version 1.14.4.
 	 */
-	v1_14_4("v1_14_R1"),
+	v1_14_4("v1_14_R1", 4.5D),
 	
 	/**
 	 * Represents an unsupported server version.
 	 */
-	UNSUPPORTED("unsupported");
+	UNSUPPORTED("unsupported", 0.0D);
 	
 	/**
 	 * Represents the server version currently running.
@@ -55,9 +55,11 @@ public enum MCVersion {
 	public static final MCVersion CURRENT_VERSION = getCurrentVersion();
 	
 	private final String path;
+	private final double pLibVer;
 	
-	private MCVersion(final String path) {
+	private MCVersion(final String path, final double pLibVer) {
 		this.path = path;
+		this.pLibVer = pLibVer;
 	}
 	
 	private static MCVersion getCurrentVersion() {
@@ -71,6 +73,10 @@ public enum MCVersion {
 	
 	public String getPath() {
 		return this.path;
+	}
+	
+	public double getRequiredProtocolLib() {
+		return this.pLibVer;
 	}
 	
 	public static final boolean isLessThan(MCVersion version) {
