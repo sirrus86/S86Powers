@@ -128,26 +128,36 @@ public class PowerLoader {
     			if (clazz.isAnnotationPresent(PowerManifest.class)) {
     				final PowerManifest manifest = clazz.getAnnotation(PowerManifest.class);
     				if (manifest.type() == null) {
-    					plugin.log(Level.WARNING, LocaleString.INVALID_POWER_TYPE.build(name));
+    					if (ConfigOption.Plugin.SHOW_CONFIG_STATUS) {
+    						plugin.log(Level.WARNING, LocaleString.INVALID_POWER_TYPE.build(name));
+    					}
     				}
     				else if (manifest.name() == "") {
-    					plugin.log(Level.WARNING, LocaleString.INVALID_POWER_NAME.build(name));
+    					if (ConfigOption.Plugin.SHOW_CONFIG_STATUS) {
+    						plugin.log(Level.WARNING, LocaleString.INVALID_POWER_NAME.build(name));
+    					}
     				}
     				else if (manifest.version().ordinal() > MCVersion.CURRENT_VERSION.ordinal()) {
-    					plugin.log(Level.WARNING, LocaleString.INVALID_SERVER_VERSION.build(name, manifest.version()));
+    					if (ConfigOption.Plugin.SHOW_CONFIG_STATUS) {
+    						plugin.log(Level.WARNING, LocaleString.INVALID_SERVER_VERSION.build(name, manifest.version()));
+    					}
     				}
     				else if (manifest.server().ordinal() > MCServer.CURRENT_SERVER.ordinal()) {
-    					plugin.log(Level.WARNING, LocaleString.INVALID_SERVER_SOFTWARE.build(name, manifest.server()));
+    					if (ConfigOption.Plugin.SHOW_CONFIG_STATUS) {
+    						plugin.log(Level.WARNING, LocaleString.INVALID_SERVER_SOFTWARE.build(name, manifest.server()));
+    					}
     				}
     				else if (manifest.incomplete()
     						&& !ConfigOption.Powers.LOAD_INCOMPLETE_POWERS) {
-    					plugin.log(Level.WARNING, LocaleString.INCOMPLETE_POWER.build(name));
+    					if (ConfigOption.Plugin.SHOW_CONFIG_STATUS) {
+    						plugin.log(Level.WARNING, LocaleString.INCOMPLETE_POWER.build(name));
+    					}
     				}
     				else {
     					load(clazz);
     				}
     			}
-    			else {
+    			else if (ConfigOption.Plugin.SHOW_CONFIG_STATUS) {
     				plugin.log(Level.WARNING, LocaleString.INVALID_POWER_MANIFEST.build(name));
     			}
     		}
