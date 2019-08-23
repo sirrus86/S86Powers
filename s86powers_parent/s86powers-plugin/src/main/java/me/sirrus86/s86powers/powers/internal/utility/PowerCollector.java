@@ -39,8 +39,10 @@ import me.sirrus86.s86powers.S86Powers;
 import me.sirrus86.s86powers.config.ConfigOption;
 import me.sirrus86.s86powers.localization.LocaleString;
 import me.sirrus86.s86powers.powers.Power;
+import me.sirrus86.s86powers.powers.PowerAdapter;
 import me.sirrus86.s86powers.powers.PowerManifest;
 import me.sirrus86.s86powers.powers.PowerType;
+import me.sirrus86.s86powers.tools.PowerTools;
 import me.sirrus86.s86powers.users.PowerUser;
 
 @PowerManifest(name = "Power Collector", type = PowerType.UTILITY, author = "sirrus86", concept = "sirrus86", icon=Material.ENCHANTED_BOOK,
@@ -88,7 +90,8 @@ public final class PowerCollector extends Power {
 		ItemMeta meta = stack.hasItemMeta() ? stack.getItemMeta() : Bukkit.getItemFactory().getItemMeta(Material.ENCHANTED_BOOK);
 		meta.setDisplayName(ChatColor.RESET.toString() + power.getType().getColor() + power.getName());
 		meta.getPersistentDataContainer().set(powerKey, PersistentDataType.STRING, power.getClass().getSimpleName());
-		List<String> lore = Collections.singletonList(ChatColor.RESET.toString() + ChatColor.GRAY + "Use to learn " + power.getName() + ".");
+		String powerDesc = PowerTools.getFilteredText(power, PowerAdapter.getAdapter(power).getDescription());
+		List<String> lore = PowerTools.wordSplit(ChatColor.RESET + ChatColor.GRAY.toString(), powerDesc, 30);
 		meta.setLore(lore);
 		stack.setItemMeta(meta);
 		return stack;
