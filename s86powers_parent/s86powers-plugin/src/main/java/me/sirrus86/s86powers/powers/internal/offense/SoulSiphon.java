@@ -27,7 +27,7 @@ import me.sirrus86.s86powers.tools.PowerTools;
 import me.sirrus86.s86powers.users.PowerUser;
 import me.sirrus86.s86powers.utils.PowerTime;
 
-@PowerManifest(name = "Soul Siphon", type = PowerType.OFFENSE, author = "sirrus86", concept = "sirrus86", icon=Material.END_CRYSTAL,
+@PowerManifest(name = "Soul Siphon", type = PowerType.OFFENSE, author = "sirrus86", concept = "sirrus86", icon = Material.END_CRYSTAL, usesPackets = true,
 	description = "[act:item]ing the top of a block while holding [item] will place a Soul Siphon. Soul Siphons will drain health from nearby entities before returning the drained health to you. [cooldown] cooldown.")
 public final class SoulSiphon extends Power {
 

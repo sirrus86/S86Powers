@@ -22,7 +22,7 @@ import me.sirrus86.s86powers.tools.PowerTools;
 import me.sirrus86.s86powers.users.PowerUser;
 import me.sirrus86.s86powers.utils.PowerTime;
 
-@PowerManifest(name = "Shuriken", type = PowerType.OFFENSE, author = "sirrus86", concept = "n33dy1", icon=Material.FLINT,
+@PowerManifest(name = "Shuriken", type = PowerType.OFFENSE, author = "sirrus86", concept = "n33dy1", icon = Material.FLINT, usesPackets = true,
 	description = "[act:item]ing while holding [item] throws it like a shuriken. Shuriken that hit enemies will deal [damage] damage to them.[pEither] If the victim is[pArmor] wearing armor[/pArmor][pBoth] or[/pBoth][pBlock] blocking[/pBlock] it will harmlessly bounce off.[/pEither]")
 public final class Shuriken extends Power {
 

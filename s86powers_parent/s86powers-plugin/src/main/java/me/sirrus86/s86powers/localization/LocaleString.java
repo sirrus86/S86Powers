@@ -153,6 +153,7 @@ public enum LocaleString {
 	LOAD_SUCCESS("console", "Successfully loaded &file."),
 	POWER_LOAD_BLOCKED("console", "&class is blocked and was not loaded."),
 	POWER_LOAD_SUCCESS("console", "&power loaded successfully."),
+	POWER_REQUIRES_PROTOCOLLIB("console", "&string requires ProtocolLib and was not loaded."),
 	POWERS_LOAD_SUCCESS("console", "&int powers loaded successfully."),
 	SAVE_ATTEMPT("console", "Attempting to save &file..."),
 	SAVE_FAIL("console", "Failed to save &file."),

@@ -25,14 +25,16 @@ import me.sirrus86.s86powers.utils.Metrics;
 import me.sirrus86.s86powers.utils.PowerExporter;
 import me.sirrus86.s86powers.utils.PowerLoader;
 
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.PluginCommand;
+import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 
 /**
  * 
  * @author sirrus86
- * @version 5.1.8
+ * @version 5.1.9
  */
 public final class S86Powers extends JavaPlugin {
 	
@@ -41,6 +43,7 @@ public final class S86Powers extends JavaPlugin {
 	private static ConfigManager configManager;
 	private static File groupDir, powerDir, userDir;
 	private static PowerTabCompleter pTC;
+	private static final Plugin protocolLib = Bukkit.getServer().getPluginManager().getPlugin("ProtocolLib");
 	
 	@Override
 	public void onEnable() {
@@ -146,6 +149,10 @@ public final class S86Powers extends JavaPlugin {
 		return powerDir;
 	}
 	
+	public static final Plugin getProtocolLib() {
+		return protocolLib;
+	}
+	
 	/**
 	 * Gets the directory where user config files are stored, specifically {@code plugins\S86_Powers\Users\}.
 	 * <p>
@@ -182,7 +189,7 @@ public final class S86Powers extends JavaPlugin {
 	@Deprecated
 	public final void showDebug(String message) {
 		if (ConfigOption.Plugin.SHOW_DEBUG_MESSAGES) {
-			log(Level.INFO, message);
+			log(Level.WARNING, message);
 		}
 	}
 	

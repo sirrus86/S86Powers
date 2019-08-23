@@ -67,7 +67,7 @@ public final class PowerTools {
 	private static final BlockFace[] radial = { BlockFace.NORTH, BlockFace.NORTH_EAST, BlockFace.EAST, BlockFace.SOUTH_EAST, BlockFace.SOUTH, BlockFace.SOUTH_WEST, BlockFace.WEST, BlockFace.NORTH_WEST };
 
 	private static final NMSLibrary nms = resolveNMS();
-	private static final PacketManager pm = new PacketManager();
+	private static final PacketManager pm = S86Powers.getProtocolLib() != null ? new PacketManager() : null;
 	private static final Random random = new Random();
 	private static final VersionTools vTools = resolveVTools();
 	
@@ -80,6 +80,7 @@ public final class PowerTools {
 	 * @param entity - The entity which needs to be disguised
 	 * @param type - The {@link EntityType} to disguise the entity as
 	 */
+	@PacketManaged
 	public static void addDisguise(Entity entity, EntityType type) {
 		pm.addDisguise(entity, type);
 	}
@@ -94,6 +95,7 @@ public final class PowerTools {
 	 * @param type - The {@link EntityType} to disguise the entity as
 	 * @param meta - Metadata to be supplied with the disguise packet. May be {@code null}
 	 */
+	@PacketManaged
 	public static void addDisguise(Entity entity, EntityType type, Map<Integer, Object> meta) {
 		pm.addDisguise(entity, type, meta);
 	}
@@ -109,6 +111,7 @@ public final class PowerTools {
 	 * @param meta - Metadata to be supplied with the disguise packet. May be {@code null}
 	 * @param data - Extra object data, such as {@link Art} for paintings
 	 */
+	@PacketManaged
 	public static void addDisguise(Entity entity, EntityType type, Map<Integer, Object> meta, Object data) {
 		pm.addDisguise(entity, type, meta, data);
 	}
@@ -122,6 +125,7 @@ public final class PowerTools {
 	 * @param entity - The entity which needs to be disguised
 	 * @param item - An {@link ItemStack} that matches this entity's disguise
 	 */
+	@PacketManaged
 	public static void addDisguise(Entity entity, ItemStack item) {
 		pm.addDisguise(entity, item);
 	}
@@ -135,10 +139,12 @@ public final class PowerTools {
 	 * @param entity - The entity which needs to be disguised
 	 * @param target - The entity to disguise the original entity as
 	 */
+	@PacketManaged
 	public static void addDisguise(Entity entity, Entity target) {
 		pm.addDisguise(entity, target);
 	}
-	
+
+	@PacketManaged
 	public static void addEquipmentDisguise(Entity entity, LivingEntity target) {
 		pm.addEquipmentDisguise(entity, target);
 	}
@@ -151,6 +157,7 @@ public final class PowerTools {
 	 * Ghost effects are not maintained after the server restarts or reloads.
 	 * @param player - Player to apply ghost appearance to
 	 */
+	@PacketManaged
 	public static void addGhost(Player player) {
 		pm.addGhost(player);
 	}
@@ -165,6 +172,7 @@ public final class PowerTools {
 	 * @param color - The color to apply to the block
 	 * @return An instance of the resulting Shulker.
 	 */
+	@PacketManaged
 	public static void addSpectralBlock(Player viewer, Block block, ChatColor color) {
 		pm.addSpectralBlock(viewer, block, color);
 	}
@@ -178,6 +186,7 @@ public final class PowerTools {
 	 * @param block - Block to disguise
 	 * @param material - Material to disguise the block as. Using non-block materials may kick any players who can see it
 	 */
+	@PacketManaged
 	public static void blockDisguise(Block block, Material material) {
 		pm.blockDisguise(block, material);
 	}
@@ -192,6 +201,7 @@ public final class PowerTools {
 	 * @param material - Material to disguise the blocks as. Using non-block materials may kick any players who can see it
 	 * @param meta - Metadata to be applied to the packet. Useful for materials that appear different with metadata (e.g. Wool)
 	 */
+	@PacketManaged
 	public static void blockDisguise(Collection<Block> blocks, Material material, BlockData data) {
 		pm.blockDisguise(blocks, material, data);
 	}	
@@ -200,6 +210,7 @@ public final class PowerTools {
 	 * Removes any disguises from a block, making it appear as it should again.
 	 * @param block - Block to update
 	 */
+	@PacketManaged
 	public static void blockUpdate(Block block) {
 		pm.blockUpdate(block);
 	}
@@ -208,6 +219,7 @@ public final class PowerTools {
 	 * Removes any disguises from a collection of blocks, making them appear as they should again.
 	 * @param blocks - Blocks to update
 	 */
+	@PacketManaged
 	public static void blockUpdate(Collection<Block> blocks) {
 		pm.blockUpdate(blocks);
 	}
@@ -246,10 +258,12 @@ public final class PowerTools {
 	 * @param entity - Entity which will be picking up the item
 	 * @param item - Item to be picked up
 	 */
+	@PacketManaged
 	public static void fakeCollect(Entity entity, Item item) {
 		pm.fakeCollect(entity, item);
 	}
-	
+
+	@PacketManaged
 	public static void fakeExplosion(Location loc, float radius) {
 		pm.fakeExplosion(loc, radius);
 	}
@@ -560,11 +574,13 @@ public final class PowerTools {
 	public static <T extends Entity> T getTargetEntity(Class<T> clazz, Location location, Vector direction, double maxDistance, Predicate<Entity> filter) {
 		return vTools.getTargetEntity(clazz, location, direction, maxDistance, filter);
 	}
-	
+
+	@PacketManaged
 	public static boolean hasDisguise(Block block) {
 		return pm.hasDisguise(block);
 	}
 
+	@PacketManaged
 	public static boolean hasDisguise(Entity entity) {
 		return pm.hasDisguise(entity);
 	}
@@ -606,6 +622,7 @@ public final class PowerTools {
 				&& item.getType().name().endsWith("_CHESTPLATE");
 	}
 
+	@PacketManaged
 	public static boolean isGhost(Player player) {
 		return pm.isGhost(player);
 	}
@@ -687,15 +704,18 @@ public final class PowerTools {
 		nms.unTame(creature);
 		setCamera(player, player);
 	}
-	
+
+	@PacketManaged
 	public static void removeDisguise(Entity entity) {
 		pm.removeDisguise(entity);
 	}
-	
+
+	@PacketManaged
 	public static void removeGhost(Player player) {
 		pm.removeGhost(player);
 	}
-	
+
+	@PacketManaged
 	public static void removeSpectralBlock(Player player, Block block) {
 		pm.removeSpectralBlock(player, block);
 	}
@@ -739,11 +759,13 @@ public final class PowerTools {
 			return vTools;
 		}
 	}
-	
+
+	@PacketManaged
 	public static void setCamera(Player player, Entity entity) {
 		pm.setCamera(player, entity);
 	}
-	
+
+	@PacketManaged
 	public static void setControlling(Player player, LivingEntity entity) {
 		pm.setControlling(player, entity);
 	}
@@ -755,7 +777,8 @@ public final class PowerTools {
 	public static ItemStack setItemGlow(ItemStack item) {
 		return nms.setItemGlow(item);
 	}
-	
+
+	@PacketManaged
 	public static void setLook(Player player, Location loc) {
 		pm.setLook(player, loc);
 	}
@@ -763,7 +786,8 @@ public final class PowerTools {
 	public static void setRotation(Entity entity, float yaw, float pitch) {
 		nms.setRotation(entity, yaw, pitch);
 	}
-	
+
+	@PacketManaged
 	public static void setTamed(Creature entity, PowerUser owner) {
 		if (owner != null) {
 			nms.setTamed(entity, owner.getPlayer());
@@ -779,11 +803,13 @@ public final class PowerTools {
 			}
 		}
 	}
-	
+
+	@PacketManaged
 	public static void showActionBarMessage(Player player, String message) {
 		pm.showActionBarMessage(player, message);
 	}
-	
+
+	@PacketManaged
 	public static void showAsSpectral(Player player, Entity entity, ChatColor color, boolean spectral) {
 		if (spectral) {
 			pm.addSpectralEntity(player, entity, color);
@@ -792,7 +818,8 @@ public final class PowerTools {
 			pm.removeSpectralEntity(player, entity);
 		}
 	}
-	
+
+	@PacketManaged
 	public static void showItemCooldown(Player player, ItemStack item, long cooldown) {
 		pm.showItemCooldown(player, item, cooldown);
 	}

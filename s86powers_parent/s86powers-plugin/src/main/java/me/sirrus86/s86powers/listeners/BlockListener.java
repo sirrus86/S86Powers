@@ -71,7 +71,8 @@ public class BlockListener implements Listener {
 	
 	@EventHandler(ignoreCancelled = true)
 	private void onBreak(BlockBreakEvent event) {
-		if (PowerTools.hasDisguise(event.getBlock())) {
+		if (S86Powers.getProtocolLib() != null
+				&& PowerTools.hasDisguise(event.getBlock())) {
 			PowerTools.blockUpdate(event.getBlock());
 		}
 	}

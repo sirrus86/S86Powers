@@ -729,7 +729,8 @@ public final class PowerUser implements Comparable<PowerUser> {
 	}
 	
 	public void sendMessage(String message) {
-		if (ConfigOption.Users.SHOW_MESSAGES_IN_ACTION_BAR) {
+		if (ConfigOption.Users.SHOW_MESSAGES_IN_ACTION_BAR
+				&& S86Powers.getProtocolLib() != null) {
 			PowerTools.showActionBarMessage(getPlayer(), message);
 		}
 		else {
@@ -750,7 +751,8 @@ public final class PowerUser implements Comparable<PowerUser> {
 				|| !ConfigOption.Admin.BYPASS_COOLDOWN) {
 			cooldowns.put(power, System.currentTimeMillis() + time);
 			if (ConfigOption.Powers.SHOW_COOLDOWN_ON_ITEM
-					&& PowerAdapter.getAdapter(power).getRequiredItem() != null) {
+					&& PowerAdapter.getAdapter(power).getRequiredItem() != null
+					&& S86Powers.getProtocolLib() != null) {
 				PowerTools.showItemCooldown(getPlayer(), PowerAdapter.getAdapter(power).getRequiredItem(), time);
 			}
 		}

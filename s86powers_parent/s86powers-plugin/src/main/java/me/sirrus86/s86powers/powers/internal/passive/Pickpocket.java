@@ -32,7 +32,7 @@ import me.sirrus86.s86powers.tools.PowerTools;
 import me.sirrus86.s86powers.users.PowerUser;
 import me.sirrus86.s86powers.utils.PowerTime;
 
-@PowerManifest(name = "Pickpocket", type = PowerType.PASSIVE, author = "sirrus86", concept = "grimm294", icon = Material.CHEST,
+@PowerManifest(name = "Pickpocket", type = PowerType.PASSIVE, author = "sirrus86", concept = "grimm294", icon = Material.CHEST, usesPackets = true,
 	description = "Sneaking makes you partially invisible. Right-clicking any monster or player while barehanded and sneaking will make you steal a random item from their inventory. Taking items from the target's inventory has a [brChance]% chance to break your stealth. Taking damage will also break stealth. Stealing has a [cooldown] cooldown.")
 public final class Pickpocket extends Power {
 

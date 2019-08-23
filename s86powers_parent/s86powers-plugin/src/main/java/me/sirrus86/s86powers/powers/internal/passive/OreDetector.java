@@ -29,7 +29,7 @@ import me.sirrus86.s86powers.tools.PowerTools;
 import me.sirrus86.s86powers.users.PowerUser;
 import me.sirrus86.s86powers.utils.PowerTime;
 
-@PowerManifest(name = "Ore Detector", type = PowerType.PASSIVE, author = "sirrus86", concept = "sirrus86", icon=Material.COMPASS,
+@PowerManifest(name = "Ore Detector", type = PowerType.PASSIVE, author = "sirrus86", concept = "sirrus86", icon = Material.COMPASS, usesPackets = true,
 	description = "While holding [item] in either hand, nearby ore blocks within [range] blocks will become visible.")
 public final class OreDetector extends Power {
 

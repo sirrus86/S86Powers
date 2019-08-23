@@ -35,7 +35,7 @@ import me.sirrus86.s86powers.tools.PowerTools;
 import me.sirrus86.s86powers.users.PowerUser;
 import me.sirrus86.s86powers.utils.PowerTime;
 
-@PowerManifest(name = "Trickshot", type = PowerType.OFFENSE, author = "sirrus86", concept = "sirrus86", icon = Material.BOW,
+@PowerManifest(name = "Trickshot", type = PowerType.OFFENSE, author = "sirrus86", concept = "sirrus86", icon = Material.BOW, usesPackets = true,
 	description = "While holding a bow at maximum power, targets are highlighted. Upon release, the arrow will attempt to home in on the highlighted target.")
 public final class Trickshot extends Power {
 

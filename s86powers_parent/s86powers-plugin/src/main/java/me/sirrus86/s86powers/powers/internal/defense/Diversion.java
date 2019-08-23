@@ -27,7 +27,7 @@ import me.sirrus86.s86powers.tools.PowerTools;
 import me.sirrus86.s86powers.users.PowerUser;
 import me.sirrus86.s86powers.utils.PowerTime;
 
-@PowerManifest(name = "Diversion", type = PowerType.DEFENSE, author = "sirrus86", concept = "blacknova777", icon=Material.ARMOR_STAND,
+@PowerManifest(name = "Diversion", type = PowerType.DEFENSE, author = "sirrus86", concept = "blacknova777", icon=Material.ARMOR_STAND, usesPackets = true,
 	description = "Upon taking damage from another entity, become invisible while summoning an exact copy of yourself as a diversion to attack the damager. Remain invisible until the diversion dies or despawns [lifespan] later. [cooldown] cooldown.")
 public final class Diversion extends Power {
 

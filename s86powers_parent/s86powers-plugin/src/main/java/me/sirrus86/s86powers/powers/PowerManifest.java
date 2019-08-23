@@ -1,7 +1,9 @@
 package me.sirrus86.s86powers.powers;
 
+import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 import org.bukkit.Material;
 
@@ -11,7 +13,8 @@ import me.sirrus86.s86powers.tools.version.MCVersion;
 /**
  * Annotation which contains unique authoring information about this power. The information provided here is used when players view this power in the plugin's power database.
  */
-@Retention(value = RetentionPolicy.RUNTIME)
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.TYPE)
 public @interface PowerManifest {
 
 	/**
@@ -55,6 +58,12 @@ public @interface PowerManifest {
 	 * The user-friendly name of this power. If the true name of your power should contain non-alphanumeric symbols or spaces, this is where you'd print the name.
 	 */
 	public String name();
+	
+	/**
+	 * Whether this power uses packets. If this power uses packets, it will only load if ProtocolLib is detected. This value is false unless set to true.
+	 * @return false unless otherwise assigned
+	 */
+	public boolean usesPackets() default false;
 	
 	/**
 	 * The minimum required server software for this power to function properly. If not set, Bukkit or greater is required.

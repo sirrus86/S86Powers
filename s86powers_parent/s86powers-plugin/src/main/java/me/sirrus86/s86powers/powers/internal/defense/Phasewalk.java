@@ -28,7 +28,7 @@ import me.sirrus86.s86powers.tools.PowerTools;
 import me.sirrus86.s86powers.users.PowerUser;
 import me.sirrus86.s86powers.utils.PowerTime;
 
-@PowerManifest(name = "Phasewalk", type = PowerType.DEFENSE, author = "sirrus86", concept = "FSCarver", icon=Material.PHANTOM_MEMBRANE,
+@PowerManifest(name = "Phasewalk", type = PowerType.DEFENSE, author = "sirrus86", concept = "FSCarver", icon=Material.PHANTOM_MEMBRANE, usesPackets = true,
 	description = "[act:item]ing while holding [item] phases you into another reality, becoming invisible to all nearby enemies[consume], consuming the [item] in the process[/consume]. While phased you're immune to damage, your speed increases, and you can move through walls one block deep. [act:item]ing [item] again unphases you, mildly damaging nearby enemies.[destabilize] Your Phasewalk will begin destabilizing if you don't unphase within [destabTimer], consuming held [item] every [destabFreq] thereafter.[/destabilize] [cooldown] cooldown.")
 public final class Phasewalk extends Power {
 

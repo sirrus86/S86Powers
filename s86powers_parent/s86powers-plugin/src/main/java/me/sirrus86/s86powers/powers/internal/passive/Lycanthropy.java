@@ -33,7 +33,7 @@ import me.sirrus86.s86powers.tools.PowerTools;
 import me.sirrus86.s86powers.tools.version.MCVersion;
 import me.sirrus86.s86powers.users.PowerUser;
 
-@PowerManifest(name = "Lycanthropy", type = PowerType.PASSIVE, author = "sirrus86", concept = "vashvhexx", icon=Material.RABBIT_HIDE,
+@PowerManifest(name = "Lycanthropy", type = PowerType.PASSIVE, author = "sirrus86", concept = "vashvhexx", icon=Material.RABBIT_HIDE, usesPackets = true,
 	description = "[control]By [act:item]ing while holding [item][/control][noControl]At night during a full moon [/noControl]you change into a wolf. As a wolf[speed] sprinting speed increases,[/speed][nv] you gain night vision,[/nv][either] and[/either] unarmed damage increases by [dmgIncr]%, but you take [ironDmg]% damage from iron tools and weapons, and are unable to wear any armor.[noControl] Effect ends at sunrise.[/noControl]")
 public final class Lycanthropy extends Power {
 

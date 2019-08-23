@@ -94,7 +94,9 @@ public final class HolyBlade extends Power {
 				if (!selected.getBlock().isEmpty()) {
 					BlockBreakEvent event = new BlockBreakEvent(selected.getBlock(), user.getPlayer());
 					callEvent(event);
-					if (!event.isCancelled()) selected.getBlock().breakNaturally();
+					if (!event.isCancelled()) {
+						selected.getBlock().breakNaturally();
+					}
 				}
 				for (LivingEntity entity : PowerTools.getNearbyEntities(LivingEntity.class, selected, 1.5D, user.getPlayer())) {
 					if (killUndead
@@ -108,7 +110,6 @@ public final class HolyBlade extends Power {
 				runTaskLater(new Runnable() {
 					@Override
 					public void run() {
-						PowerTools.blockUpdate(selected.getBlock());
 						selected.getWorld().playEffect(selected, Effect.STEP_SOUND, Material.GLOWSTONE);
 						selected.add(dir);
 						stage ++;

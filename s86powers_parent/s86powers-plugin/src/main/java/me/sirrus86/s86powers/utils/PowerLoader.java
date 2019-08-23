@@ -153,6 +153,12 @@ public class PowerLoader {
     						plugin.log(Level.WARNING, LocaleString.INCOMPLETE_POWER.build(name));
     					}
     				}
+    				else if (manifest.usesPackets()
+    						&& S86Powers.getProtocolLib() == null) {
+    					if (ConfigOption.Plugin.SHOW_CONFIG_STATUS) {
+    						plugin.log(Level.WARNING, LocaleString.POWER_REQUIRES_PROTOCOLLIB.build(name));
+    					}
+    				}
     				else {
     					load(clazz);
     				}

@@ -19,7 +19,7 @@ import me.sirrus86.s86powers.tools.PowerTools;
 import me.sirrus86.s86powers.users.PowerUser;
 import me.sirrus86.s86powers.utils.PowerTime;
 
-@PowerManifest(name = "Decoy", type = PowerType.DEFENSE, author = "sirrus86", concept = "heylookoverthere", icon=Material.ARMOR_STAND,
+@PowerManifest(name = "Decoy", type = PowerType.DEFENSE, author = "sirrus86", concept = "heylookoverthere", icon = Material.ARMOR_STAND, usesPackets = true,
 	description = "By [act:item]ing any non-player entity while holding [item], transform the entity into a copy of yourself[consume], consuming the [item] in the process[/consume]. Effect lasts until entity is killed or despawns. [cooldown] cooldown.")
 public final class Decoy extends Power {
 
