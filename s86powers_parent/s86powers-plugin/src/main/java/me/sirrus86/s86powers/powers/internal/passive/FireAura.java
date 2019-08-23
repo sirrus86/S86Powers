@@ -55,7 +55,7 @@ public final class FireAura extends Power {
 			isBlind.remove(user);
 		}
 		if (rainTask.containsKey(user)) {
-			cancelTask(sparkTask.get(user));
+			cancelTask(rainTask.get(user));
 			rainTask.remove(user);
 		}
 		if (sparkTask.containsKey(user)) {
@@ -63,7 +63,7 @@ public final class FireAura extends Power {
 			sparkTask.remove(user);
 		}
 		if (waterTask.containsKey(user)) {
-			cancelTask(sparkTask.get(user));
+			cancelTask(waterTask.get(user));
 			waterTask.remove(user);
 		}
 	}
