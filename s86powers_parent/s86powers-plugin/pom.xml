@@ -9,7 +9,7 @@
 		<version>parent</version>
 	</parent>
 	<artifactId>s86powers-plugin</artifactId>
-	<version>5.1.8</version>
+	<version>5.1.9</version>
 	<name>Plugin</name>
 
 	<dependencies>
