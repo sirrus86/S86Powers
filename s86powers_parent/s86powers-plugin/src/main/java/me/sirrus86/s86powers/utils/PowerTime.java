@@ -1,5 +1,7 @@
 package me.sirrus86.s86powers.utils;
 
+import me.sirrus86.s86powers.localization.LocaleString;
+
 public class PowerTime {
 
 	private final static byte MILLISECONDS_PER_TICK = 50;
@@ -81,29 +83,37 @@ public class PowerTime {
 		if (time > 0) {
 			tmp = tmp + time / MILLISECONDS_PER_TICK + "t";
 		}
-		return tmp != "" ? tmp : "None";
+		return tmp != "" ? tmp : LocaleString.NONE.toString();
 	}
 	
 	public static String asLongString(long millis) {
 		String tmp = "";
 		long time = millis;
 		if (time >= MILLISECONDS_PER_DAY) {
-			tmp = tmp + time / MILLISECONDS_PER_DAY + ((time / MILLISECONDS_PER_DAY) == 1 ? " day " : " days ");
+			tmp = tmp + time / MILLISECONDS_PER_DAY + ((time / MILLISECONDS_PER_DAY) == 1 ?
+					" " + LocaleString.DAY.toString() + " " :
+					" " + LocaleString.DAYS.toString() + " ");
 			time %= MILLISECONDS_PER_DAY;
 		}
 		if (time >= MILLISECONDS_PER_HOUR) {
-			tmp = tmp + time / MILLISECONDS_PER_HOUR + ((time / MILLISECONDS_PER_HOUR) == 1 ? " hour " : " hours ");
+			tmp = tmp + time / MILLISECONDS_PER_HOUR + ((time / MILLISECONDS_PER_HOUR) == 1 ?
+					" " + LocaleString.HOUR.toString() + " " :
+					" " + LocaleString.HOURS.toString() + " ");
 			time %= MILLISECONDS_PER_HOUR;
 		}
 		if (time >= MILLISECONDS_PER_MINUTE) {
-			tmp = tmp + time / MILLISECONDS_PER_MINUTE + ((time / MILLISECONDS_PER_MINUTE) == 1 ? " minute " : " minutes ");
+			tmp = tmp + time / MILLISECONDS_PER_MINUTE + ((time / MILLISECONDS_PER_MINUTE) == 1 ?
+					" " + LocaleString.MINUTE.toString() + " " :
+					" " + LocaleString.MINUTES.toString() + " ");
 			time %= MILLISECONDS_PER_MINUTE;
 		}
 		if (time >= MILLISECONDS_PER_SECOND) {
-			tmp = tmp + time / MILLISECONDS_PER_SECOND + ((time / MILLISECONDS_PER_SECOND) == 1 ? " second " : " seconds ");
+			tmp = tmp + time / MILLISECONDS_PER_SECOND + ((time / MILLISECONDS_PER_SECOND) == 1 ?
+					" " + LocaleString.SECOND.toString() + " " :
+					" " + LocaleString.SECONDS.toString() + " ");
 		}
 		if (tmp.equalsIgnoreCase("")) {
-			return "less than 1 second";
+			return LocaleString.LESS_THAN_ONE_SECOND.toString();
 		}
 		else {
 			tmp = tmp.substring(0, tmp.lastIndexOf(" "));
