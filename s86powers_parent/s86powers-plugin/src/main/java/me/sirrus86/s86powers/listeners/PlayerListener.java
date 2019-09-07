@@ -22,6 +22,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.event.server.ServerLoadEvent;
 
 import com.google.common.collect.Lists;
@@ -84,9 +85,19 @@ public class PlayerListener implements Listener {
 			PowerUserAdapter uCont = PowerUserAdapter.getAdapter(user);
 			for (Power power : uCont.getPowers(true)) {
 				if (uCont.hasPowerEnabled(power)) {
-					PowerAdapter pCont = PowerAdapter.getAdapter(power);
-					pCont.enable(user);
+					power.enable(user);
 				}
+			}
+		}
+	}
+	
+	@EventHandler
+	private void onRespawn(PlayerRespawnEvent event) {
+		PowerUser user = S86Powers.getConfigManager().getUser(event.getPlayer().getUniqueId());
+		PowerUserAdapter uCont = PowerUserAdapter.getAdapter(user);
+		for (Power power : uCont.getPowers(true)) {
+			if (uCont.hasPowerEnabled(power)) {
+				power.enable(user);
 			}
 		}
 	}
