@@ -48,7 +48,7 @@ public final class GrapplingHook extends Power {
 	}
 
 	@Override
-	protected void options() {
+	protected void config() {
 		cooldown = option("fall-resist", PowerTime.toMillis(3, 0), "How long after using power that the user is immune to fall damage.");
 		hookVel = option("hook-velocity", 2.0D, "Velocity at which hooks are cast by the user.");
 		minDist = option("minimum-distance-from-target", 2.0D, "Minimum distance entity can be from target location before hook disengages.");
@@ -66,6 +66,7 @@ public final class GrapplingHook extends Power {
 			public void run() {
 				if (entity.isValid()
 						&& !entity.isDead()
+						&& entity.getLocation().getWorld() == loc.getWorld()
 						&& entity.getLocation().distanceSquared(loc) > minDist * minDist
 						&& i < PowerTime.toTicks(pullTime)) {
 					double dist = entity.getLocation().distance(loc);
@@ -103,6 +104,7 @@ public final class GrapplingHook extends Power {
 			Hook hook = null;
 			if (event.getState() == State.CAUGHT_ENTITY
 					&& event.getCaught() != null
+					&& event.getCaught() != event.getPlayer()
 					&& pullHooked) {
 				hook = new Hook(event.getCaught());
 			}
