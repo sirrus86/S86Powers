@@ -421,6 +421,17 @@ public final class PowerTools {
 		tmp = new String(chars);
 		return tmp;
 	}
+	
+	public static String getFriendlyName(Entity entity) {
+		String name = entity.getClass().getSimpleName().replace("Craft", "");
+		if (entity instanceof Player) {
+			name = ((Player)entity).getDisplayName();
+		}
+		else if (entity.getCustomName() != null) {
+			name = entity.getCustomName();
+		}
+		return name;
+	}
 
 	public static Block getHighestAirBlock(Location loc, int range) {
 		Location newLoc = loc.clone();
