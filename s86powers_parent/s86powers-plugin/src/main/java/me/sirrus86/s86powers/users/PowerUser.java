@@ -309,6 +309,10 @@ public final class PowerUser implements Comparable<PowerUser> {
 			for (Power power : powers.keySet()) {
 				PowerAdapter.getAdapter(power).disable(this);
 			}
+			if (S86Powers.getProtocolLib() != null) {
+				PowerTools.removeDisguise(getPlayer());
+				PowerTools.removeGhost(getPlayer());
+			}
 		}
 	}
 	
