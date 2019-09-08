@@ -62,7 +62,7 @@ public final class Arachnophile extends Power {
 	}
 
 	@Override
-	protected void options() {
+	protected void config() {
 		fallRed = option("fall-damage-reduction", 50.0D, "Percentage of fall damage to negate.");
 		item = option("item", new ItemStack(Material.STICK), "Item used to tame and direct spiders.");
 		noPoison = option("poison-immunity", true, "Whether user should be immune to poison.");

@@ -43,7 +43,7 @@ public final class PolarBlade extends Power {
 			slowFactor = createNamespacedKey("slow-factor");
 	
 	@Override
-	protected void options() {
+	protected void config() {
 		maxSharp = option("maximum-sharpness", 8, "Maximum sharpness enchant that can be applied to a Polar Blade.");
 		slowDur = option("slowness-duration", PowerTime.toMillis(5, 0), "Amount of time slowness effect lasts.");
 		slowDesc = locale("message.slowness-descriptor", ChatColor.RED + "Slowness [power] ([time])");

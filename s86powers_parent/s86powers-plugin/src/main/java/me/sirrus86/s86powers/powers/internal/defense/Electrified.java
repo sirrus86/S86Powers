@@ -24,7 +24,7 @@ public final class Electrified extends Power {
 	private double lDmg;
 	
 	@Override
-	protected void options() {
+	protected void config() {
 		cooldown = option("cooldown", PowerTime.toMillis(0), "Period of time before power can be used again.");
 		lDmg = option("lightning-damage", 5.0D, "Damage caused by lightning strikes to attackers.");
 		supplies(new ItemStack(Material.SHIELD));

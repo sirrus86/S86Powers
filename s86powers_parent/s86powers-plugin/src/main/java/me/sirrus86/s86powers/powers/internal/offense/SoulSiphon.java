@@ -48,7 +48,7 @@ public final class SoulSiphon extends Power {
 	}
 	
 	@Override
-	protected void options() {
+	protected void config() {
 		cooldown = option("cooldown", PowerTime.toMillis(30, 0), "Amount of time before power can be used again.");
 		drainRange = option("drain-range", 15.0D, "Maximum range from which siphons can drain or feed health.");
 		item = option("item", new ItemStack(Material.END_CRYSTAL), "Item used to create soul siphons.");

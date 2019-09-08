@@ -42,7 +42,7 @@ public final class Decoy extends Power {
 	}
 
 	@Override
-	protected void options() {
+	protected void config() {
 		consume = option("consume-item", false, "Whether item should be consumed on use.");
 		cooldown = option("cooldown", PowerTime.toMillis(0), "Amount of time before power can be used again.");
 		item = option("item", new ItemStack(Material.BLAZE_ROD), "Item used to create decoys.");

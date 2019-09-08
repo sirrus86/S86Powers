@@ -31,7 +31,7 @@ public final class EnderSoul extends Power {
 	private double velMod;
 	
 	@Override
-	protected void options() {
+	protected void config() {
 		doPot = option("slowfall.enable", true, "Whether slow fall should activate when teleporting somewhere off the ground.");
 		immunePearl = option("pearl-damage-immunity", true, "Whether users should be immune to ender pearl damage.");
 		modVel = option("modify-pearl-velocity", true, "Whether ender pearl velocity should be modified. If false, pearls are thrown normally.");

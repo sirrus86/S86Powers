@@ -59,7 +59,7 @@ public final class Aquaphile extends Power {
 	}
 
 	@Override
-	protected void options() {
+	protected void config() {
 		canDolphin = option("enable-dolphin-form", true, "Whether dolphin form should be enabled.");
 		heal = option("heal-underwater", true, "Whether users should be healed while underwater.");
 		nv = option("night-vision", true, "Whether users should get night-vision underwater.");

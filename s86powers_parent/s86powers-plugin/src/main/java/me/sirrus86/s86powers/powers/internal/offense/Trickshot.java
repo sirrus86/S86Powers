@@ -74,7 +74,7 @@ public final class Trickshot extends Power {
 	}
 
 	@Override
-	protected void options() {
+	protected void config() {
 		maxDist = option("maximum-target-distance", 50.0D, "Maximum distance for which targets can be chosen.");
 		maxAngle = option("maximum-angle", 0.12D, "Maximum rotational angle homing arrows will turn.");
 		targetAnimals = option("target-animals", false, "Whether animals should be targetted by ricochet arrows.");

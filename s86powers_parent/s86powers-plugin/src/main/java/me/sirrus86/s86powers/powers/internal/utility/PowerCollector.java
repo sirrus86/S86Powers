@@ -69,7 +69,7 @@ public final class PowerCollector extends Power {
 	}
 	
 	@Override
-	protected void options() {
+	protected void config() {
 		for (LootTables tables : lootTables) {
 			lootChance.put(tables, option("loot-chance." + tables.name().replace("_", "-").toLowerCase(), 1.0D,
 					"Chance to find power books within the " + WordUtils.capitalizeFully(tables.name().replace("_", " ")) + " loot table."));
@@ -210,7 +210,7 @@ public final class PowerCollector extends Power {
 	
 	@EventHandler
 	private void onServerLoad(ServerLoadEvent event) {
-		options();
+		config();
 	}
 
 }

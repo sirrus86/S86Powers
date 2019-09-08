@@ -43,7 +43,7 @@ public final class Acrobat extends Power {
 	}
 	
 	@Override
-	protected void options() {
+	protected void config() {
 		item = option("item", new ItemStack(Material.FEATHER), "Item used to change jump levels.");
 		maxJump = option("max-jump-level", 3, "Maximum jump level user can achieve.");
 		noDmg = option("negate-fall-damage", true, "Whether fall damage should be ignored.");

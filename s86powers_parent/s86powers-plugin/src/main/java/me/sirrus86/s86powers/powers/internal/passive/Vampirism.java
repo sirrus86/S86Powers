@@ -80,7 +80,7 @@ public final class Vampirism extends Power {
 	}
 
 	@Override
-	protected void options() {
+	protected void config() {
 		food = option("food-regen", 7, "Amount of food regeneration granted by killing other entities.");
 		helmProt = option("helmet-prevents-ignition", false, "Whether wearing a helmet will prevent vampires from igniting in sunlight.");
 		infect = option("infect-other-players", false, "Whether attacks from vampires should infect players without the power.");

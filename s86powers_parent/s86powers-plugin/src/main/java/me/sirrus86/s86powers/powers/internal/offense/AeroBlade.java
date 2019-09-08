@@ -35,7 +35,7 @@ public final class AeroBlade extends Power {
 	}
 	
 	@Override
-	protected void options() {
+	protected void config() {
 		cooldown = option("cooldown", PowerTime.toMillis(1, 0), "Amount of time before power can be used again.");
 		fSpread = option("feather-spread", 0.1D, "Spread of feathers. Higher values create greater spreads.");
 		fVel = option("feather-velocity", 2.0D, "Velocity of feathers.");

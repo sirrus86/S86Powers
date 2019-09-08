@@ -35,7 +35,7 @@ public final class NeutralizerGrenade extends Power {
 	}
 
 	@Override
-	protected void options() {
+	protected void config() {
 		item = option("item", new ItemStack(Material.LAPIS_LAZULI, 1), "Item used to throw neutralizer grenades.");
 		nDur = option("neutralize-duration", PowerTime.toMillis(30, 0), "Amount of time players are neutralized when hit by a grenade.");
 		range = option("neutralize-range", 5.0D, "Distance from impact point where grenade may neutralize players.");

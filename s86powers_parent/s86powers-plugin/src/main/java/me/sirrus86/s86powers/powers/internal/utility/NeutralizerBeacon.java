@@ -57,7 +57,7 @@ public final class NeutralizerBeacon extends Power {
 	}
 
 	@Override
-	protected void options() {
+	protected void config() {
 		destructable = option("destructable-by-others", true, "Whether beacons can be destroyed by users other than the creator.");
 		immuneToOwn = option("immune-to-own-beacons", false, "Whether users should be immune to their own beacons.");
 		radius = option("radius", 50.0D, "Radius of the neutralizing field from the beacon.");

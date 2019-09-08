@@ -102,7 +102,7 @@ public final class MobCatcher extends Power {
 	}
 
 	@Override
-	protected void options() {
+	protected void config() {
 		captureTamed = option("capture-tamed", false, "Whether entities tamed by other players (wolves, cats, etc) can be captured.");
 		eggsThrown = stat("eggs-thrown", 50, "Entities relocated", "[item] is now refunded after expelling a stored entity.");
 		item = option("item", new ItemStack(Material.ENDER_EYE, 1), "Item used to catch and store mobs.");

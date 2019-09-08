@@ -59,7 +59,7 @@ public final class WebWall extends Power {
 	}
 	
 	@Override
-	protected void options() {
+	protected void config() {
 		cooldown = option("cooldown", PowerTime.toMillis(30, 0), "Amount of time before power can be used again.");
 		doConsume = option("consume-item", true, "Whether item should be consumed on use.");
 		item = option("item", new ItemStack(Material.COBWEB), "Item used to create web walls.");

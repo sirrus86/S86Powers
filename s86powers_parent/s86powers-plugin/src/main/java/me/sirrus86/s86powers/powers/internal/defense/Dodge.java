@@ -19,7 +19,7 @@ import me.sirrus86.s86powers.powers.PowerType;
 import me.sirrus86.s86powers.tools.PowerTools;
 import me.sirrus86.s86powers.users.PowerUser;
 
-@PowerManifest(name = "Dodge", type = PowerType.DEFENSE, author = "sirrus86", concept = "n33dy1", icon=Material.ENDER_EYE,
+@PowerManifest(name = "Dodge", type = PowerType.DEFENSE, author = "sirrus86", concept = "n33dy1", icon = Material.ENDER_EYE,
 	description = "Always have a [base]% chance to dodge melee attacks. Chance to dodge increases as you fail to dodge attacks, up to a maximum of [max]%. Upon death your dodge chance resets back to [base]%.")
 public final class Dodge extends Power {
 
@@ -42,7 +42,7 @@ public final class Dodge extends Power {
 	}
 
 	@Override
-	protected void options() {
+	protected void config() {
 		base = option("base-dodge-chance", 15.0D, "Minimum dodge chance while using this power.");
 		max = option("maximum-dodge-chance", 75.0D, "Maximum dodge chance while using this power.");
 		steps = option("increment-steps", 15, "Number of times dodge chance can increment.");
@@ -64,12 +64,10 @@ public final class Dodge extends Power {
 				}
 				double chance = random.nextDouble();
 				if (chance < dodge.get(user) / 100.0D) {
-					String name = event.getDamager().getCustomName() != null ? event.getDamager().getCustomName() : event.getDamager().getClass().getSimpleName().replace("Craft", "");
 					if (event.getDamager() instanceof Player) {
 						getUser(((Player)event.getDamager())).sendMessage(playerDodged.replace("[player]", user.getPlayer().getName()));
-						name = ((Player) event.getDamager()).getDisplayName() + ChatColor.GREEN;
 					}
-					user.sendMessage(youDodged.replace("[name]", name));
+					user.sendMessage(youDodged.replace("[name]", PowerTools.getFriendlyName(event.getDamager()) + ChatColor.GREEN));
 					PowerTools.playParticleEffect(user.getPlayer().getLocation(), Particle.CLOUD);
 					Vector difference = user.getPlayer().getLocation().clone().subtract(event.getDamager().getLocation()).toVector();
 					user.getPlayer().setVelocity(difference);

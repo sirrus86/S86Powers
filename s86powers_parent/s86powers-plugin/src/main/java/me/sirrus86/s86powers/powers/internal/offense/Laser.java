@@ -51,7 +51,7 @@ public final class Laser extends Power {
 	}
 
 	@Override
-	protected void options() {
+	protected void config() {
 		consumable = option("consumable", new ItemStack(Material.REDSTONE, 1), "Item used as fuel for the laser.");
 		cooldown = option("cooldown", PowerTime.toMillis(10, 0), "Amount of time before power can be used again.");
 		damage = option("damage", 5.0D, "Amount of damage done by laser beams.");

@@ -52,7 +52,7 @@ public final class Diversion extends Power {
 	}
 
 	@Override
-	protected void options() {
+	protected void config() {
 		cooldown = option("cooldown", PowerTime.toMillis(1, 0, 0), "How long before another diversion can be created.");
 		decoysMade = stat("diversions-made", 30, "Diversions created", "You now create [maxDecoys] diversions when damaged instead of 1.");
 		lifespan = option("diversion-lifespan", PowerTime.toMillis(10, 0), "How long diversions last before despawning.");
@@ -76,10 +76,10 @@ public final class Diversion extends Power {
 					if (decoys.get(user).size() < (user.hasStatMaxed(decoysMade) ? maxDecoys : 1)) {
 						for (int i = 0; i < (user.hasStatMaxed(decoysMade) ? maxDecoys : 1); i ++) {
 							Vindicator pz = user.getPlayer().getWorld().spawn(user.getPlayer().getLocation(), Vindicator.class);
-							pz.setPatrolLeader(false);
 							runTask(new BukkitRunnable() {
 								@Override
 								public void run() {
+									pz.setPatrolLeader(false);
 									PowerTools.addDisguise(pz, EntityType.PLAYER, null, user.getPlayer().getUniqueId());
 									PowerTools.addEquipmentDisguise(pz, user.getPlayer());
 									PowerTools.addGhost(user.getPlayer());

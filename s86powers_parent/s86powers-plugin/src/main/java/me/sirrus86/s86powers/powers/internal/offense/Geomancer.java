@@ -24,7 +24,7 @@ public class Geomancer extends Power {
 	}
 
 	@Override
-	protected void options() {
+	protected void config() {
 		cooldown = option("cooldown", PowerTime.toMillis(2, 0), "Period of time before power can be used again.");
 		item = option("item", new ItemStack(Material.MOSSY_COBBLESTONE), "Item required to use power.");
 		minRange = option("minimum-range", 5.0D, "Minimum range which power can be used on targets.");

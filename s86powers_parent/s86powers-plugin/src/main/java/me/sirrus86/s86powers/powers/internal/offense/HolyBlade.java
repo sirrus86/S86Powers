@@ -32,7 +32,7 @@ public final class HolyBlade extends Power {
 	private boolean wMany;
 	
 	@Override
-	protected void options() {
+	protected void config() {
 		breakNonSolid = option("break-non-solid-blocks", true, "Whether non-solid blocks are broken by beams.");
 		cooldown = option("cooldown", PowerTime.toMillis(200), "Period of time before power can be used again.");
 		dmg = option("damage", 5.0D, "Damage done by light beams.");

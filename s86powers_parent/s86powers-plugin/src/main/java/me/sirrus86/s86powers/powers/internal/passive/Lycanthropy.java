@@ -63,7 +63,7 @@ public final class Lycanthropy extends Power {
 	}
 
 	@Override
-	protected void options() {
+	protected void config() {
 		control = option("control-transformation", false, "Whether users should always be able to willfully transform.");
 		dmgIncr = option("damage-multiplier", 400.0D, "Percentage increase of damage done while transformed and barehanded.");
 		infect = option("infect-other-players", false, "Whether barehanded attacks from werewolves should infect players without the power.");

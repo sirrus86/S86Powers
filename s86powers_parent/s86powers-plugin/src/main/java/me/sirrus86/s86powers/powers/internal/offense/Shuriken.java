@@ -38,7 +38,7 @@ public final class Shuriken extends Power {
 	}
 
 	@Override
-	protected void options() {
+	protected void config() {
 		cooldown = option("cooldown", PowerTime.toMillis(5), "Amount of time before power can be used again.");
 		damage = option("damage", 3.0D, "Amount of damage caused by shurikens.");
 		item = option("item", new ItemStack(Material.FLINT), "Item to be thrown as a shuriken.");

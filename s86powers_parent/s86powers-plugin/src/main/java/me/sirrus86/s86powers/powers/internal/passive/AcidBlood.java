@@ -26,7 +26,7 @@ public final class AcidBlood extends Power {
 	private boolean afflict;
 	
 	@Override
-	protected void options() {
+	protected void config() {
 		absorb = option("absorb-percentage", 100.0D, "Percent of poison damage to be absorbed as health.");
 		affDur = option("afflict-duration", PowerTime.toMillis(5, 0), "How long attackers should be afflicted with poison.");
 		affInt = option("afflict-intensity", 1, "Intensity of poison afflicted to attackers.");

@@ -52,7 +52,7 @@ public final class DarkRegen extends Power {
 	}
 
 	@Override
-	protected void options() {
+	protected void config() {
 		cloak = option("superpower.enable-shadow-cloak", true, "Whether user should be immune to shadow affinity damage while in shadows.");
 		cooldown = option("minimum-cooldown", PowerTime.toMillis(200), "Minimum amount of time before user can regenerate in darkness.");
 		darkLvl = option("maximum-light-level", 8, "Maximum light level (from 0-15, darkest to brightest) in which the power will work.");

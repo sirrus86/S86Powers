@@ -40,7 +40,7 @@ public class BrewMaster extends Power {
 	}
 
 	@Override
-	protected void options() {
+	protected void config() {
 		consumes = stat("potions-consumed", 50, "Potions consumed", "You can combine potions by placing multiple potions in a crafting grid.");
 		stack = option("potion-stack-size", 16, "How many potions should fit in a stack.");
 	}

@@ -39,7 +39,7 @@ public final class Brawler extends Power {
 	}
 	
 	@Override
-	protected void options() {
+	protected void config() {
 		dmgIncr = option("damage-increase", 400.0D, "Percentage increase for damage done while barehanded.");
 		juggleVert = option("juggle-vertical-modifier", 0.5D, "Velocity modifier to entities hit while falling.");
 		offHandDef = option("offhand-defense", 75.0D, "Percentage decrease to incoming melee damage while off-hand has no item equipped.");

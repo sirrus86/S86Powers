@@ -57,7 +57,7 @@ public final class Pickpocket extends Power {
 	}
 
 	@Override
-	protected void options() {
+	protected void config() {
 		brChance = option("stealth-break-chance", 20.0D, "Percentage chance that stealth will break when attempting to pickpocket.");
 		cooldown = option("steal-cooldown", PowerTime.toMillis(5, 0), "Amount of time after stealing before you can pickpocket again.");
 		dontDrop = option("no-drops-after-theft", true, "Whether non-player pickpocket victims should no longer be able to drop items on death.");

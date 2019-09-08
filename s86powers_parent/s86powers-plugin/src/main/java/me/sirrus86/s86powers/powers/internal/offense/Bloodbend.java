@@ -55,7 +55,7 @@ public final class Bloodbend extends Power {
 	}
 
 	@Override
-	protected void options() {
+	protected void config() {
 		cooldown = option("cooldown", PowerTime.toMillis(5, 0), "Amount of time before power can be used again.");
 		dmg = option("damage", 1.0D, "Amount of damage done to targets per tick.");
 		dur = option("duration", PowerTime.toMillis(1, 0), "Amount of time target is drained before being let go.");

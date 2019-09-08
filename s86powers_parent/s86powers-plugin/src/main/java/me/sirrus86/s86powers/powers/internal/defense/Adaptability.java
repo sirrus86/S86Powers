@@ -18,7 +18,7 @@ import me.sirrus86.s86powers.powers.PowerType;
 import me.sirrus86.s86powers.users.PowerUser;
 import me.sirrus86.s86powers.utils.PowerTime;
 
-@PowerManifest(name = "Adaptability", type = PowerType.DEFENSE, author = "sirrus86", concept = "diamondmario", icon=Material.LEATHER_CHESTPLATE,
+@PowerManifest(name = "Adaptability", type = PowerType.DEFENSE, author = "sirrus86", concept = "diamondmario", icon = Material.LEATHER_CHESTPLATE,
 	description = "When damaged, develop resistance to that damage type, reducing all following damage of the same type starting at [initAmt]%, increasing up to [maxAmt]%. While resistant to one type, damage from all other types increased to [dmgIncr]%. [cooldown] cooldown.[noArmor] Power prevents you from wearing armor.[/noArmor]")
 public final class Adaptability extends Power {
 
@@ -40,7 +40,7 @@ public final class Adaptability extends Power {
 	}
 
 	@Override
-	protected void options() {
+	protected void config() {
 		cooldown = option("adapt-cooldown", PowerTime.toMillis(3, 0), "Minimum time between incoming damage that user may further adapt.");
 		dmgIncr = option("damage-increase", 200.0D, "Percentage of damage done from adaptable sources that aren't being adapted to.");
 		initAmt = option("initial-adapt", 25.0D, "Initial percent of damage mitigation after user changes adapt type.");

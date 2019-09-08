@@ -38,7 +38,7 @@ public final class Blastwave extends Power {
 	}
 	
 	@Override
-	protected void options() {
+	protected void config() {
 		blastRad = option("blast-radius", 3.0D, "Radius size of the blast.");
 		consume = option("consume-item", true, "Whether item should be consumed when power is used.");
 		cooldown = option("cooldown", PowerTime.toMillis(10, 0), "Amount of time before power can be used again.");

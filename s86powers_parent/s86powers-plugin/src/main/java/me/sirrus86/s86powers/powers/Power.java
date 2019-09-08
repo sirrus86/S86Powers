@@ -127,7 +127,7 @@ public abstract class Power implements Comparable<Power>, Listener {
 	/**
 	 * Catalogs all configurable options for this power.
 	 */
-	protected abstract void options();
+	protected abstract void config();
 
 	public Power() {
 		plugin = JavaPlugin.getPlugin(S86Powers.class);
@@ -519,7 +519,7 @@ public abstract class Power implements Comparable<Power>, Listener {
 	}
 	
 	void refreshOptions() {
-		options();
+		config();
 	}
 	
 	/**
@@ -533,7 +533,7 @@ public abstract class Power implements Comparable<Power>, Listener {
 	
 	void reload() {
 		onEnable();
-		options();
+		config();
 	}
 	
 	void removeUser(PowerUser user) {

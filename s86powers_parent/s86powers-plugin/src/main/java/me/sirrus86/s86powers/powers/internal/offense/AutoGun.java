@@ -76,7 +76,7 @@ public final class AutoGun extends Power {
 	}
 
 	@Override
-	protected void options() {
+	protected void config() {
 		arrowsPerVolley = option("arrows-per-volley", 3, "Number of arrows fired at a time by turrets.");
 		consumeItem = option("consume-item", true, "Whether item should be consumed on use.");
 		cooldown = option("cooldown", PowerTime.toMillis(1, 0), "Cooldown between placing turrets.");

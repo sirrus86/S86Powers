@@ -43,7 +43,7 @@ public final class PyroBow extends Power {
 	}
 
 	@Override
-	protected void options() {
+	protected void config() {
 		canExplode = stat("enemies-ignited", 50, "Enemies ignited", "Arrows now explode, covering the nearby area in flames.");
 		cooldown = option("wet-cooldown", PowerTime.toMillis(5, 0), "How long after being wet before power can be used again.");
 		disableIfWet = option("disable-power-if-wet", true, "Whether the power should fail if the user has been exposed to rain or water recently.");

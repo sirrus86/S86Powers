@@ -35,7 +35,7 @@ public final class Lumberjack extends Power {
 	}
 
 	@Override
-	protected void options() {
+	protected void config() {
 		doLeaves = option("break-leaves", true, "Whether adjacent leaves should also be broken when trees are chopped down.");
 		doThreshold = option("apply-threshold", true, "Whether the number of blocks broken at one time should be limited.");
 		replant = option("auto-replant", true, "Whether a sapling should be placed where the tree once stood after being chopped.");

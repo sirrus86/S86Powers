@@ -84,7 +84,7 @@ public final class Necromancer extends Power {
 	}
 
 	@Override
-	protected void options() {
+	protected void config() {
 		auraDur = option("aura-duration", PowerTime.toMillis(10, 0), "Amount of time an aura will last before dissipating.");
 		auraRad = option("aura-radius", 5, "Maximum radius of a given aura.");
 		cooldown = option("cooldown", PowerTime.toMillis(30, 0), "Amount of time before power can be used again.");

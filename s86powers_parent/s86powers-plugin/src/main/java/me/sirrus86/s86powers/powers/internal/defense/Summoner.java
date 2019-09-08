@@ -66,7 +66,7 @@ public final class Summoner extends Power {
 	}
 
 	@Override
-	protected void options() {
+	protected void config() {
 		bSpawn = option("summon-chance.blaze", 10, "Chance blazes will be summoned. Higher number means greater chance, 0 means no chance.");
 		cooldown = option("cooldown", PowerTime.toMillis(5, 0, 0), "Amount of time before power can be used again.");
 		gSpawn = option("summon-chance.ghast", 3, "Chance ghasts will be summoned. Higher number means greater chance, 0 means no chance.");

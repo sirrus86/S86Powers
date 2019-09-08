@@ -2,6 +2,7 @@ package me.sirrus86.s86powers.powers.internal.passive;
 
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -19,6 +20,8 @@ import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
+
+import com.google.common.collect.Lists;
 
 import me.sirrus86.s86powers.powers.Power;
 import me.sirrus86.s86powers.powers.PowerManifest;
@@ -69,7 +72,7 @@ public final class FireAura extends Power {
 	}
 	
 	@Override
-	protected void options() {
+	protected void config() {
 		goBlind = option("blind-in-lava", true, "Whether to apply blindness to player while in lava. This actually improves vision.");
 		rainDmg = option("rain-damage", 1, "Hunger caused by being in the rain.");
 		waterDmg = option("water-damage", 4.0D, "Damage caused by being in water.");
@@ -149,11 +152,14 @@ public final class FireAura extends Power {
 	}
 	
 	private boolean inWater(PowerUser user) {
-		Block[] blocks = new Block[] { user.getPlayer().getLocation().getBlock(), user.getPlayer().getEyeLocation().getBlock() };
-		for (int i = 0; i < blocks.length; i ++) {
-			if (blocks[i].getType() == Material.WATER
-				|| (blocks[i].getBlockData() instanceof Waterlogged
-						&& ((Waterlogged) blocks[i].getBlockData()).isWaterlogged())) {
+		List<Block> blocks = Lists.newArrayList(user.getPlayer().getEyeLocation().getBlock());
+		if (user.getPlayer().getVehicle() == null) {
+			blocks.add(user.getPlayer().getLocation().getBlock());
+		}
+		for (int i = 0; i < blocks.size(); i ++) {
+			if (blocks.get(i).getType() == Material.WATER
+				|| (blocks.get(i).getBlockData() instanceof Waterlogged
+						&& ((Waterlogged) blocks.get(i).getBlockData()).isWaterlogged())) {
 				return true;
 			}
 		}

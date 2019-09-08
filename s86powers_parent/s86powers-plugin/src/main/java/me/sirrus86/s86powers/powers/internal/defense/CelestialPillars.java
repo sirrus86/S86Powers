@@ -63,7 +63,7 @@ public final class CelestialPillars extends Power {
 	}
 
 	@Override
-	protected void options() {
+	protected void config() {
 		consume = option("consume-item", true, "Whether item should be consumed when power is used.");
 		cooldown = option("cooldown", PowerTime.toMillis(45, 0), "Amount of time before power can be used again.");
 		item = option("item", new ItemStack(Material.SEA_LANTERN), "Item used to trigger pillars.");

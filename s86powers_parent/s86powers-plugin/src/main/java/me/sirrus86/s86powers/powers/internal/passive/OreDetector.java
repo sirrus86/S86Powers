@@ -60,7 +60,7 @@ public final class OreDetector extends Power {
 	}
 
 	@Override
-	protected void options() {
+	protected void config() {
 		cooldown = option("update-cooldown", PowerTime.toMillis(1, 0), "Minimum time needed before updating detectable blocks when moving.");
 		item = option("item", new ItemStack(Material.COMPASS), "Item used to detect ores.");
 		range = option("detect-range", 10.0D, "Maximum range to detect ores.");

@@ -45,7 +45,7 @@ public final class Rewind extends Power {
 	}
 	
 	@Override
-	protected void options() {
+	protected void config() {
 		cooldown = option("cooldown", PowerTime.toMillis(1, 0, 0), "Amount of time before power can be used again.");
 		item = option("item", new ItemStack(Material.CLOCK), "Item used to rewind time.");
 		rewindTime = option("rewind-time", PowerTime.toMillis(5, 0), "Maximum amount of time that can be rewound.");

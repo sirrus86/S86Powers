@@ -42,7 +42,7 @@ public final class Haste extends Power {
 	}
 
 	@Override
-	protected void options() {
+	protected void config() {
 		deg = option("haste-degree", 3, "Degree of Haste effect given to users.");
 	}
 

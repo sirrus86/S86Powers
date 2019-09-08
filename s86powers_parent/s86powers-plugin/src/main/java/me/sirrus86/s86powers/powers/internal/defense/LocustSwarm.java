@@ -68,7 +68,7 @@ public final class LocustSwarm extends Power {
 	}
 
 	@Override
-	protected void options() {
+	protected void config() {
 		cooldown = option("cooldown", PowerTime.toMillis(30, 0), "How long before power can be used again.");
 		infestOnly = option("infested-only", true, "Whether only infested stone blocks should spawn Silverfish. If false, all nearby stone blocks will spawn them.");
 		item = option("item", new ItemStack(Material.ROTTEN_FLESH, 1), "Item used to summon silverfish.");

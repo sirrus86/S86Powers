@@ -16,7 +16,7 @@ public class Shapeshifter extends Power {
 	}
 
 	@Override
-	protected void options() {
+	protected void config() {
 		
 	}
 
