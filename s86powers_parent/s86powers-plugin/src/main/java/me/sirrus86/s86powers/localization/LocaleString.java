@@ -117,6 +117,7 @@ public enum LocaleString {
 	AUTO_SAVE_COOLDOWN_CONFIG("config", "Amount of time in milliseconds before auto-save can be triggered again."),
 	BYPASS_COOLDOWN_CONFIG("config", "Whether admins ignore cooldowns from power use."),
 	BYPASS_PERMISSION_CONFIG("config", "Whether admins can use powers regardless of having the 's86powers.enable' permission."),
+	DAMAGE_PLAYERS_CONFIG("config", "Whether players can damage other players with powers."),
 	ENABLE_PERMISSION_ASSIGNMENTS_CONFIG("config", "Whether players can have powers or groups assigned to them via permissions."),
 	ENFORCE_POWER_CAP_CONFIG("config", "Whether non-admins should be limited in how many powers they may assign to themselves."),
 	LOAD_INCOMPLETE_POWERS_CONFIG("config", "Whether incomplete powers should be loaded."),

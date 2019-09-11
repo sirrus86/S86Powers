@@ -53,6 +53,8 @@ public final class ConfigOption {
 		
 		private final static String PARENT = "powers.";
 
+		public static boolean DAMAGE_PLAYERS = S86Powers.getConfigManager().getConfig().getBoolean(PARENT + "damage-players", true);
+
 		public static boolean LOAD_INCOMPLETE_POWERS = S86Powers.getConfigManager().getConfig().getBoolean(PARENT + "load-incomplete-powers", false);
 
 		public static boolean PREVENT_GRIEFING = S86Powers.getConfigManager().getConfig().getBoolean(PARENT + "prevent-griefing", true);

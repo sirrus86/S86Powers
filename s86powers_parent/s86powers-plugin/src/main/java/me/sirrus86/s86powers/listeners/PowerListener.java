@@ -4,6 +4,7 @@ import java.util.Map;
 import java.util.WeakHashMap;
 
 import me.sirrus86.s86powers.S86Powers;
+import me.sirrus86.s86powers.config.ConfigOption;
 import me.sirrus86.s86powers.events.PowerDamageEvent;
 import me.sirrus86.s86powers.localization.LocaleString;
 import me.sirrus86.s86powers.events.PowerUseEvent;
@@ -28,7 +29,7 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 
-public class PowerListener implements Listener {
+public final class PowerListener implements Listener {
 
 	private Map<Damageable, PowerDamageCause> trackList = new WeakHashMap<>();
 	
@@ -105,7 +106,8 @@ public class PowerListener implements Listener {
 		PowerUser user = event.getUser();
 		Damageable target = event.getTarget();
 		PowerUser uTarget = target instanceof Player ? S86Powers.getConfigManager().getUser(((Player) target).getUniqueId()) : null;
-		if (uTarget == null) {
+		if (uTarget == null
+				|| ConfigOption.Powers.DAMAGE_PLAYERS) {
 			double damage = event.getDamage();
 			if (damage > event.getCap()) {
 				damage = event.getCap();
