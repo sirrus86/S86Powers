@@ -58,8 +58,10 @@ public final class PowerCollector extends Power {
 	private final NamespacedKey powerKey = createNamespacedKey("power-key");
 	
 	private double dropChance;
+	private boolean enforceCap;
 	private Firework firework = null;
 	private Map<LootTables, Double> lootChance;
+	private int powerCap;
 	private List<Power> powerWeight;
 	
 	@Override
@@ -83,6 +85,8 @@ public final class PowerCollector extends Power {
 			}
 		}
 		dropChance = option("drop-chance", 0.5D, "Chance to find power books when enemies are defeated.");
+		enforceCap = option("enforce-cap", false, "Whether to prevent power books from dropping if too many players have the power assigned.");
+		powerCap = option("power-cap", 20, "Maximum number of players that have power assigned before books stop dropping for that power.");
 	}
 	
 	private ItemStack createPowerBook(Power power) {
@@ -133,7 +137,11 @@ public final class PowerCollector extends Power {
 				&& event.getDroppedExp() > 0
 				&& random.nextDouble() < dropChance / 100.0D) {
 			Collections.shuffle(powerWeight);
-			event.getDrops().add(createPowerBook(powerWeight.get(0)));
+			Power power = powerWeight.get(0);
+			if (!enforceCap
+					|| power.getUsers().size() < powerCap) {
+				event.getDrops().add(createPowerBook(power));
+			}
 		}
 	}
 	
@@ -152,19 +160,23 @@ public final class PowerCollector extends Power {
 						&& lootChance.containsKey(getLootTables(chest.getLootTable()))
 						&& random.nextDouble() < lootChance.get(getLootTables(chest.getLootTable())) / 100.0D) {
 					Collections.shuffle(powerWeight);
-					Inventory chestInv = chest.getBlockInventory();
-					boolean deposited = false;
-					for (int i = 0; i < chestInv.getSize(); i ++) {
-						int j = random.nextInt(chestInv.getSize());
-						if (chestInv.getItem(j) == null) {
-							chestInv.setItem(j, createPowerBook(powerWeight.get(0)));
-							deposited = true;
-							break;
+					Power power = powerWeight.get(0);
+					if (!enforceCap
+							|| power.getUsers().size() < powerCap) {
+						Inventory chestInv = chest.getBlockInventory();
+						boolean deposited = false;
+						for (int i = 0; i < chestInv.getSize(); i ++) {
+							int j = random.nextInt(chestInv.getSize());
+							if (chestInv.getItem(j) == null) {
+								chestInv.setItem(j, createPowerBook(power));
+								deposited = true;
+								break;
+							}
 						}
-					}
-					if (!deposited
-							&& chestInv.firstEmpty() != -1) {
-						chestInv.setItem(chestInv.firstEmpty(), createPowerBook(powerWeight.get(0)));
+						if (!deposited
+								&& chestInv.firstEmpty() != -1) {
+							chestInv.setItem(chestInv.firstEmpty(), createPowerBook(power));
+						}
 					}
 				}
 			}
