@@ -26,6 +26,7 @@ import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.event.server.ServerLoadEvent;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 
 public class PlayerListener implements Listener {
 
@@ -43,6 +44,12 @@ public class PlayerListener implements Listener {
 		if (S86Powers.getProtocolLib() != null) {
 			PowerTools.removeDisguise(event.getEntity());
 			PowerTools.removeGhost(event.getEntity());
+		}
+		if (ConfigOption.Users.REMOVE_POWERS_ON_DEATH) {
+			PowerUser user = S86Powers.getConfigManager().getUser(event.getEntity().getUniqueId());
+			for (Power power : Sets.newHashSet(user.getAssignedPowers())) {
+				PowerUserAdapter.getAdapter(user).removePower(power);
+			}
 		}
 	}
 	

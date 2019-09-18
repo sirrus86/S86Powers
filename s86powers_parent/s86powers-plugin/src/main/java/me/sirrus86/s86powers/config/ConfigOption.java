@@ -75,6 +75,8 @@ public final class ConfigOption {
 		public static int POWER_CAP_PER_TYPE = S86Powers.getConfigManager().getConfig().getInt(PARENT + "power-cap-per-type", 1);
 
 		public static int POWER_CAP_TOTAL = S86Powers.getConfigManager().getConfig().getInt(PARENT + "power-cap-total", 3);
+
+		public static boolean REMOVE_POWERS_ON_DEATH = S86Powers.getConfigManager().getConfig().getBoolean(PARENT + "remove-powers-on-death", false);
 		
 		public static boolean SHOW_MESSAGES_IN_ACTION_BAR = S86Powers.getConfigManager().getConfig().getBoolean(PARENT + "show-messages-in-action-bar", true);
 		

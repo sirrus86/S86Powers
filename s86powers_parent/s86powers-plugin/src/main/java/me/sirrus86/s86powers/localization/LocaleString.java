@@ -125,6 +125,7 @@ public enum LocaleString {
 	POWER_CAP_PER_TYPE_CONFIG("config", "Maximum number of powers a non-admin may assign to themselves per given type."),
 	POWER_CAP_TOTAL_CONFIG("config", "Maximum number of powers a non-admin may assign to themselves."),
 	PREVENT_GRIEFING_CONFIG("config", "Whether fires, explosions, etc. from powers should cause no structural damage."),
+	REMOVE_POWERS_ON_DEATH_CONFIG("config", "Whether powers should be removed from players when they die."),
 	SAVE_ON_DISABLE_CONFIG("config", "Whether to automatically save all configs when the plugin is disabled."),
 	SHOW_COLORS_IN_CONSOLE_CONFIG("config", "Whether to show colors in the console. Note: Commands will show colors regardless."),
 	SHOW_COMMAND_HEADER_CONFIG("config", "Whether to show the header when commands are executed."),
