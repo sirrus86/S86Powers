@@ -103,7 +103,8 @@ public final class PowerCollector extends Power {
 	
 	private boolean canAddPower(PowerUser user, Power power) {
 		if (ConfigOption.Users.ENFORCE_POWER_CAP) {
-			return (user.getAssignedPowers().size() < ConfigOption.Users.POWER_CAP_TOTAL
+			return (user.getPlayer().hasPermission(PowerAdapter.getAdapter(power).getAssignPermission())
+					&& user.getAssignedPowers().size() < ConfigOption.Users.POWER_CAP_TOTAL
 					&& user.getAssignedPowersByType(power.getType()).size() < ConfigOption.Users.POWER_CAP_PER_TYPE);
 		}
 		else return true;
