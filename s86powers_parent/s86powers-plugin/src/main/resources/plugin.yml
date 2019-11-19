@@ -59,8 +59,7 @@ permissions:
         children:
             s86powers.manage.player: true
             s86powers.manage.player.add: true
-            s86powers.manage.player.create: true
-            s86powers.manage.player.delete: true
+            s86powers.manage.player.clear: true
             s86powers.manage.player.help: true
             s86powers.manage.player.info: true
             s86powers.manage.player.list: true
@@ -106,6 +105,7 @@ permissions:
         children:
             s86powers.manage.self: true
             s86powers.manage.self.add: true
+            s86powers.manage.self.clear: true
             s86powers.manage.self.info: true
             s86powers.manage.self.join: true
             s86powers.manage.self.leave: true

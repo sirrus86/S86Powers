@@ -28,11 +28,11 @@ import me.sirrus86.s86powers.users.PowerUserAdapter;
 
 public final class PowerTabCompleter implements TabCompleter {
 
-	private static final List<String> BASE = Lists.newArrayList("add", "config", "group", "help", "info", "player", "power", "remove", "stats", "supply", "toggle"),
+	private static final List<String> BASE = Lists.newArrayList("add", "clear", "config", "group", "help", "info", "player", "power", "remove", "stats", "supply", "toggle"),
 			CONFIG = Lists.newArrayList("info", "list", "reload", "save", "set"),
 			GROUP = Lists.newArrayList("add", "assign", "create", "delete", "info", "kick", "remove"),
 			POWER = Lists.newArrayList("block", "disable", "enable", "info", "kill", "lock", "option", "reload", "save", "stats", "supply", "unblock", "unlock"),
-			PLAYER = Lists.newArrayList("add", "info", "remove", "stats", "supply", "toggle"),
+			PLAYER = Lists.newArrayList("add", "clear", "info", "remove", "stats", "supply", "toggle"),
 			REGION = Lists.newArrayList("create", "delete", "info", "resize", "toggle");
 	
 	private static final List<String> empty = new ArrayList<>();
@@ -93,6 +93,9 @@ public final class PowerTabCompleter implements TabCompleter {
 						else if (args.length > 3) {
 							if (args[2].equalsIgnoreCase("add") && sender.hasPermission(S86Permission.PLAYER_ADD)) {
 								return StringUtil.copyPartialMatches(args[3], getPowerList(false), new ArrayList<>());
+							}
+							if (args[2].equalsIgnoreCase("clear") && sender.hasPermission(S86Permission.PLAYER_CLEAR)) {
+								return StringUtil.copyPartialMatches(args[3], Lists.newArrayList("DEFENSE", "OFFENSE", "PASSIVE"), new ArrayList<>());
 							}
 							else if ((args[2].equalsIgnoreCase("remove") && sender.hasPermission(S86Permission.PLAYER_REMOVE))
 									|| (args[2].equalsIgnoreCase("stats") && sender.hasPermission(S86Permission.PLAYER_STATS))
@@ -165,6 +168,9 @@ public final class PowerTabCompleter implements TabCompleter {
 				}
 				else if (args[0].equalsIgnoreCase("add") && sender.hasPermission(S86Permission.SELF_ADD)) {
 					return StringUtil.copyPartialMatches(args[1], getPowerList(false), new ArrayList<>());
+				}
+				else if (args[0].equalsIgnoreCase("clear") && sender.hasPermission(S86Permission.SELF_CLEAR)) {
+					return StringUtil.copyPartialMatches(args[1], Lists.newArrayList("DEFENSE", "OFFENSE", "PASSIVE"), new ArrayList<>());
 				}
 				else if ((args[0].equalsIgnoreCase("remove") && sender.hasPermission(S86Permission.SELF_REMOVE))
 						|| (args[0].equalsIgnoreCase("stats") && sender.hasPermission(S86Permission.SELF_STATS))

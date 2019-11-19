@@ -32,6 +32,7 @@ public class S86Permission {
 
 	public static final Permission PLAYER = new Permission("s86powers.manage.player", "Allows user to use player commands.", PermissionDefault.TRUE);
 	public static final Permission PLAYER_ADD = new Permission("s86powers.manage.player.add", "Allows user to add powers to other players.", PermissionDefault.FALSE);
+	public static final Permission PLAYER_CLEAR = new Permission("s86powers.manage.player.clear", "Allows user to remove all powers from other players.", PermissionDefault.FALSE);
 	public static final Permission PLAYER_HELP = new Permission("s86powers.manage.player.help", "Allows user to view player help.", PermissionDefault.TRUE);
 	public static final Permission PLAYER_INFO = new Permission("s86powers.manage.player.info", "Allows user to view info on other players.", PermissionDefault.TRUE);
 	public static final Permission PLAYER_LIST = new Permission("s86powers.manage.player.list", "Allows user to view a list of all players.", PermissionDefault.TRUE);
@@ -69,6 +70,7 @@ public class S86Permission {
 
 	public static final Permission SELF = new Permission("s86powers.manage.self", "Allows user to use self commands.", PermissionDefault.TRUE);
 	public static final Permission SELF_ADD = new Permission("s86powers.manage.self.add", "Allows user to add powers to themselves.", PermissionDefault.TRUE);
+	public static final Permission SELF_CLEAR = new Permission("s86powers.manage.self.clear", "Allows user to remove all powers from themselves.", PermissionDefault.TRUE);
 	public static final Permission SELF_INFO = new Permission("s86powers.manage.self.info", "Allows user to view info on themselves.", PermissionDefault.TRUE);
 	public static final Permission SELF_REMOVE = new Permission("s86powers.manage.self.remove", "Allows user to remove powers from themselves.", PermissionDefault.TRUE);
 	public static final Permission SELF_STATS = new Permission("s86powers.manage.self.stats", "Allows user to view their own power stats.", PermissionDefault.TRUE);

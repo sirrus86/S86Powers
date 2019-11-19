@@ -14,12 +14,14 @@ import me.sirrus86.s86powers.users.PowerUserAdapter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 
 public class ComPlayer extends ComAbstract {
 	
@@ -42,6 +44,9 @@ public class ComPlayer extends ComAbstract {
 					}
 					else if (args[2].equalsIgnoreCase("add")) {
 						comUserAdd(uCont, args.length > 3 ? (args[3].equalsIgnoreCase("random") ? getRandomPower(uCont) : config.getPower(args[3])) : null);
+					}
+					else if (args[2].equalsIgnoreCase("clear")) {
+						comUserClear(uCont, args.length > 3 ? args[3].toUpperCase() : null);
 					}
 					else if (args[2].equalsIgnoreCase("remove")) {
 						comUserRemove(uCont, args.length > 3 ? config.getPower(args[3]) : null);
@@ -110,6 +115,28 @@ public class ComPlayer extends ComAbstract {
 			}
 			else {
 				sender.sendMessage(ERROR + LocaleString.UNKNOWN_POWER);
+			}
+		}
+		else {
+			sender.sendMessage(ERROR + LocaleString.NO_PERMISSION);
+		}
+	}
+	
+	private void comUserClear(PowerUserAdapter user, String type) {
+		if (sender.hasPermission(S86Permission.PLAYER_CLEAR)) {
+			PowerType pType = null;
+			if (type != null) {
+				try {
+					pType = PowerType.valueOf(type);
+				} catch (IllegalArgumentException e) {
+					sender.sendMessage(ERROR + LocaleString.UNKNOWN_TYPE.build(type));
+					return;
+				}
+			}
+			Set<Power> powers = pType != null ? Sets.newHashSet(user.getAssignedPowersByType(pType)) : Sets.newHashSet(user.getAssignedPowers());
+			for (Power power : powers) {
+				user.removePower(power);
+				sender.sendMessage(SUCCESS + LocaleString.PLAYER_REMOVE_POWER_SUCCESS.build(user.getUser(), power));
 			}
 		}
 		else {
