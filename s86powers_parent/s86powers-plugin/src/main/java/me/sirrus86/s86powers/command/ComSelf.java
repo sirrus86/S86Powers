@@ -74,7 +74,18 @@ public class ComSelf extends ComAbstract {
 						&& (uCont.getAssignedPowersByType(power.getType()).size() >= ConfigOption.Users.POWER_CAP_PER_TYPE
 								|| uCont.getAssignedPowers().size() >= ConfigOption.Users.POWER_CAP_TOTAL)) {
 					if (uCont.getAssignedPowersByType(power.getType()).size() >= ConfigOption.Users.POWER_CAP_PER_TYPE) {
-						sender.sendMessage(ERROR + LocaleString.SELF_TOO_MANY_POWERS_TYPE.build(power.getType()));
+						if (ConfigOption.Users.REPLACE_POWERS_OF_SAME_TYPE) {
+							List<Power> powers = Lists.newArrayList(sUser.getAssignedPowersByType(power.getType()));
+							Collections.shuffle(powers);
+							Power removePower = powers.get(0);
+							uCont.removePower(removePower);
+							sender.sendMessage(SUCCESS + LocaleString.SELF_REMOVE_POWER_SUCCESS.build(removePower));
+							sUser.addPower(power);
+							sender.sendMessage(SUCCESS + LocaleString.SELF_ADD_POWER_SUCCESS.build(power));
+						}
+						else {
+							sender.sendMessage(ERROR + LocaleString.SELF_TOO_MANY_POWERS_TYPE.build(power.getType()));
+						}
 					}
 					else if (uCont.getAssignedPowers().size() >= ConfigOption.Users.POWER_CAP_TOTAL) {
 						sender.sendMessage(ERROR + LocaleString.SELF_TOO_MANY_POWERS);

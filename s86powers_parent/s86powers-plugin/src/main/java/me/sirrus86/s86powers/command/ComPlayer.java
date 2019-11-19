@@ -86,7 +86,18 @@ public class ComPlayer extends ComAbstract {
 						&& (user.getAssignedPowersByType(power.getType()).size() >= ConfigOption.Users.POWER_CAP_PER_TYPE
 								|| user.getAssignedPowers().size() >= ConfigOption.Users.POWER_CAP_TOTAL)) {
 					if (user.getAssignedPowersByType(power.getType()).size() >= ConfigOption.Users.POWER_CAP_PER_TYPE) {
-						sender.sendMessage(ERROR + LocaleString.PLAYER_TOO_MANY_POWERS_TYPE.build(user.getUser(), power.getType()));
+						if (ConfigOption.Users.REPLACE_POWERS_OF_SAME_TYPE) {
+							List<Power> powers = Lists.newArrayList(user.getAssignedPowersByType(power.getType()));
+							Collections.shuffle(powers);
+							Power removePower = powers.get(0);
+							user.removePower(removePower);
+							sender.sendMessage(SUCCESS + LocaleString.PLAYER_REMOVE_POWER_SUCCESS.build(user.getUser(), removePower));
+							user.addPower(power);
+							sender.sendMessage(SUCCESS + LocaleString.PLAYER_ADD_POWER_SUCCESS.build(user.getUser(), power));
+						}
+						else {
+							sender.sendMessage(ERROR + LocaleString.PLAYER_TOO_MANY_POWERS_TYPE.build(user.getUser(), power.getType()));
+						}
 					}
 					else if (user.getAssignedPowers().size() >= ConfigOption.Users.POWER_CAP_TOTAL) {
 						sender.sendMessage(ERROR + LocaleString.PLAYER_TOO_MANY_POWERS.build(user.getUser()));

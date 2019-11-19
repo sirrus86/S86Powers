@@ -35,6 +35,8 @@ import org.bukkit.loot.LootTable;
 import org.bukkit.loot.LootTables;
 import org.bukkit.persistence.PersistentDataType;
 
+import com.google.common.collect.Lists;
+
 import me.sirrus86.s86powers.S86Powers;
 import me.sirrus86.s86powers.config.ConfigOption;
 import me.sirrus86.s86powers.localization.LocaleString;
@@ -44,8 +46,9 @@ import me.sirrus86.s86powers.powers.PowerManifest;
 import me.sirrus86.s86powers.powers.PowerType;
 import me.sirrus86.s86powers.tools.PowerTools;
 import me.sirrus86.s86powers.users.PowerUser;
+import me.sirrus86.s86powers.users.PowerUserAdapter;
 
-@PowerManifest(name = "Power Collector", type = PowerType.UTILITY, author = "sirrus86", concept = "sirrus86", icon=Material.ENCHANTED_BOOK,
+@PowerManifest(name = "Power Collector", type = PowerType.UTILITY, author = "sirrus86", concept = "sirrus86", icon = Material.ENCHANTED_BOOK,
 	description = "Power books have a [dropChance]% chance to drop from mobs, as well as a chance to appear in treasure chests in the world. Power books can be read to learn new powers.")
 public final class PowerCollector extends Power {
 
@@ -103,11 +106,29 @@ public final class PowerCollector extends Power {
 	
 	private boolean canAddPower(PowerUser user, Power power) {
 		if (ConfigOption.Users.ENFORCE_POWER_CAP) {
-			return (user.getPlayer().hasPermission(PowerAdapter.getAdapter(power).getAssignPermission())
-					&& user.getAssignedPowers().size() < ConfigOption.Users.POWER_CAP_TOTAL
-					&& user.getAssignedPowersByType(power.getType()).size() < ConfigOption.Users.POWER_CAP_PER_TYPE);
+			if (user.getAssignedPowers().size() < ConfigOption.Users.POWER_CAP_TOTAL
+					&& user.getPlayer().hasPermission(PowerAdapter.getAdapter(power).getAssignPermission())) {
+				if (ConfigOption.Users.REPLACE_POWERS_OF_SAME_TYPE
+						&& user.getAssignedPowersByType(power.getType()).size() >= ConfigOption.Users.POWER_CAP_PER_TYPE) {
+					List<Power> powers = Lists.newArrayList(user.getAssignedPowersByType(power.getType()));
+					Collections.shuffle(powers);
+					Power removePower = powers.get(0);
+					PowerUserAdapter.getAdapter(user).removePower(removePower);
+					user.sendMessage(LocaleString.SELF_REMOVE_POWER_SUCCESS.build(removePower));
+					return true;
+				}
+				else {
+					return (user.getAssignedPowers().size() < ConfigOption.Users.POWER_CAP_TOTAL
+							&& user.getAssignedPowersByType(power.getType()).size() < ConfigOption.Users.POWER_CAP_PER_TYPE);
+				}
+			}
+			else {
+				return false;
+			}
 		}
-		else return true;
+		else {
+			return user.getPlayer().hasPermission(PowerAdapter.getAdapter(power).getAssignPermission());
+		}
 	}
 	
 	private LootTables getLootTables(LootTable table) {
