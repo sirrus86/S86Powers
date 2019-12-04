@@ -48,6 +48,10 @@ import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.PotionMeta;
+import org.bukkit.potion.PotionData;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 import org.bukkit.util.Vector;
 
 import com.google.common.collect.Lists;
@@ -512,6 +516,42 @@ public final class PowerTools {
 		return nms != null ? nms : resolveNMS();
 	}
 	
+	public static final PotionEffect getPotionEffect(PotionData data) {
+		PotionEffectType type = data.getType().getEffectType();
+		int amp = data.isUpgraded() ? 1 : 0;
+		int dur = 0;
+		switch (data.getType()) {
+			case FIRE_RESISTANCE: case INVISIBILITY: case JUMP: case NIGHT_VISION: case SPEED: case STRENGTH: case WATER_BREATHING: {
+				dur = data.isExtended() ? PowerTime.toTicks(8, 0, 0) : (data.isUpgraded() ? PowerTime.toTicks(1, 30, 0) : PowerTime.toTicks(3, 0, 0));
+				break;
+			}
+			case POISON: case REGEN: {
+				dur = data.isExtended() ? PowerTime.toTicks(1, 30, 0) : (data.isUpgraded() ? PowerTime.toTicks(22, 0) : PowerTime.toTicks(45, 0));
+				break;
+			}
+			case SLOW_FALLING: case SLOWNESS: case WEAKNESS: {
+				dur = data.isExtended() ? PowerTime.toTicks(4, 0, 0) : (data.isUpgraded() ? PowerTime.toTicks(20, 0) : PowerTime.toTicks(1, 30, 0));
+				break;
+			}
+			case TURTLE_MASTER: {
+				dur = data.isExtended() ? PowerTime.toTicks(40, 0) : PowerTime.toTicks(20, 0);
+				break;
+			}
+			default: break;
+		}
+		return new PotionEffect(type, dur, amp);
+	}
+	
+	public static final String getPotionEffectName(PotionEffectType type) {
+		return WordUtils.capitalizeFully(type.getName().replace("_", " "));
+//		switch (type) {
+//			case INSTANT_HEAL: return "Instant Health";
+//			case JUMP: return "Jump Boost";
+//			case REGEN: return "Regeneration";
+//			default: return WordUtils.capitalizeFully(type.name().replace("_", " "));
+//		}
+	}
+	
 	public static LivingEntity getRandomEntity(Entity entity, double radius, LivingEntity... ignore) {
 		return getRandomEntity(entity, radius, ignore != null ? Sets.newHashSet(ignore) : null);
 	}
@@ -660,6 +700,12 @@ public final class PowerTools {
 	public static final boolean isPickaxe(ItemStack item) {
 		return item != null
 				&& item.getType().name().endsWith("_PICKAXE");
+	}
+	
+	public static final boolean isPotion(ItemStack item) {
+		return item.getType().name().contains("POTION")
+				&& item.hasItemMeta()
+				&& item.getItemMeta() instanceof PotionMeta;
 	}
 
 	public static final boolean isProjectile(ItemStack item) {
