@@ -14,6 +14,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.event.entity.ProjectileLaunchEvent;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -57,6 +58,7 @@ public class SnowMiser extends Power {
 		freezeWater = option("freeze-water", true, "Whether water hit by snowballs should turn into ice.");
 		snowAndIce = addSnow && freezeWater;
 		snowOrIce = addSnow || freezeWater;
+		supplies(new ItemStack(Material.SNOWBALL, 16));
 	}
 	
 	private int trackSnowball(Snowball snowball) {
@@ -93,7 +95,7 @@ public class SnowMiser extends Power {
 				if (target.hasPotionEffect(PotionEffectType.SLOW)) {
 					amplifier = Integer.min(freezeCap, target.getPotionEffect(PotionEffectType.SLOW).getAmplifier() + 1);
 				}
-				target.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, (int) freezeDur, amplifier), true);
+				target.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, (int) PowerTime.toTicks(freezeDur), amplifier), true);
 			}
 		}
 	}
