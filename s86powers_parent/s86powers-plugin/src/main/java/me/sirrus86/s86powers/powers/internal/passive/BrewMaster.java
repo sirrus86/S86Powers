@@ -10,6 +10,7 @@ import org.bukkit.event.player.PlayerItemConsumeEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.PotionMeta;
 import org.bukkit.potion.PotionEffect;
+import org.bukkit.scheduler.BukkitRunnable;
 
 import me.sirrus86.s86powers.powers.Power;
 import me.sirrus86.s86powers.powers.PowerManifest;
@@ -129,17 +130,30 @@ public class BrewMaster extends Power {
 				&& event.getItem() != null
 				&& potMats.contains(event.getItem().getType())) {
 			PotionMeta meta = (PotionMeta) event.getItem().getItemMeta();
-			if (meta.hasCustomEffects()) {
-				for (PotionEffect newEffect : meta.getCustomEffects()) {
-					for (PotionEffect effect : user.getPlayer().getActivePotionEffects()) {
-						if (effect.getType() == newEffect.getType()) {
-							PotionEffect addEffect = new PotionEffect(effect.getType(), effect.getDuration() + newEffect.getDuration(), Integer.max(effect.getAmplifier(), newEffect.getAmplifier()));
-							user.getPlayer().addPotionEffect(addEffect, true);
-						}
+			PotionEffect newEffect = PowerTools.getPotionEffect(meta.getBasePotionData());
+			PotionEffect effect = user.getPlayer().getPotionEffect(newEffect.getType());
+			if (effect != null) {
+				PotionEffect addEffect = new PotionEffect(effect.getType(), effect.getDuration() + newEffect.getDuration(), Integer.max(effect.getAmplifier(), newEffect.getAmplifier()));
+				runTask(new BukkitRunnable() {
+
+					@Override
+					public void run() {
+						user.getPlayer().addPotionEffect(addEffect, true);
 					}
-				}
-//				user.increaseStat(consumes, 1);
+					
+				});
 			}
+//			if (meta.hasCustomEffects()) {
+//				for (PotionEffect newEffect : meta.getCustomEffects()) {
+//					for (PotionEffect effect : user.getPlayer().getActivePotionEffects()) {
+//						if (effect.getType() == newEffect.getType()) {
+//							PotionEffect addEffect = new PotionEffect(effect.getType(), effect.getDuration() + newEffect.getDuration(), Integer.max(effect.getAmplifier(), newEffect.getAmplifier()));
+//							user.getPlayer().addPotionEffect(addEffect, true);
+//						}
+//					}
+//				}
+//				user.increaseStat(consumes, 1);
+//			}
 		}
 	}
 	
