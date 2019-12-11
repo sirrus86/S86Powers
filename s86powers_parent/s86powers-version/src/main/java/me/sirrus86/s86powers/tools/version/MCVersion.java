@@ -45,6 +45,11 @@ public enum MCVersion {
 	v1_14_4("v1_14_R1", 4.5D),
 	
 	/**
+	 * Represents server version 1.15.
+	 */
+	v1_15("v1_15_R1", 4.5D),
+	
+	/**
 	 * Represents an unsupported server version.
 	 */
 	UNSUPPORTED("unsupported", 0.0D);
