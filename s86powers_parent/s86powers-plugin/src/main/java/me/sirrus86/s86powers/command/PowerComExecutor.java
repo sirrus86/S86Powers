@@ -26,8 +26,10 @@ public final class PowerComExecutor implements CommandExecutor {
 			gui.open((Player) sender);
 		}
 		else {
-			FOOTER = createFooter(sender);
-			sender.sendMessage(ConfigOption.Plugin.SHOW_COMMAND_HEADER ? HEADER : FOOTER);
+			if (ConfigOption.Plugin.SHOW_COMMAND_LINES) {
+				FOOTER = createFooter(sender);
+				sender.sendMessage(ConfigOption.Plugin.SHOW_COMMAND_HEADER ? HEADER : FOOTER);
+			}
 			if (args.length > 0) {
 				if (args[0].equalsIgnoreCase("config")) {
 					new ComConfig(sender, args);
@@ -55,7 +57,9 @@ public final class PowerComExecutor implements CommandExecutor {
 			else {
 				new ComHelp(sender, args);
 			}
-			sender.sendMessage(FOOTER);
+			if (ConfigOption.Plugin.SHOW_COMMAND_LINES) {
+				sender.sendMessage(FOOTER);
+			}
 		}
 		return true;
 	}
