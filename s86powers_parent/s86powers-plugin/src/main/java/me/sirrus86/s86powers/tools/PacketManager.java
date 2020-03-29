@@ -253,9 +253,9 @@ public final class PacketManager {
 					entityPacket.getDoubles().write(2, loc.getZ());
 					entityPacket.getBytes().write(0, (byte) (loc.getYaw() * 256.0F / 360.0F));
 					entityPacket.getBytes().write(1, (byte) (loc.getPitch() * 256.0F / 360.0F));
-					if (watcher != null) {
-						entityPacket.getDataWatcherModifier().write(0, watcher);
-					}
+//					if (watcher != null) {
+//						entityPacket.getDataWatcherModifier().write(0, watcher);
+//					}
 				}
 				else {
 					throw new IllegalArgumentException("UUID is required!");
@@ -275,9 +275,9 @@ public final class PacketManager {
 				entityPacket.getBytes().write(0, (byte) (loc.getYaw() * 256.0F / 360.0F));
 				entityPacket.getBytes().write(1, (byte) (loc.getPitch() * 256.0F / 360.0F));
 				entityPacket.getBytes().write(2, (byte) (loc.getYaw() * 256.0F / 360.0F));
-				if (watcher != null) {
-					entityPacket.getDataWatcherModifier().write(0, watcher);
-				}
+//				if (watcher != null) {
+//					entityPacket.getDataWatcherModifier().write(0, watcher);
+//				}
 			}
 		}
 		else {
