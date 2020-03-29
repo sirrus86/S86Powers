@@ -30,7 +30,7 @@ import me.sirrus86.s86powers.powers.PowerManifest;
 import me.sirrus86.s86powers.powers.PowerStat;
 import me.sirrus86.s86powers.powers.PowerType;
 import me.sirrus86.s86powers.tools.PowerTools;
-import me.sirrus86.s86powers.tools.version.MCVersion;
+import me.sirrus86.s86powers.tools.version.MCMetadata;
 import me.sirrus86.s86powers.users.PowerUser;
 
 @PowerManifest(name = "Lycanthropy", type = PowerType.PASSIVE, author = "sirrus86", concept = "vashvhexx", icon=Material.RABBIT_HIDE, usesPackets = true,
@@ -50,7 +50,8 @@ public final class Lycanthropy extends Power {
 	
 	@Override
 	protected void onEnable() {
-		angryMeta.put(MCVersion.isLessThan(MCVersion.v1_14) ? 13 : 15, (byte) 0x02);
+//		angryMeta.put(MCVersion.isLessThan(MCVersion.v1_14) ? 13 : 15, (byte) 0x02);
+		angryMeta.put(MCMetadata.TAMEABLE_STATE.getIndex(), (byte) 0x02);
 		isWolf = new HashSet<>();
 		runTaskTimer(manage, 0L, 0L);
 	}

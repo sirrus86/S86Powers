@@ -34,7 +34,7 @@ import me.sirrus86.s86powers.powers.PowerManifest;
 import me.sirrus86.s86powers.powers.PowerStat;
 import me.sirrus86.s86powers.powers.PowerType;
 import me.sirrus86.s86powers.tools.PowerTools;
-import me.sirrus86.s86powers.tools.version.MCVersion;
+import me.sirrus86.s86powers.tools.version.MCMetadata;
 import me.sirrus86.s86powers.users.PowerUser;
 
 @PowerManifest(name = "Vampirism", type = PowerType.PASSIVE, author = "sirrus86", concept = "TheClownOfCrime", icon=Material.FERMENTED_SPIDER_EYE, usesPackets = true,
@@ -53,7 +53,8 @@ public final class Vampirism extends Power {
 	
 	@Override
 	protected void onEnable() {
-		flyingMeta.put(MCVersion.isLessThan(MCVersion.v1_14) ? 12 : 14, (byte) 0x00);
+//		flyingMeta.put(MCVersion.isLessThan(MCVersion.v1_14) ? 12 : 14, (byte) 0x00);
+		flyingMeta.put(MCMetadata.BAT_HANGING.getIndex(), (byte) 0x00);
 		sprinting = new HashSet<>();
 		transformed = new HashSet<>();
 		runTaskTimer(manage, 0L, 5L);
