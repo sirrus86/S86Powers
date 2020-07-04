@@ -5,6 +5,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
+import org.bukkit.event.inventory.InventoryType.SlotType;
 import org.bukkit.event.player.PlayerQuitEvent;
 
 import me.sirrus86.s86powers.S86Powers;
@@ -24,9 +25,11 @@ public class GUIListener implements Listener {
 			GUIAbstract gui = GUIAbstract.getGUI(player.getUniqueId());
 			if (gui != null) {
 				event.setCancelled(true);
-				GUIAction action = gui.getAction(event.getSlot());
-				if (action != null) {
-					action.click(player);
+				if (event.getSlotType() == SlotType.CONTAINER) {
+					GUIAction action = gui.getAction(event.getSlot());
+					if (action != null) {
+						action.click(player);
+					}
 				}
 			}
 		}
