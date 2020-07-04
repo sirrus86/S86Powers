@@ -5,6 +5,7 @@ import java.util.function.Predicate;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.EntityType;
 import org.bukkit.util.Vector;
 
 public class VersionTools extends me.sirrus86.s86powers.tools.version.VersionTools {
@@ -22,6 +23,14 @@ public class VersionTools extends me.sirrus86.s86powers.tools.version.VersionToo
 					return entity;
 				}
 			}
+		}
+		return null;
+	}
+	
+	@Override
+	public EntityType resolveEntityType(String name) {
+		switch(name) {
+			case "PIGLIN": case "PIGZOMBIE": return EntityType.PIG_ZOMBIE;
 		}
 		return null;
 	}

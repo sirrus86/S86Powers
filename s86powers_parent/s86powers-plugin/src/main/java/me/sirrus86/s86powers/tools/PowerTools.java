@@ -777,8 +777,12 @@ public final class PowerTools {
 		pm.removeSpectralBlock(player, block);
 	}
 	
+	public static EntityType resolveEntityType(String name) {
+		return vTools.resolveEntityType(name);
+	}
+	
 	@SuppressWarnings("deprecation")
-	public static EntityType resolveEntityType(String typeString) {
+	public static EntityType resolveEntityTypeByName(String typeString) {
 		for (EntityType type : EntityType.values()) {
 			if (type.getName().equalsIgnoreCase(typeString)) {
 				return type;
@@ -803,8 +807,12 @@ public final class PowerTools {
 					case v1_13: case v1_13_1: case v1_13_2: {
 						return (VersionTools) Class.forName("me.sirrus86.s86powers.tools.version.v1_13.VersionTools").newInstance();
 					}
-					default: {
+					case v1_14: case v1_14_1: case v1_14_2: case v1_14_3: case v1_14_4:
+					case v1_15: case v1_15_1: case v1_15_2: {
 						return (VersionTools) Class.forName("me.sirrus86.s86powers.tools.version.v1_14.VersionTools").newInstance();
+					}
+					default: {
+						return (VersionTools) Class.forName("me.sirrus86.s86powers.tools.version.v1_16.VersionTools").newInstance();
 					}
 				}
 			} catch (Exception e) {

@@ -1,4 +1,4 @@
-package me.sirrus86.s86powers.tools.version.v1_14;
+package me.sirrus86.s86powers.tools.version.v1_16;
 
 import java.util.function.Predicate;
 
@@ -27,7 +27,7 @@ public class VersionTools extends me.sirrus86.s86powers.tools.version.VersionToo
 	@Override
 	public EntityType resolveEntityType(String name) {
 		switch(name) {
-			case "PIGLIN": case "PIGZOMBIE": return EntityType.PIG_ZOMBIE;
+			case "PIGLIN": case "PIGZOMBIE": return EntityType.PIGLIN;
 		}
 		return null;
 	}

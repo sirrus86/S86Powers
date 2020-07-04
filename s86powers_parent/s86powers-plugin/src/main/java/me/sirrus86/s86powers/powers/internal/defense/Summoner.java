@@ -45,7 +45,7 @@ public final class Summoner extends Power {
 
 	private Map<PowerUser, LivingEntity> minions;
 	
-	private final EnumSet<EntityType> nMobs = EnumSet.of(EntityType.BLAZE, EntityType.GHAST, EntityType.MAGMA_CUBE, EntityType.PIG_ZOMBIE, EntityType.WITHER_SKELETON);
+	private final EnumSet<EntityType> nMobs = EnumSet.of(EntityType.BLAZE, EntityType.GHAST, EntityType.MAGMA_CUBE, PowerTools.resolveEntityType("PIGZOMBIE"), EntityType.WITHER_SKELETON);
 	
 	private int bSpawn, gSpawn, pjSpawn, pzSpawn, wsSpawn;
 	private String noRoom;

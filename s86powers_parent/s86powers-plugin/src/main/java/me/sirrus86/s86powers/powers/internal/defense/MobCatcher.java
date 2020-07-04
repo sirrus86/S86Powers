@@ -60,7 +60,7 @@ public final class MobCatcher extends Power {
 	private final Set<EntityType> capturable = EnumSet.of(EntityType.BAT, EntityType.BLAZE, EntityType.CAT, EntityType.CAVE_SPIDER, EntityType.CHICKEN,
 			EntityType.COW, EntityType.CREEPER, EntityType.DOLPHIN, EntityType.DROWNED, EntityType.ENDERMAN, EntityType.ENDERMITE, EntityType.FOX,
 			EntityType.GHAST, EntityType.GUARDIAN, EntityType.HUSK, EntityType.MAGMA_CUBE, EntityType.MUSHROOM_COW, EntityType.OCELOT, EntityType.PANDA,
-			EntityType.PARROT, EntityType.PHANTOM, EntityType.PIG, EntityType.PIG_ZOMBIE, EntityType.POLAR_BEAR, EntityType.RABBIT, EntityType.SHEEP,
+			EntityType.PARROT, EntityType.PHANTOM, EntityType.PIG, PowerTools.resolveEntityType("PIGZOMBIE"), EntityType.POLAR_BEAR, EntityType.RABBIT, EntityType.SHEEP,
 			EntityType.SHULKER, EntityType.SILVERFISH, EntityType.SKELETON, EntityType.SLIME, EntityType.SPIDER, EntityType.SQUID, EntityType.STRAY,
 			EntityType.TURTLE, EntityType.WITCH, EntityType.WITHER_SKELETON, EntityType.WOLF, EntityType.ZOMBIE);
 	
