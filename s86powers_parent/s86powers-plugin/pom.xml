@@ -9,7 +9,7 @@
 		<version>parent</version>
 	</parent>
 	<artifactId>s86powers-plugin</artifactId>
-	<version>5.1.14</version>
+	<version>5.1.15</version>
 	<name>Plugin</name>
 
 	<dependencies>
@@ -51,6 +51,13 @@
 			<groupId>me.sirrus86</groupId>
 			<artifactId>s86powers-v1_15_R1</artifactId>
 			<version>v1_15_R1</version>
+			<scope>compile</scope>
+			<optional>true</optional>
+		</dependency>
+		<dependency>
+			<groupId>me.sirrus86</groupId>
+			<artifactId>s86powers-v1_16_R1</artifactId>
+			<version>v1_16_R1</version>
 			<scope>compile</scope>
 			<optional>true</optional>
 		</dependency>
