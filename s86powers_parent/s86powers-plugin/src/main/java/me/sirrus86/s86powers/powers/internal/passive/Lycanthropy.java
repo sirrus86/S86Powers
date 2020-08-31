@@ -1,8 +1,6 @@
 package me.sirrus86.s86powers.powers.internal.passive;
 
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 
 import org.bukkit.ChatColor;
@@ -31,6 +29,8 @@ import me.sirrus86.s86powers.powers.PowerStat;
 import me.sirrus86.s86powers.powers.PowerType;
 import me.sirrus86.s86powers.tools.PowerTools;
 import me.sirrus86.s86powers.tools.version.MCMetadata;
+import me.sirrus86.s86powers.tools.version.MCMetadata.EntityMeta;
+//import me.sirrus86.s86powers.tools.version.MCMetadata;
 import me.sirrus86.s86powers.users.PowerUser;
 
 @PowerManifest(name = "Lycanthropy", type = PowerType.PASSIVE, author = "sirrus86", concept = "vashvhexx", icon=Material.RABBIT_HIDE, usesPackets = true,
@@ -39,7 +39,8 @@ public final class Lycanthropy extends Power {
 
 	private Set<PowerUser> isWolf;
 	
-	private final Map<Integer, Object> angryMeta = new HashMap<>();
+//	private final Map<Integer, Object> angryMeta = new HashMap<>();
+	private final MCMetadata angryMeta = new MCMetadata();
 	
 	private double dmgIncr, infectChance, ironDmg;
 	@SuppressWarnings("unused")
@@ -51,7 +52,8 @@ public final class Lycanthropy extends Power {
 	@Override
 	protected void onEnable() {
 //		angryMeta.put(MCVersion.isLessThan(MCVersion.v1_14) ? 13 : 15, (byte) 0x02);
-		angryMeta.put(MCMetadata.TAMEABLE_STATE.getIndex(), (byte) 0x02);
+//		angryMeta.put(MCMetadata.TAMEABLE_STATE.getIndex(), (byte) 0x02);
+		angryMeta.setEntry(EntityMeta.TAMEABLE_STATE, (byte) 0x02);
 		isWolf = new HashSet<>();
 		runTaskTimer(manage, 0L, 0L);
 	}

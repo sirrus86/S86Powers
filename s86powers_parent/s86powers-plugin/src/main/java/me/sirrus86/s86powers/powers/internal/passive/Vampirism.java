@@ -1,9 +1,7 @@
 package me.sirrus86.s86powers.powers.internal.passive;
 
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.Map;
 import java.util.Set;
 
 import org.bukkit.ChatColor;
@@ -35,6 +33,7 @@ import me.sirrus86.s86powers.powers.PowerStat;
 import me.sirrus86.s86powers.powers.PowerType;
 import me.sirrus86.s86powers.tools.PowerTools;
 import me.sirrus86.s86powers.tools.version.MCMetadata;
+import me.sirrus86.s86powers.tools.version.MCMetadata.EntityMeta;
 import me.sirrus86.s86powers.users.PowerUser;
 
 @PowerManifest(name = "Vampirism", type = PowerType.PASSIVE, author = "sirrus86", concept = "TheClownOfCrime", icon=Material.FERMENTED_SPIDER_EYE, usesPackets = true,
@@ -43,7 +42,8 @@ public final class Vampirism extends Power {
 
 	private Set<PowerUser> sprinting, transformed;
 	
-	private final Map<Integer, Object> flyingMeta = new HashMap<>();
+//	private final Map<Integer, Object> flyingMeta = new HashMap<>();
+	private final MCMetadata flyingMeta = new MCMetadata();
 	
 	private boolean helmProt, infect;
 	private int food, jmp, spd;
@@ -54,7 +54,8 @@ public final class Vampirism extends Power {
 	@Override
 	protected void onEnable() {
 //		flyingMeta.put(MCVersion.isLessThan(MCVersion.v1_14) ? 12 : 14, (byte) 0x00);
-		flyingMeta.put(MCMetadata.BAT_HANGING.getIndex(), (byte) 0x00);
+//		flyingMeta.put(MCMetadata.BAT_HANGING.getIndex(), (byte) 0x00);
+		flyingMeta.setEntry(EntityMeta.BAT_IS_HANGING, (byte) 0x00);
 		sprinting = new HashSet<>();
 		transformed = new HashSet<>();
 		runTaskTimer(manage, 0L, 5L);

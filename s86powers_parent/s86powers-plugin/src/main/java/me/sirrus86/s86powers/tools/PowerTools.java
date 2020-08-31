@@ -18,6 +18,7 @@ import me.sirrus86.s86powers.config.ConfigOption;
 import me.sirrus86.s86powers.powers.Power;
 import me.sirrus86.s86powers.powers.PowerAdapter;
 import me.sirrus86.s86powers.tools.nms.NMSLibrary;
+import me.sirrus86.s86powers.tools.version.MCMetadata;
 import me.sirrus86.s86powers.tools.version.MCVersion;
 import me.sirrus86.s86powers.tools.version.VersionTools;
 import me.sirrus86.s86powers.users.PowerUser;
@@ -87,6 +88,21 @@ public final class PowerTools {
 	@PacketManaged
 	public static void addDisguise(Entity entity, EntityType type) {
 		pm.addDisguise(entity, type);
+	}
+	
+	/**
+	 * Adds a disguise to an entity, making it look like a different kind of entity.
+	 * <p>
+	 * Uses packets to maintain the disguise. The disguise will remain until {@link PowerTools#removeDisguise(Entity)} is called, or if the entity dies or despawns.
+	 * <p>
+	 * Disguises are not maintained after the server restarts or reloads.
+	 * @param entity - The entity which needs to be disguised
+	 * @param type - The {@link EntityType} to disguise the entity as
+	 * @param meta - Metadata to be supplied with the disguise packet. May be {@code null}
+	 */
+	@PacketManaged
+	public static void addDisguise(Entity entity, EntityType type, MCMetadata meta) {
+		pm.addDisguise(entity, type, meta.getMap());
 	}
 	
 	/**
