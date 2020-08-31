@@ -178,7 +178,7 @@ public final class Arachnophile extends Power {
 				if (event.getHitEntity() != null
 						&& event.getHitEntity() instanceof LivingEntity) {
 					LivingEntity entity = (LivingEntity) event.getHitEntity();
-					entity.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, (int) PowerTime.toTicks(webDur), 1), true);
+					entity.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, (int) PowerTime.toTicks(webDur), 1));
 				}
 				webs.remove(event.getEntity());
 			}

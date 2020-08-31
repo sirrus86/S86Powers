@@ -137,7 +137,7 @@ public final class PowerUser implements Comparable<PowerUser> {
 	 */
 	public boolean addPotionEffect(PotionEffect effect) {
 		if (isOnline()) {
-			return getPlayer().addPotionEffect(new PotionEffect(effect.getType(), effect.getDuration(), effect.getAmplifier(), false, false, false), true);
+			return getPlayer().addPotionEffect(new PotionEffect(effect.getType(), effect.getDuration(), effect.getAmplifier(), false, false, false));
 		}
 		return false;
 	}

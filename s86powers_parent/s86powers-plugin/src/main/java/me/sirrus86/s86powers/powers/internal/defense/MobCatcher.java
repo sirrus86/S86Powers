@@ -183,10 +183,10 @@ public final class MobCatcher extends Power {
 			meta.getPersistentDataContainer().set(collarColor, PersistentDataType.STRING, ((Wolf)entity).getCollarColor().toString());
 		}
 		if (entity instanceof Zombie) {
-			if (((Zombie)entity).isBaby()) {
+			if (((Zombie)entity).isBaby()) { //Deprecated 1.16
 				stats.add("Juvenile");
 			}
-			meta.getPersistentDataContainer().set(zombieBaby, PersistentDataType.BYTE, ((Zombie)entity).isBaby() ? (byte) 1 : (byte) 0);
+			meta.getPersistentDataContainer().set(zombieBaby, PersistentDataType.BYTE, ((Zombie)entity).isBaby() ? (byte) 1 : (byte) 0); //Deprecated 1.16
 		}
 		meta.setDisplayName(WordUtils.capitalize(entity.getType().name().replaceAll("_", " ").toLowerCase()));
 		if (entity.getCustomName() != null) {
@@ -246,7 +246,7 @@ public final class MobCatcher extends Power {
 			((Wolf)entity).setCollarColor(DyeColor.valueOf(meta.getPersistentDataContainer().get(collarColor, PersistentDataType.STRING)));
 		}
 		if (entity instanceof Zombie) {
-			((Zombie)entity).setBaby(meta.getPersistentDataContainer().get(zombieBaby, PersistentDataType.BYTE) == 1);
+			((Zombie)entity).setBaby(meta.getPersistentDataContainer().get(zombieBaby, PersistentDataType.BYTE) == 1); //Deprecated 1.16
 		}
 		entity.setHealth(meta.getPersistentDataContainer().get(entityHealth, PersistentDataType.DOUBLE));
 		return entity;

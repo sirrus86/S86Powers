@@ -86,7 +86,7 @@ public final class Bulwark extends Power {
 					}
 					user.sendMessage(didParry.replace("[name]", PowerTools.getFriendlyName(target) + ChatColor.GREEN));
 					if (doFatigue) {
-						target.addPotionEffect(new PotionEffect(PotionEffectType.SLOW_DIGGING, (int) PowerTime.toTicks(fatigueTime), fatigueAmp), true);
+						target.addPotionEffect(new PotionEffect(PotionEffectType.SLOW_DIGGING, (int) PowerTime.toTicks(fatigueTime), fatigueAmp));
 					}
 				}
 				else if (event.getDamager() instanceof Arrow

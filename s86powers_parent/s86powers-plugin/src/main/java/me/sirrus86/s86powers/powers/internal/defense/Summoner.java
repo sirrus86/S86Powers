@@ -264,7 +264,7 @@ public final class Summoner extends Power {
 					case PIG_JOCKEY: {
 						minion = spawn.getWorld().spawn(spawn, PigZombie.class);
 						Chicken ch = spawn.getWorld().spawn(spawn, Chicken.class);
-						((PigZombie) minion).setBaby(true);
+						((PigZombie) minion).setBaby(true); //Deprecated 1.16
 						ch.addPassenger(minion);
 						break;
 					}

@@ -59,7 +59,7 @@ public final class Brawler extends Power {
 				event.setDamage(event.getDamage() * (dmgIncr / 100.0D));
 				if (user.getPlayer().isSneaking()
 						&& event.getEntity() instanceof LivingEntity) {
-					((LivingEntity) event.getEntity()).addPotionEffect(new PotionEffect(PotionEffectType.SLOW, (int) PowerTime.toTicks(slowDur), slowAmp, false, false, false), true);
+					((LivingEntity) event.getEntity()).addPotionEffect(new PotionEffect(PotionEffectType.SLOW, (int) PowerTime.toTicks(slowDur), slowAmp, false, false, false));
 				}
 				else if (canUppercut.containsKey(user)
 						&& System.currentTimeMillis() < canUppercut.get(user)) {

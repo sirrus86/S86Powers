@@ -269,7 +269,7 @@ public final class Necromancer extends Power {
 				for (LivingEntity entity : PowerTools.getNearbyEntities(LivingEntity.class, loc, i)) {
 					if (!(entity instanceof Skeleton || entity instanceof Zombie)
 							&& entity != user.getPlayer()) {
-						entity.addPotionEffect(new PotionEffect(PotionEffectType.WEAKNESS, 20, wkLvl), true);
+						entity.addPotionEffect(new PotionEffect(PotionEffectType.WEAKNESS, 20, wkLvl));
 					}
 				}
 				if (System.currentTimeMillis() >= time) {

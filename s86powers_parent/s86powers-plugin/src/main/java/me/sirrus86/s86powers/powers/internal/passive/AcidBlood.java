@@ -48,7 +48,7 @@ public final class AcidBlood extends Power {
 					if (((EntityDamageByEntityEvent) event).getDamager() instanceof LivingEntity
 							&& afflict && user.getCooldown(this) <= 0) {
 						LivingEntity target = (LivingEntity) ((EntityDamageByEntityEvent) event).getDamager();
-						target.addPotionEffect(new PotionEffect(PotionEffectType.POISON, (int) PowerTime.toTicks(affDur), affInt), true);
+						target.addPotionEffect(new PotionEffect(PotionEffectType.POISON, (int) PowerTime.toTicks(affDur), affInt));
 						user.setCooldown(this, cooldown);
 					}
 				}

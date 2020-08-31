@@ -95,7 +95,7 @@ public class SnowMiser extends Power {
 				if (target.hasPotionEffect(PotionEffectType.SLOW)) {
 					amplifier = Integer.min(freezeCap, target.getPotionEffect(PotionEffectType.SLOW).getAmplifier() + 1);
 				}
-				target.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, (int) PowerTime.toTicks(freezeDur), amplifier), true);
+				target.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, (int) PowerTime.toTicks(freezeDur), amplifier));
 			}
 		}
 	}
