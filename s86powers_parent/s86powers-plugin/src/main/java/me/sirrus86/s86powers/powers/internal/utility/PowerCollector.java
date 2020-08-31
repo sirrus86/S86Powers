@@ -2,11 +2,9 @@ package me.sirrus86.s86powers.powers.internal.utility;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.apache.commons.lang.WordUtils;
 import org.bukkit.Bukkit;
@@ -19,8 +17,6 @@ import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.block.Chest;
 import org.bukkit.entity.Firework;
-import org.bukkit.entity.LivingEntity;
-import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
@@ -33,6 +29,7 @@ import org.bukkit.inventory.meta.FireworkMeta;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.loot.LootTable;
 import org.bukkit.loot.LootTables;
+import org.bukkit.loot.Lootable;
 import org.bukkit.persistence.PersistentDataType;
 
 import com.google.common.collect.Lists;
@@ -51,16 +48,9 @@ import me.sirrus86.s86powers.users.PowerUserAdapter;
 @PowerManifest(name = "Power Collector", type = PowerType.UTILITY, author = "sirrus86", concept = "sirrus86", icon = Material.ENCHANTED_BOOK,
 	description = "Power books have a [dropChance]% chance to drop from mobs, as well as a chance to appear in treasure chests in the world. Power books can be read to learn new powers.")
 public final class PowerCollector extends Power {
-
-	private final Set<LootTables> lootTables = EnumSet.of(LootTables.ABANDONED_MINESHAFT, LootTables.BURIED_TREASURE, LootTables.DESERT_PYRAMID,
-			LootTables.END_CITY_TREASURE, LootTables.FISHING_TREASURE, LootTables.IGLOO_CHEST, LootTables.JUNGLE_TEMPLE, LootTables.NETHER_BRIDGE,
-			LootTables.PILLAGER_OUTPOST, LootTables.SHIPWRECK_TREASURE, LootTables.SIMPLE_DUNGEON, LootTables.STRONGHOLD_CORRIDOR,
-			LootTables.STRONGHOLD_CROSSING, LootTables.STRONGHOLD_LIBRARY, LootTables.UNDERWATER_RUIN_BIG, LootTables.UNDERWATER_RUIN_SMALL,
-			LootTables.WOODLAND_MANSION);
 	
 	private final NamespacedKey powerKey = createNamespacedKey("power-key");
 	
-	private double dropChance;
 	private boolean enforceCap;
 	private Firework firework = null;
 	private Map<LootTables, Double> lootChance;
@@ -75,8 +65,8 @@ public final class PowerCollector extends Power {
 	
 	@Override
 	protected void config() {
-		for (LootTables tables : lootTables) {
-			lootChance.put(tables, option("loot-chance." + tables.name().replace("_", "-").toLowerCase(), 1.0D,
+		for (LootTables tables : LootTables.values()) {
+			lootChance.put(tables, option("loot-chance." + tables.name().replace("_", "-").toLowerCase(), 0.5D,
 					"Chance to find power books within the " + WordUtils.capitalizeFully(tables.name().replace("_", " ")) + " loot table."));
 		}
 		for (Power power : S86Powers.getConfigManager().getPowers()) {
@@ -87,7 +77,6 @@ public final class PowerCollector extends Power {
 				}
 			}
 		}
-		dropChance = option("drop-chance", 0.5D, "Chance to find power books when enemies are defeated.");
 		enforceCap = option("enforce-cap", false, "Whether to prevent power books from dropping if too many players have the power assigned.");
 		powerCap = option("power-cap", 20, "Maximum number of players that have power assigned before books stop dropping for that power.");
 	}
@@ -133,7 +122,7 @@ public final class PowerCollector extends Power {
 	
 	private LootTables getLootTables(LootTable table) {
 		if (table != null) {
-			for (LootTables tables : lootTables) {
+			for (LootTables tables : LootTables.values()) {
 				if (Bukkit.getLootTable(tables.getKey()).equals(table)) {
 					return tables;
 				}
@@ -153,16 +142,19 @@ public final class PowerCollector extends Power {
 	@EventHandler
 	private void onDeath(EntityDeathEvent event) {
 		if (ConfigOption.Plugin.USE_LOOT_TABLES
-				&& event.getEntity() instanceof LivingEntity
-				&& !(event.getEntity() instanceof Player)
-				&& event.getDrops() != null
 				&& event.getDroppedExp() > 0
-				&& random.nextDouble() < dropChance / 100.0D) {
-			Collections.shuffle(powerWeight);
-			Power power = powerWeight.get(0);
-			if (!enforceCap
-					|| power.getUsers().size() < powerCap) {
-				event.getDrops().add(createPowerBook(power));
+				&& event.getEntity() instanceof Lootable) {
+			Lootable entity = (Lootable) event.getEntity();
+			if (entity.getLootTable() != null
+					&& getLootTables(entity.getLootTable()) != null
+					&& lootChance.containsKey(getLootTables(entity.getLootTable()))
+					&& random.nextDouble() < lootChance.get(getLootTables(entity.getLootTable())) / 100.0D) {
+				Collections.shuffle(powerWeight);
+				Power power = powerWeight.get(0);
+				if (!enforceCap
+						|| power.getUsers().size() < powerCap) {
+					event.getDrops().add(createPowerBook(power));
+				}
 			}
 		}
 	}
