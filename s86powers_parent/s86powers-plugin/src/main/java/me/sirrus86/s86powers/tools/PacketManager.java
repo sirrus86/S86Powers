@@ -405,7 +405,7 @@ public final class PacketManager {
 			for (Player viewer : pm.getEntityTrackers(player)) {
 				showAsGhost(viewer, player);
 			}
-			player.addPotionEffect(new PotionEffect(PotionEffectType.INVISIBILITY, Integer.MAX_VALUE, 0, false, false, false), true);
+			player.addPotionEffect(new PotionEffect(PotionEffectType.INVISIBILITY, Integer.MAX_VALUE, 0, false, false, false));
 		}
 	}
 	
