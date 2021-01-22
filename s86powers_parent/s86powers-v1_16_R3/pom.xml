@@ -8,15 +8,15 @@
 		<artifactId>s86powers-parent</artifactId>
 		<version>parent</version>
 	</parent>
-	<artifactId>s86powers-v1_16_R2</artifactId>
-	<version>v1_16_R2</version>
-	<name>v1_16_R2</name>
+	<artifactId>s86powers-v1_16_R3</artifactId>
+	<version>v1_16_R3</version>
+	<name>v1_16_R3</name>
 
 	<dependencies>
 		<dependency>
 			<groupId>org.spigotmc</groupId>
 			<artifactId>spigot</artifactId>
-			<version>1.16.3-R0.1-SNAPSHOT</version>
+			<version>1.16.5-R0.1-SNAPSHOT</version>
 			<type>jar</type>
 			<scope>provided</scope>
 		</dependency>
