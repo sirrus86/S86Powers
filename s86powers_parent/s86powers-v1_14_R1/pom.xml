@@ -11,6 +11,7 @@
 	<artifactId>s86powers-v1_14_R1</artifactId>
 	<version>v1_14_R1</version>
 	<name>v1_14_R1</name>
+	<packaging>jar</packaging>
 
 	<dependencies>
 		<dependency>
