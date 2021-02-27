@@ -45,8 +45,8 @@ import me.sirrus86.s86powers.tools.PowerTools;
 import me.sirrus86.s86powers.users.PowerUser;
 import me.sirrus86.s86powers.users.PowerUserAdapter;
 
-@PowerManifest(name = "Power Collector", type = PowerType.UTILITY, author = "sirrus86", concept = "sirrus86", icon = Material.ENCHANTED_BOOK,
-	description = "Power books have a [dropChance]% chance to drop from mobs, as well as a chance to appear in treasure chests in the world. Power books can be read to learn new powers.")
+@PowerManifest(name = "Power Collector", type = PowerType.UTILITY, author = "sirrus86", concept = "sirrus86", icon = Material.WRITTEN_BOOK,
+	description = "Power books have a chance to drop from mobs, as well as a chance to appear in treasure chests in the world. Power books can be read to learn new powers.")
 public final class PowerCollector extends Power {
 	
 	private final NamespacedKey powerKey = createNamespacedKey("power-key");
