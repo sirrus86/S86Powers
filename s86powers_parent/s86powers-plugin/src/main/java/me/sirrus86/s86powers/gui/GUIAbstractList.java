@@ -6,6 +6,9 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
+import org.bukkit.Material;
+import org.bukkit.inventory.ItemStack;
+
 import com.google.common.collect.Lists;
 
 import me.sirrus86.s86powers.localization.LocaleString;
@@ -16,6 +19,9 @@ public abstract class GUIAbstractList<T extends Comparable<T>> extends GUIAbstra
 	List<T> list = new ArrayList<>();
 	
 	List<GUIAbstractList<T>> sourceList = new ArrayList<>();
+	
+	final static ItemStack PAGE1 = new ItemStack(Material.PAPER),
+			PAGE2 = new ItemStack(Material.PAPER);
 	
 	int page = 1;
 	

@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.bukkit.ChatColor;
+import org.bukkit.Material;
+import org.bukkit.inventory.ItemStack;
 
 import me.sirrus86.s86powers.S86Powers;
 import me.sirrus86.s86powers.localization.LocaleString;
@@ -22,6 +24,10 @@ public class GUIPlayer extends GUIAbstract {
 	
 	static List<GUIPlayerList> PLAYER_LIST_GUI = new ArrayList<>();
 	
+	final static ItemStack ADD_POWER = createItem(Material.BLAZE_POWDER, LocaleString.ADD_POWER.toString(), PowerTools.wordSplit(ChatColor.RESET.toString() + ChatColor.GRAY.toString(), LocaleString.PLAYER_ADD_HELP.toString(), 30)),
+			REMOVE_POWER = createItem(Material.BLAZE_POWDER, LocaleString.REMOVE_POWER.toString(), PowerTools.wordSplit(ChatColor.RESET.toString() + ChatColor.GRAY.toString(), LocaleString.PLAYER_REMOVE_HELP.toString(), 30)),
+			INFO = createItem(Material.FILLED_MAP, LocaleString.INFO.toString(), PowerTools.wordSplit(ChatColor.RESET.toString() + ChatColor.GRAY.toString(), LocaleString.PLAYER_INFO_HELP.toString(), 30));
+	
 	public GUIPlayer() {
 		super(2, LocaleString.PLAYER.toString());
 		refresh();
@@ -37,7 +43,7 @@ public class GUIPlayer extends GUIAbstract {
 
 	@Override
 	void setItems() {
-		setItem(0, POWER, LocaleString.ADD_POWER.toString(), PowerTools.wordSplit(ChatColor.RESET.toString() + ChatColor.GRAY.toString(), LocaleString.PLAYER_ADD_HELP.toString(), 30), player -> {
+		setItem(0, ADD_POWER, player -> {
 			PowerUser user = selectedUser.get(player.getUniqueId());
 			PowerUserAdapter uCont = PowerUserAdapter.getAdapter(user);
 			if (player.hasPermission(S86Permission.PLAYER_ADD)) {
@@ -53,7 +59,7 @@ public class GUIPlayer extends GUIAbstract {
 				player.performCommand("powers player " + (user.getName() != null ? user.getName() : "!NULL") + " add");
 			}
 		});
-		setItem(1, POWER, LocaleString.REMOVE_POWER.toString(), PowerTools.wordSplit(ChatColor.RESET.toString() + ChatColor.GRAY.toString(), LocaleString.PLAYER_REMOVE_HELP.toString(), 30), player -> {
+		setItem(1, REMOVE_POWER, player -> {
 			PowerUser user = selectedUser.get(player.getUniqueId());
 			PowerUserAdapter uCont = PowerUserAdapter.getAdapter(user);
 			if (player.hasPermission(S86Permission.PLAYER_REMOVE)) {
@@ -68,12 +74,12 @@ public class GUIPlayer extends GUIAbstract {
 				player.performCommand("powers player " + (user.getName() != null ? user.getName() : "!NULL") + " remove");
 			}
 		});
-		setItem(3, LIST, LocaleString.INFO.toString(), PowerTools.wordSplit(ChatColor.RESET.toString() + ChatColor.GRAY.toString(), LocaleString.PLAYER_INFO_HELP.toString(), 30), player -> {
+		setItem(3, INFO, player -> {
 			PowerUser user = selectedUser.get(player.getUniqueId());
 			player.closeInventory();
 			player.performCommand("powers player " + (user.getName() != null ? user.getName() : "!NULL") + " info");
 		});
-		setItem(12, BACK, LocaleString.BACK.toString(), (String) null, player -> {
+		setItem(12, BACK, player -> {
 			openLast(player);
 		});
 	}

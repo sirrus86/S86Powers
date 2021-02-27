@@ -1,9 +1,12 @@
 package me.sirrus86.s86powers.gui;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.bukkit.ChatColor;
+import org.bukkit.inventory.ItemStack;
 
 import me.sirrus86.s86powers.localization.LocaleString;
 import me.sirrus86.s86powers.powers.Power;
@@ -14,9 +17,22 @@ import me.sirrus86.s86powers.users.PowerUser;
 import me.sirrus86.s86powers.users.PowerUserAdapter;
 
 public class GUIPowerList extends GUIAbstractList<Power> {
+
+	static Map<Power, ItemStack> powerItems = new HashMap<>();
 	
 	public GUIPowerList(int page, Collection<Power> list) {
 		super(page, list);
+	}
+	
+	private void setItem(int slot, Power power, GUIAction action) {
+		if (!powerItems.containsKey(power)) {
+			PowerAdapter pCont = PowerAdapter.getAdapter(power);
+			String powerName = ChatColor.RESET + "" + power.getType().getColor() + power.getName();
+			String powerDesc = PowerTools.getFilteredText(power, pCont.getDescription());
+			List<String> lore = PowerTools.wordSplit(ChatColor.RESET.toString() + ChatColor.GRAY.toString(), powerDesc, 30);
+			powerItems.put(power, createItem(pCont.getIcon(), powerName, lore));
+		}
+		setItem(slot, powerItems.get(power), action);
 	}
 
 	@Override
@@ -26,10 +42,7 @@ public class GUIPowerList extends GUIAbstractList<Power> {
 			for (int i = index; i < Math.min(list.size(), index + 45); i ++) {
 				Power power = list.get(i);
 				PowerAdapter pCont = PowerAdapter.getAdapter(power);
-				String powerName = power.getType().getColor() + power.getName();
-				String powerDesc = PowerTools.getFilteredText(power, pCont.getDescription());
-				List<String> lore = PowerTools.wordSplit(ChatColor.RESET.toString() + ChatColor.GRAY.toString(), powerDesc, 30);
-				setItem(i - index, pCont.getIcon(), ChatColor.RESET + powerName, lore, player -> {
+				setItem(i - index, power, player -> {
 					if (selectedGroup.containsKey(player.getUniqueId())) {
 						PowerGroup group = selectedGroup.get(player.getUniqueId());
 						if (group.hasPower(power)) {
@@ -59,16 +72,16 @@ public class GUIPowerList extends GUIAbstractList<Power> {
 					}
 				});
 			}
-			setItem(48, BACK, LocaleString.BACK.toString(), (String) null, player -> {
+			setItem(48, BACK, player -> {
 				openLast(player);
 			});
 			if (page > 1) {
-				setItem(49, PAGE, LocaleString.PAGE.toString() + " " + Integer.toString(page - 1), (String) null, player -> {
+				setItem(49, PAGE1, LocaleString.PAGE.toString() + " " + Integer.toString(page - 1), (List<String>) null, player -> {
 					openGUI(player, sourceList.get(page - 2));
 				});
 			}
 			if (page < sourceList.size()) {
-				setItem(50, PAGE, LocaleString.PAGE.toString() + " " + Integer.toString(page + 1), (String) null, player -> {
+				setItem(50, PAGE2, LocaleString.PAGE.toString() + " " + Integer.toString(page + 1), (List<String>) null, player -> {
 					openGUI(player, sourceList.get(page));
 				});
 			}

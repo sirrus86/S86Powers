@@ -1,7 +1,6 @@
 package me.sirrus86.s86powers.gui;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -18,19 +17,27 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import me.sirrus86.s86powers.S86Powers;
+import me.sirrus86.s86powers.localization.LocaleString;
 import me.sirrus86.s86powers.powers.Power;
 import me.sirrus86.s86powers.users.PowerGroup;
 import me.sirrus86.s86powers.users.PowerUser;
 
 public abstract class GUIAbstract {
 
-	private static final S86Powers plugin = JavaPlugin.getPlugin(S86Powers.class);
+	final static S86Powers plugin = JavaPlugin.getPlugin(S86Powers.class);
 	private final static String GUIHEADER = ChatColor.BOLD.toString() + ChatColor.GOLD + "S86 Powers" + ChatColor.RESET + " v" + plugin.getDescription().getVersion() + " by sirrus86";
 	
-	@SuppressWarnings("deprecation")
-	static final Material BACK = Material.LEGACY_SIGN, CONFIG = Material.CRAFTING_TABLE, DELETE = Material.BARRIER, ENABLE = Material.REDSTONE_TORCH,
-			GROUP = Material.TOTEM_OF_UNDYING, LIST = Material.FILLED_MAP, PAGE = Material.PAPER, PLAYER = Material.PLAYER_HEAD,
-			POWER = Material.BLAZE_POWDER, RELOAD = Material.BOOK, SAVE = Material.WRITABLE_BOOK;
+	final static ItemStack BACK = createItem(Material.ARROW, LocaleString.BACK.toString(), null);
+//			CONFIG = Material.CRAFTING_TABLE,
+//			DELETE = Material.BARRIER,
+//			ENABLE = Material.REDSTONE_TORCH,
+//			GROUP = Material.TOTEM_OF_UNDYING,
+//			LIST = Material.FILLED_MAP,
+//			PAGE = Material.PAPER,
+//			PLAYER = Material.PLAYER_HEAD,
+//			POWER = Material.BLAZE_POWDER,
+//			RELOAD = Material.BOOK,
+//			SAVE = Material.WRITABLE_BOOK;
 	
 	Map<Integer, GUIAction> actions = new HashMap<>();
 	private static Map<UUID, GUIAbstract> currentGUI = new HashMap<>();
@@ -39,6 +46,8 @@ public abstract class GUIAbstract {
 	static Map<UUID, PowerGroup> selectedGroup = new HashMap<>();
 	static Map<UUID, Power> selectedPower = new HashMap<>();
 	static Map<UUID, PowerUser> selectedUser = new HashMap<>();
+
+	static Map<Power, ItemStack> playerItems = new HashMap<>();
 	
 	Inventory guiInv;
 	
@@ -53,6 +62,26 @@ public abstract class GUIAbstract {
 		selectedGroup.remove(player.getUniqueId());
 		selectedPower.remove(player.getUniqueId());
 		selectedUser.remove(player.getUniqueId());
+	}
+	
+	static ItemStack createItem(Material material, String name, List<String> text) {
+		ItemStack item = new ItemStack(material);
+		plugin.showDebug("GUIAbstract.setItem(" + material.toString() + "," + name + "," + (text != null ? text.toString() : "null") + ")");
+		plugin.showDebug("GUIAbstract.setItem() - Created item");
+		ItemMeta meta = item.hasItemMeta() ? item.getItemMeta() : Bukkit.getServer().getItemFactory().getItemMeta(item.getType());
+		plugin.showDebug("GUIAbstract.setItem() - Created meta");
+		meta.setDisplayName(ChatColor.RESET + name);
+		plugin.showDebug("GUIAbstract.setItem() - meta.setDisplayName()");
+		if (text != null
+				&& !text.isEmpty()) {
+			meta.setLore(text);
+			plugin.showDebug("GUIAbstract.setItem() - meta.setLore()");
+		}
+		meta.addItemFlags(ItemFlag.values());
+		plugin.showDebug("GUIAbstract.setItem() - meta.addItemFlags()");
+		item.setItemMeta(meta);
+		plugin.showDebug("GUIAbstract.setItem() - item.setItemMeta()");
+		return item;
 	}
 	
 	public GUIAction getAction(int slot) {
@@ -114,15 +143,18 @@ public abstract class GUIAbstract {
 		currentGUI.remove(uuid);
 	}
 	
-	void setItem(int slot, Material material, String name, String text, GUIAction action) {
-		setItem(slot, material, name, text != null ? Collections.singletonList(text) : null, action);
+	void setItem(int slot, ItemStack item, GUIAction action) {
+		guiInv.setItem(slot, item);
+		if (action != null) {
+			actions.put(slot, action);
+		}
 	}
 	
-	void setItem(int slot, Material material, String name, List<String> text, GUIAction action) {
-		ItemStack item = new ItemStack(material);
-		ItemMeta meta = item.hasItemMeta() ? item.getItemMeta() : Bukkit.getServer().getItemFactory().getItemMeta(material);
+	void setItem(int slot, ItemStack item, String name, List<String> text, GUIAction action) {
+		ItemMeta meta = item.hasItemMeta() ? item.getItemMeta() : Bukkit.getServer().getItemFactory().getItemMeta(item.getType());
 		meta.setDisplayName(ChatColor.RESET + name);
-		if (text != null) {
+		if (text != null
+				&& !text.isEmpty()) {
 			meta.setLore(text);
 		}
 		meta.addItemFlags(ItemFlag.values());

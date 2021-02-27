@@ -1,6 +1,7 @@
 package me.sirrus86.s86powers.gui;
 
 import java.util.Collection;
+import java.util.List;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -62,16 +63,16 @@ public class GUIPlayerList extends GUIAbstractList<PowerUser> {
 					}
 				});
 			}
-			setItem(48, BACK, LocaleString.BACK.toString(), (String) null, player -> {
+			setItem(48, BACK, player -> {
 				openLast(player);
 			});
 			if (page > 1) {
-				setItem(49, PAGE, LocaleString.PAGE.toString() + " " + Integer.toString(page - 1), (String) null, player -> {
+				setItem(49, PAGE1, LocaleString.PAGE.toString() + " " + Integer.toString(page - 1), (List<String>) null, player -> {
 					openGUI(player, sourceList.get(page - 2));
 				});
 			}
 			if (page < sourceList.size()) {
-				setItem(50, PAGE, LocaleString.PAGE.toString() + " " + Integer.toString(page + 1), (String) null, player -> {
+				setItem(50, PAGE2, LocaleString.PAGE.toString() + " " + Integer.toString(page + 1), (List<String>) null, player -> {
 					openGUI(player, sourceList.get(page));
 				});
 			}

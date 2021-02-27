@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.bukkit.ChatColor;
+import org.bukkit.Material;
+import org.bukkit.inventory.ItemStack;
 
 import me.sirrus86.s86powers.S86Powers;
 import me.sirrus86.s86powers.localization.LocaleString;
@@ -23,6 +25,13 @@ public class GUIGroup extends GUIAbstract {
 	
 	static List<GUIGroupList> GROUP_LIST_GUI = new ArrayList<>();
 	
+	final static ItemStack ADD_PLAYER = createItem(Material.PLAYER_HEAD, LocaleString.ADD_PLAYER.toString(), PowerTools.wordSplit(ChatColor.RESET.toString() + ChatColor.GRAY.toString(), LocaleString.GROUP_ASSIGN_HELP.toString(), 30)),
+			ADD_POWER = createItem(Material.BLAZE_POWDER, LocaleString.ADD_POWER.toString(), PowerTools.wordSplit(ChatColor.RESET.toString() + ChatColor.GRAY.toString(), LocaleString.GROUP_ADD_HELP.toString(), 30)),
+			REMOVE_PLAYER = createItem(Material.PLAYER_HEAD, LocaleString.REMOVE_PLAYER.toString(), PowerTools.wordSplit(ChatColor.RESET.toString() + ChatColor.GRAY.toString(), LocaleString.GROUP_KICK_HELP.toString(), 30)),
+			REMOVE_POWER = createItem(Material.BLAZE_POWDER, LocaleString.REMOVE_POWER.toString(), PowerTools.wordSplit(ChatColor.RESET.toString() + ChatColor.GRAY.toString(), LocaleString.GROUP_REMOVE_HELP.toString(), 30)),
+			INFO = createItem(Material.FILLED_MAP, LocaleString.INFO.toString(), PowerTools.wordSplit(ChatColor.RESET.toString() + ChatColor.GRAY.toString(), LocaleString.GROUP_INFO_HELP.toString(), 30)),
+			DELETE = createItem(Material.BARRIER, LocaleString.DELETE.toString(), PowerTools.wordSplit(ChatColor.RESET.toString() + ChatColor.GRAY.toString(), LocaleString.GROUP_DELETE_HELP.toString(), 30));
+	
 	public GUIGroup() {
 		super(2, LocaleString.GROUPS.toString());
 		refresh();
@@ -38,7 +47,7 @@ public class GUIGroup extends GUIAbstract {
 
 	@Override
 	void setItems() {
-		setItem(0, PLAYER, LocaleString.ADD_PLAYER.toString(), PowerTools.wordSplit(ChatColor.RESET.toString() + ChatColor.GRAY.toString(), LocaleString.GROUP_ASSIGN_HELP.toString(), 30), player -> {
+		setItem(0, ADD_PLAYER, player -> {
 			if (player.hasPermission(S86Permission.GROUP_ASSIGN)) {
 				PowerGroup group = selectedGroup.get(player.getUniqueId());
 				groupAddPlayerList.put(group, GUIAbstractList.createLists(GUIPlayerList.class, S86Powers.getConfigManager().getUserList(), group.getMembers()));
@@ -52,7 +61,7 @@ public class GUIGroup extends GUIAbstract {
 				player.performCommand("powers group assign");
 			}
 		});
-		setItem(1, PLAYER, LocaleString.REMOVE_PLAYER.toString(), PowerTools.wordSplit(ChatColor.RESET.toString() + ChatColor.GRAY.toString(), LocaleString.GROUP_KICK_HELP.toString(), 30), player -> {
+		setItem(1, REMOVE_PLAYER, player -> {
 			if (player.hasPermission(S86Permission.GROUP_KICK)) {
 				PowerGroup group = selectedGroup.get(player.getUniqueId());
 				groupRemovePlayerList.put(group, GUIAbstractList.createLists(GUIPlayerList.class, group.getMembers()));
@@ -66,7 +75,7 @@ public class GUIGroup extends GUIAbstract {
 				player.performCommand("powers group kick");
 			}
 		});
-		setItem(3, POWER, LocaleString.ADD_POWER.toString(), PowerTools.wordSplit(ChatColor.RESET.toString() + ChatColor.GRAY.toString(), LocaleString.GROUP_ADD_HELP.toString(), 30), player -> {
+		setItem(3, ADD_POWER, player -> {
 			if (player.hasPermission(S86Permission.GROUP_ADD)) {
 				PowerGroup group = selectedGroup.get(player.getUniqueId());
 				groupAddPowerList.put(group, GUIAbstractList.createLists(GUIPowerList.class, S86Powers.getConfigManager().getPowers(),
@@ -81,7 +90,7 @@ public class GUIGroup extends GUIAbstract {
 				player.performCommand("powers group add");
 			}
 		});
-		setItem(4, POWER, LocaleString.REMOVE_POWER.toString(), PowerTools.wordSplit(ChatColor.RESET.toString() + ChatColor.GRAY.toString(), LocaleString.GROUP_REMOVE_HELP.toString(), 30), player -> {
+		setItem(4, REMOVE_POWER, player -> {
 			if (player.hasPermission(S86Permission.GROUP_REMOVE)) {
 				PowerGroup group = selectedGroup.get(player.getUniqueId());
 				groupRemovePowerList.put(group, GUIAbstractList.createLists(GUIPowerList.class, group.getPowers()));
@@ -95,17 +104,17 @@ public class GUIGroup extends GUIAbstract {
 				player.performCommand("powers group remove");
 			}
 		});
-		setItem(6, LIST, LocaleString.INFO.toString(), PowerTools.wordSplit(ChatColor.RESET.toString() + ChatColor.GRAY.toString(), LocaleString.GROUP_INFO_HELP.toString(), 30), player -> {
+		setItem(6, INFO, player -> {
 			PowerGroup group = selectedGroup.get(player.getUniqueId());
 			player.closeInventory();
 			player.performCommand("powers group " + group.getName() + " info");
 		});
-		setItem(8, DELETE, LocaleString.DELETE.toString(), PowerTools.wordSplit(ChatColor.RESET.toString() + ChatColor.GRAY.toString(), LocaleString.GROUP_DELETE_HELP.toString(), 30), player -> {
+		setItem(8, DELETE, player -> {
 			PowerGroup group = selectedGroup.get(player.getUniqueId());
 			player.closeInventory();
 			player.performCommand("powers group " + group.getName() + " delete");
 		});
-		setItem(12, BACK, LocaleString.BACK.toString(), (String) null, player -> {
+		setItem(12, BACK, player -> {
 			openLast(player);
 		});
 	}

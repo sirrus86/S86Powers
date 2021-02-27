@@ -4,6 +4,8 @@ import java.util.Collection;
 import java.util.List;
 
 import org.bukkit.ChatColor;
+import org.bukkit.Material;
+import org.bukkit.inventory.ItemStack;
 
 import me.sirrus86.s86powers.S86Powers;
 import me.sirrus86.s86powers.localization.LocaleString;
@@ -25,18 +27,18 @@ public class GUIConfigList extends GUIAbstractList<String> {
 				String configValue = S86Powers.getConfigManager().getConfigValue(configOption).toString();
 				List<String> lore = PowerTools.wordSplit(ChatColor.RESET.toString() + ChatColor.GRAY.toString(), configDesc, 30);
 				lore.add(ChatColor.RESET + LocaleString.VALUE.toString() + ": " + ChatColor.GRAY + configValue);
-				setItem(i - index, LIST, configOption, lore, null);
+				setItem(i - index, new ItemStack(Material.PAPER), configOption, lore, null);
 			}
-			setItem(48, BACK, LocaleString.BACK.toString(), (String) null, player -> {
+			setItem(48, BACK, player -> {
 				openLast(player);
 			});
 			if (page > 1) {
-				setItem(49, PAGE, LocaleString.PAGE.toString() + " " + Integer.toString(page - 1), (String) null, player -> {
+				setItem(49, PAGE1, player -> {
 					openGUI(player, GUIConfig.CONFIG_LIST_GUI.get(page - 2));
 				});
 			}
 			if (page < GUIConfig.CONFIG_LIST_GUI.size()) {
-				setItem(50, PAGE, LocaleString.PAGE.toString() + " " + Integer.toString(page + 1), (String) null, player -> {
+				setItem(50, PAGE2, player -> {
 					openGUI(player, GUIConfig.CONFIG_LIST_GUI.get(page));
 				});
 			}

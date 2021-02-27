@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.bukkit.ChatColor;
+import org.bukkit.Material;
+import org.bukkit.inventory.ItemStack;
 
 import me.sirrus86.s86powers.S86Powers;
 import me.sirrus86.s86powers.localization.LocaleString;
@@ -19,6 +21,11 @@ public final class GUIPower extends GUIAbstract {
 	private static Map<Power, List<GUIOptionList>> powerOptionList = new HashMap<>();
 	
 	static List<GUIPowerList> POWER_LIST_GUI = new ArrayList<>();
+	
+	final static ItemStack INFO = createItem(Material.FILLED_MAP, LocaleString.INFO.toString(), PowerTools.wordSplit(ChatColor.RESET.toString() + ChatColor.GRAY.toString(), LocaleString.POWER_INFO_HELP.toString(), 30)),
+			OPTIONS = createItem(Material.FILLED_MAP, LocaleString.OPTIONS.toString(), PowerTools.wordSplit(ChatColor.RESET.toString() + ChatColor.GRAY.toString(), LocaleString.POWER_OPTION_HELP.toString(), 30)),
+			ENABLE = createItem(Material.REDSTONE_TORCH, LocaleString.ENABLE.toString(), PowerTools.wordSplit(ChatColor.RESET.toString() + ChatColor.GRAY.toString(), LocaleString.POWER_ENABLE_HELP.toString(), 30)),
+			DISABLE = createItem(Material.BARRIER, LocaleString.DISABLE.toString(), PowerTools.wordSplit(ChatColor.RESET.toString() + ChatColor.GRAY.toString(), LocaleString.POWER_DISABLE_HELP.toString(), 30));
 
 	public GUIPower() {
 		super(2, LocaleString.POWER.toString());
@@ -35,13 +42,13 @@ public final class GUIPower extends GUIAbstract {
 
 	@Override
 	void setItems() {
-		setItem(0, LIST, LocaleString.INFO.toString(), PowerTools.wordSplit(ChatColor.RESET.toString() + ChatColor.GRAY.toString(), LocaleString.POWER_INFO_HELP.toString(), 30), player -> {
+		setItem(0, INFO, player -> {
 			Power power = selectedPower.get(player.getUniqueId());
 			PowerAdapter pCont = PowerAdapter.getAdapter(power);
 			player.closeInventory();
 			player.performCommand("powers power " + pCont.getTag() + " info");
 		});
-		setItem(2, LIST, LocaleString.OPTIONS.toString(), PowerTools.wordSplit(ChatColor.RESET.toString() + ChatColor.GRAY.toString(), LocaleString.POWER_OPTION_HELP.toString(), 30), player -> {
+		setItem(2, OPTIONS, player -> {
 			Power power = selectedPower.get(player.getUniqueId());
 			PowerAdapter pCont = PowerAdapter.getAdapter(power);
 			if (player.hasPermission(S86Permission.POWER_OPTION)) {
@@ -56,19 +63,19 @@ public final class GUIPower extends GUIAbstract {
 				player.performCommand("powers power " + pCont.getTag() + " option");
 			}
 		});
-		setItem(7, ENABLE, LocaleString.ENABLE.toString(), PowerTools.wordSplit(ChatColor.RESET.toString() + ChatColor.GRAY.toString(), LocaleString.POWER_ENABLE_HELP.toString(), 30), player -> {
+		setItem(7, ENABLE, player -> {
 			Power power = selectedPower.get(player.getUniqueId());
 			PowerAdapter pCont = PowerAdapter.getAdapter(power);
 			player.closeInventory();
 			player.performCommand("powers power " + pCont.getTag() + " enable");
 		});
-		setItem(8, DELETE, LocaleString.DISABLE.toString(), PowerTools.wordSplit(ChatColor.RESET.toString() + ChatColor.GRAY.toString(), LocaleString.POWER_DISABLE_HELP.toString(), 30), player -> {
+		setItem(8, DISABLE, player -> {
 			Power power = selectedPower.get(player.getUniqueId());
 			PowerAdapter pCont = PowerAdapter.getAdapter(power);
 			player.closeInventory();
 			player.performCommand("powers power " + pCont.getTag() + " disable");
 		});
-		setItem(12, BACK, LocaleString.BACK.toString(), (String) null, player -> {
+		setItem(12, BACK, player -> {
 			openLast(player);
 		});
 	}
