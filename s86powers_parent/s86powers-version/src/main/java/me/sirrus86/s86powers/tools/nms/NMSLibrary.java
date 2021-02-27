@@ -24,7 +24,7 @@ public abstract class NMSLibrary {
 	
 	public abstract int getEntityTypeID(EntityType type);
 
-	public abstract String getItemName(ItemStack item);
+//	public abstract String getItemName(ItemStack item);
 	
 	public abstract Object getNMSEntityType(EntityType type);
 	

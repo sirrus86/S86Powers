@@ -87,10 +87,10 @@ public class NMSLibrary extends me.sirrus86.s86powers.tools.nms.NMSLibrary {
 		return EntityTypes.REGISTRY.a(getNMSEntityType(type));
 	}
 
-	@Override
-	public String getItemName(org.bukkit.inventory.ItemStack item) {
-		return CraftItemStack.asNMSCopy(item).getName().getText();
-	}
+//	@Override
+//	public String getItemName(org.bukkit.inventory.ItemStack item) {
+//		return CraftItemStack.asNMSCopy(item).getName().getText();
+//	}
 	
 	@Override
 	public EntityTypes<?> getNMSEntityType(EntityType type) {
