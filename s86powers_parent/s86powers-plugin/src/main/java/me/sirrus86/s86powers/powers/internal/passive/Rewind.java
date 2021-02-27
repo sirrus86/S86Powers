@@ -21,7 +21,7 @@ import me.sirrus86.s86powers.users.PowerUser;
 import me.sirrus86.s86powers.utils.PowerTime;
 
 @PowerManifest(name = "Rewind", type = PowerType.PASSIVE, author = "sirrus86", concept = "sirrus86", icon=Material.GOLDEN_BOOTS,
-	description = "[act:item]ing while holding [item] allows you to go back in time up to [rewindTime], bringing you to your previous position. [cooldown] cooldown.")
+	description = "[act:item]ing while holding [item] allows you to go back in time up to [rewind-time], bringing you to your previous position. [cooldown] cooldown.")
 public final class Rewind extends Power {
 
 	private Map<PowerUser, Long> locCD;

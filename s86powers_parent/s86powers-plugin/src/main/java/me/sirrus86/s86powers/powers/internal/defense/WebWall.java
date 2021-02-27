@@ -31,8 +31,8 @@ import me.sirrus86.s86powers.tools.PowerTools;
 import me.sirrus86.s86powers.users.PowerUser;
 import me.sirrus86.s86powers.utils.PowerTime;
 
-@PowerManifest(name = "Web Wall", type = PowerType.DEFENSE, author = "sirrus86", concept = "vashvhexx", icon=Material.COBWEB,
-	description = "[act:item]ing a block while holding [item] will cause a wall made of spider webs to sprout from the surface. Walls last for [wallDur]. [cooldown] cooldown.")
+@PowerManifest(name = "Web Wall", type = PowerType.DEFENSE, author = "sirrus86", concept = "vashvhexx", icon = Material.COBWEB,
+	description = "[act:item]ing a block while holding [item] will cause a wall made of spider webs to sprout from the surface. Walls last for [wall-duration]. [cooldown] cooldown.")
 public final class WebWall extends Power {
 
 	private final EnumSet<BlockFace> directions = EnumSet.of(BlockFace.DOWN, BlockFace.EAST, BlockFace.NORTH, BlockFace.SOUTH, BlockFace.UP, BlockFace.WEST);

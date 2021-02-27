@@ -27,8 +27,9 @@ import me.sirrus86.s86powers.tools.PowerTools;
 import me.sirrus86.s86powers.users.PowerUser;
 import me.sirrus86.s86powers.utils.PowerTime;
 
-@PowerManifest(name = "Diversion", type = PowerType.DEFENSE, author = "sirrus86", concept = "blacknova777", icon=Material.ARMOR_STAND, usesPackets = true,
-	description = "Upon taking damage from another entity, become invisible while summoning an exact copy of yourself as a diversion to attack the damager. Remain invisible until the diversion dies or despawns [lifespan] later. [cooldown] cooldown.")
+@PowerManifest(name = "Diversion", type = PowerType.DEFENSE, author = "sirrus86", concept = "blacknova777", icon = Material.ARMOR_STAND, usesPackets = true,
+	description = "Upon taking damage from another entity, become invisible while summoning an exact copy of yourself as a diversion to attack the damager."
+			+ " Remain invisible until the diversion dies or despawns [diversion-lifespan] later. [cooldown] cooldown.")
 public final class Diversion extends Power {
 
 	private Map<PowerUser, Set<Decoy>> decoys;
@@ -77,6 +78,7 @@ public final class Diversion extends Power {
 						for (int i = 0; i < (user.hasStatMaxed(decoysMade) ? maxDecoys : 1); i ++) {
 							Vindicator pz = user.getPlayer().getWorld().spawn(user.getPlayer().getLocation(), Vindicator.class);
 							runTask(new BukkitRunnable() {
+								
 								@Override
 								public void run() {
 									pz.setPatrolLeader(false);
@@ -84,6 +86,7 @@ public final class Diversion extends Power {
 									PowerTools.addEquipmentDisguise(pz, user.getPlayer());
 									PowerTools.addGhost(user.getPlayer());
 								}
+								
 							});
 							if (damager instanceof Mob) {
 								((Mob) damager).setTarget(pz);

@@ -32,7 +32,8 @@ import me.sirrus86.s86powers.users.PowerUser;
 import me.sirrus86.s86powers.utils.PowerTime;
 
 @PowerManifest(name = "Ore Detector", type = PowerType.PASSIVE, author = "sirrus86", concept = "sirrus86", icon = Material.COMPASS, usesPackets = true,
-	description = "While holding [item] in either hand, nearby ore blocks within [range] blocks will become visible.[useProgression] Mining detected blocks will eventually allow you to detect more rare veins.[/useProgression]")
+	description = "While holding [item] in either hand, nearby ore blocks within [detect-range] blocks will become visible."
+			+ "[use-progression] Mining detected blocks will eventually allow you to detect more rare veins.[/use-progression]")
 public final class OreDetector extends Power {
 
 	private Set<Material> detectable = EnumSet.of(Material.COAL_ORE, Material.DIAMOND_ORE, Material.EMERALD_ORE, Material.GOLD_ORE,

@@ -19,7 +19,7 @@ import me.sirrus86.s86powers.tools.PowerTools;
 import me.sirrus86.s86powers.users.PowerUser;
 
 @PowerManifest(name = "Brew Master", type = PowerType.PASSIVE, author = "sirrus86", concept = "Swagofswag", icon = Material.POTION,
-	description = "Potions you pick up now stack up to [stack]. Potions you drink now extend the duration of other similar potion effects on you.")
+	description = "Potions you pick up now stack up to [potion-stack-size]. Potions you drink now extend the duration of other similar potion effects on you.")
 public class BrewMaster extends Power {
 	
 	private final EnumSet<Material> potMats = EnumSet.of(Material.POTION, Material.SPLASH_POTION, Material.LINGERING_POTION);

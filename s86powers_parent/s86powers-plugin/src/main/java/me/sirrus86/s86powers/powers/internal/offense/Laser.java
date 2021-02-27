@@ -27,7 +27,8 @@ import me.sirrus86.s86powers.users.PowerUser;
 import me.sirrus86.s86powers.utils.PowerTime;
 
 @PowerManifest(name = "Laser", type = PowerType.OFFENSE, author = "sirrus86", concept = "n33dy1", icon=Material.DISPENSER,
-	description = "[act:item]ing while holding [item] shoots a laser in front of you. The laser can penetrate walls and will constantly damage enemies.[useConsume] Consumes [consumable] as fuel.[/useConsume] [cooldown] cooldown.")
+	description = "[act:item]ing while holding [item] shoots a laser in front of you. The laser can penetrate walls and will constantly damage enemies."
+			+ "[use-consumable] Consumes [consumable] as fuel.[/use-consumable] [cooldown] cooldown.")
 public final class Laser extends Power {
 
 	private Map<PowerUser, Beam> lasers;

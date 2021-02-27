@@ -36,8 +36,9 @@ import me.sirrus86.s86powers.tools.version.MCMetadata;
 import me.sirrus86.s86powers.tools.version.MCMetadata.EntityMeta;
 import me.sirrus86.s86powers.users.PowerUser;
 
-@PowerManifest(name = "Vampirism", type = PowerType.PASSIVE, author = "sirrus86", concept = "TheClownOfCrime", icon=Material.FERMENTED_SPIDER_EYE, usesPackets = true,
-	description = "You rapidly lose hunger while in direct sunlight, eventually igniting you[helmProt] unless you are wearing a helmet[/helmProt]. While sprinting, running speed and jump height increase. Immune to fall damage. Wooden tools do [wMult]x more damage to you.")
+@PowerManifest(name = "Vampirism", type = PowerType.PASSIVE, author = "sirrus86", concept = "TheClownOfCrime", icon = Material.FERMENTED_SPIDER_EYE, usesPackets = true,
+	description = "You rapidly lose hunger while in direct sunlight, eventually igniting you[helmet-prevents-ignition] unless you are wearing a helmet[/helmet-prevents-ignition]."
+			+ " While sprinting, running speed and jump height increase. Immune to fall damage. Wooden tools do [wood-damage-multiplier]x more damage to you.")
 public final class Vampirism extends Power {
 
 	private Set<PowerUser> sprinting, transformed;

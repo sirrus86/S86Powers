@@ -17,6 +17,7 @@ import me.sirrus86.s86powers.S86Powers;
 import me.sirrus86.s86powers.config.ConfigOption;
 import me.sirrus86.s86powers.powers.Power;
 import me.sirrus86.s86powers.powers.PowerAdapter;
+import me.sirrus86.s86powers.powers.PowerOption;
 import me.sirrus86.s86powers.tools.nms.NMSLibrary;
 import me.sirrus86.s86powers.tools.version.MCMetadata;
 import me.sirrus86.s86powers.tools.version.MCVersion;
@@ -28,6 +29,7 @@ import org.apache.commons.lang.WordUtils;
 
 import org.bukkit.Art;
 import org.bukkit.Axis;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -49,6 +51,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.PotionMeta;
 import org.bukkit.potion.PotionData;
 import org.bukkit.potion.PotionEffect;
@@ -401,16 +404,31 @@ public final class PowerTools {
 		while(tmp.indexOf("[") != -1 && tmp.indexOf("]") != -1) {
 			int i = tmp.indexOf("["),
 					j = tmp.indexOf("]");
-			String tag = tmp.substring(i, j + 1);
-			String field = tmp.substring(i + 1, j);
+			String tag = tmp.substring(i, j + 1),
+					field = tmp.substring(i + 1, j);
+			PowerOption option = adapter.getOption(field); // ADDED
 			if (field.startsWith("act:")) {
-				ItemStack item = (ItemStack) adapter.getFieldValue(field.substring(4));
+				option = adapter.getOption(field.substring(4)); // ADDED
+				Object object = null;
+				if (option != null) {
+					object = adapter.getOptionValue(option);
+				}
+				else {
+					object = adapter.getFieldValue(field.substring(4));
+				}
+				ItemStack item = (ItemStack) object;
 				if (item != null) {
 					tmp = tmp.replace(tag, PowerTools.getActionString(item));
 				}
 			}
 			else {
-				Object object = adapter.getFieldValue(field);
+				Object object = null;
+				if (option != null) {
+					object = adapter.getOptionValue(option);
+				}
+				else {
+					object = adapter.getFieldValue(field);
+				}
 				if (object != null) {
 					if (object instanceof Boolean) {
 						String endTag = "[/" + field + "]";
@@ -434,9 +452,11 @@ public final class PowerTools {
 			}
 		}
 		char[] chars = tmp.toCharArray();
-		Character.toUpperCase(chars[0]);
+		chars[0] = Character.toUpperCase(chars[0]);
 		for (int i = 2; i < chars.length; i ++) {
-			if (chars[i - 2] == '.') Character.toUpperCase(chars[i]);
+			if (chars[i - 2] == '.') {
+				Character.toUpperCase(chars[i]);
+			}
 		}
 		tmp = new String(chars);
 		return tmp;
@@ -464,8 +484,10 @@ public final class PowerTools {
 		return newLoc.getBlock();
 	}
 
+	// TODO Not working?
 	public static String getItemName(ItemStack item) {
-		return nms.getItemName(item);
+		ItemMeta meta = item.hasItemMeta() ? item.getItemMeta() : Bukkit.getServer().getItemFactory().getItemMeta(item.getType());
+		return WordUtils.capitalize(meta.hasLocalizedName() ? meta.getLocalizedName() : item.getType().toString().replace('_', ' ').toLowerCase());
 	}
 
 	public static Set<Block> getNearbyBlocks(Block block, BlockFace... faces) {

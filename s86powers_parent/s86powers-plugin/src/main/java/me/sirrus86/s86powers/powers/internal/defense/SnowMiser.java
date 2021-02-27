@@ -26,7 +26,8 @@ import me.sirrus86.s86powers.users.PowerUser;
 import me.sirrus86.s86powers.utils.PowerTime;
 
 @PowerManifest(name = "Snow Miser", type = PowerType.DEFENSE, author = "sirrus86", concept = "bobby16may", icon = Material.SNOWBALL,
-	description = "[snowOrIce]Thrown snowballs[freezeWater] freeze water into ice[/freezeWater][snowAndIce] and[/snowAndIce][addSnow] produce snow on other surfaces[/addSnow]. [/snowOrIce]Snowballs thrown at enemies are slowed for [freezeDur], increasing in effect with each application. Users of this power cannot be frozen by other users.")
+	description = "[snowOrIce]Thrown snowballs[freeze-water] freeze water into ice[/freeze-water][snowAndIce] and[/snowAndIce][add-snow-cover] produce snow on other surfaces[/add-snow-cover]."
+			+ " [/snowOrIce]Snowballs thrown at enemies are slowed for [freeze-duration], increasing in effect with each application. Users of this power cannot be frozen by other users.")
 public class SnowMiser extends Power {
 
 	private Map<Snowball, Integer> snowballs;

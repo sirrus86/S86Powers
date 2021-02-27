@@ -20,7 +20,8 @@ import me.sirrus86.s86powers.tools.PowerTools;
 import me.sirrus86.s86powers.users.PowerUser;
 
 @PowerManifest(name = "Dodge", type = PowerType.DEFENSE, author = "sirrus86", concept = "n33dy1", icon = Material.ENDER_EYE,
-	description = "Always have a [base]% chance to dodge melee attacks. Chance to dodge increases as you fail to dodge attacks, up to a maximum of [max]%. Upon death your dodge chance resets back to [base]%.")
+	description = "Always have a [base-dodge-chance]% chance to dodge melee attacks. Chance to dodge increases as you fail to dodge attacks,"
+			+ " up to a maximum of [maximum-dodge-chance]%. Upon death your dodge chance resets back to [base-dodge-chance]%.")
 public final class Dodge extends Power {
 
 	private Map<PowerUser, Double> dodge;

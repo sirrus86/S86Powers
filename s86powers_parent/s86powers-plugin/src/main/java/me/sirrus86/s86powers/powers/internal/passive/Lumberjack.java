@@ -21,7 +21,8 @@ import me.sirrus86.s86powers.tools.PowerTools;
 import me.sirrus86.s86powers.users.PowerUser;
 
 @PowerManifest(name = "Lumberjack", type = PowerType.PASSIVE, author = "sirrus86", concept = "sirrus86", icon=Material.IRON_AXE,
-	description = "Breaking log blocks[reqAxe] using an axe[/reqAxe] will cause all adjacent logs[doLeaves] and leaves[/doLeaves] to also break.[replant] Trees cut down are automatically replanted.[/replant]")
+	description = "Breaking log blocks[require-axe] using an axe[/require-axe] will cause all adjacent logs[break-leaves] and leaves[/break-leaves] to also break."
+			+ "[auto-replant] Trees cut down are automatically replanted.[/auto-replant]")
 public final class Lumberjack extends Power {
 
 	private List<Block> blocks;

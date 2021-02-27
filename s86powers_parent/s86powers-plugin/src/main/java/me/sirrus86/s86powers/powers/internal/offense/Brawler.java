@@ -23,7 +23,8 @@ import me.sirrus86.s86powers.users.PowerUser;
 import me.sirrus86.s86powers.utils.PowerTime;
 
 @PowerManifest(name = "Brawler", type = PowerType.OFFENSE, author = "sirrus86", concept = "diamondmario", icon = Material.DAMAGED_ANVIL,
-	description = "All barehanded attacks deal [dmgIncr]% normal damage. Barehanded attacks while crouching will slow the target for [slowDur], while attacks within [uppercutBuffer] of rising will uppercut them into the air. Falling enemies above you can be juggled for additional damage.")
+	description = "All barehanded attacks deal [damage-increase]% normal damage. Barehanded attacks while crouching will slow the target for [sweep-slow-duration],"
+			+ " while attacks within [uppercut-buffer] of rising will uppercut them into the air. Falling enemies above you can be juggled for additional damage.")
 public final class Brawler extends Power {
 
 	private Map<PowerUser, Long> canUppercut;
@@ -45,7 +46,7 @@ public final class Brawler extends Power {
 		offHandDef = option("offhand-defense", 75.0D, "Percentage decrease to incoming melee damage while off-hand has no item equipped.");
 		slowAmp = option("sweep-slow-amplifier", 2, "Amplifier of slow effect applied to those hit by low sweep attacks.");
 		slowDur = option("sweep-slow-duration", PowerTime.toMillis(3, 0), "Amount of time to slow those hit by low sweep attacks.");
-		totalDmg = stat("total-barehanded-damage", 100, "Damage dealt while barehanded", "Keeping you off-hand empty allows you to block [offHandDef]% of melee damage from enemies.");
+		totalDmg = stat("total-barehanded-damage", 100, "Damage dealt while barehanded", "Keeping you off-hand empty allows you to block [offhand-defense]% of melee damage from enemies.");
 		uppercutBuffer = option("uppercut-buffer", PowerTime.toMillis(500), "Amount of time after standing from crouch to perform an uppercut.");
 		uppercutVert = option("uppercut-vertical-modifier", 0.75D, "Velocity modifier to entities hit by an uppercut.");
 	}

@@ -34,7 +34,10 @@ import me.sirrus86.s86powers.tools.version.MCMetadata.EntityMeta;
 import me.sirrus86.s86powers.users.PowerUser;
 
 @PowerManifest(name = "Lycanthropy", type = PowerType.PASSIVE, author = "sirrus86", concept = "vashvhexx", icon=Material.RABBIT_HIDE, usesPackets = true,
-	description = "[control]By [act:item]ing while holding [item][/control][noControl]At night during a full moon [/noControl]you change into a wolf. As a wolf[speed] sprinting speed increases,[/speed][nv] you gain night vision,[/nv][either] and[/either] unarmed damage increases by [dmgIncr]%, but you take [ironDmg]% damage from iron tools and weapons, and are unable to wear any armor.[noControl] Effect ends at sunrise.[/noControl]")
+	description = "[control-transformation]By [act:item]ing while holding [item][/control-transformation][noControl]At night during a full moon [/noControl]you change into a wolf."
+			+ " As a wolf[increase-speed] sprinting speed increases,[/increase-speed][night-vision] you gain night vision,[/night-vision]"
+			+ "[either] and[/either] unarmed damage increases by [damage-multiplier]%, but you take [iron-multiplier]% damage from iron tools and weapons,"
+			+ " and are unable to wear any armor.[noControl] Effect ends at sunrise.[/noControl]")
 public final class Lycanthropy extends Power {
 
 	private Set<PowerUser> isWolf;

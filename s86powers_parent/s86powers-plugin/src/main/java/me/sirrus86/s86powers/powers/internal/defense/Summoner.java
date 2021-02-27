@@ -40,7 +40,8 @@ import me.sirrus86.s86powers.users.PowerUser;
 import me.sirrus86.s86powers.utils.PowerTime;
 
 @PowerManifest(name = "Summoner", type = PowerType.DEFENSE, author = "sirrus86", concept = "sirrus86", icon=Material.BLAZE_ROD, usesPackets = true,
-	description = "All monsters from the nether will ignore you. [act:item]ing the ground while holding [item] will create a portal which summons a random minion from the nether. The summoned minion will follow and defend you. Summoning only works in the overworld and The End. [cooldown] cooldown.")
+	description = "All monsters from the nether will ignore you. [act:item]ing the ground while holding [item] will create a portal which summons a random minion from the nether."
+			+ " The summoned minion will follow and defend you. Summoning only works in the overworld and The End. [cooldown] cooldown.")
 public final class Summoner extends Power {
 
 	private Map<PowerUser, LivingEntity> minions;

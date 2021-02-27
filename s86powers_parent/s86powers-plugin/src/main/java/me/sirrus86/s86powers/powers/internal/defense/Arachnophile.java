@@ -38,7 +38,8 @@ import me.sirrus86.s86powers.users.PowerUser;
 import me.sirrus86.s86powers.utils.PowerTime;
 
 @PowerManifest(name = "Arachnophile", type = PowerType.DEFENSE, author = "sirrus86", concept = "vashvhexx", icon = Material.COBWEB, usesPackets = true,
-	description = "Hostile spiders, cave spiders, silverfish, and endermites will no longer attack you[noPoison], you become immune to poison[/noPoison], and fall damage is reduced by [fallRed]%. [act:item]ing a spider while holding [item] will allow you to tame it. Tamed spiders will follow and defend you.")
+	description = "Hostile spiders, cave spiders, silverfish, and endermites will no longer attack you[poison-immunity], you become immune to poison[/poison-immunity],"
+			+ " and fall damage is reduced by [fall-damage-reduction]%. [act:item]ing a spider while holding [item] will allow you to tame it. Tamed spiders will follow and defend you.")
 public final class Arachnophile extends Power {
 
 	private double fallRed;

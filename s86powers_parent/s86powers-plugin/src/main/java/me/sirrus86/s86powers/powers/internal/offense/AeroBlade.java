@@ -20,7 +20,9 @@ import me.sirrus86.s86powers.users.PowerUser;
 import me.sirrus86.s86powers.utils.PowerTime;
 
 @PowerManifest(name = "Aero Blade", type = PowerType.OFFENSE, author = "sirrus86", concept = "repete8", icon=Material.IRON_SWORD, usesPackets = true,
-	description = "[wItem][act:item]ing while holding [item][/wItem][wMany] or [/wMany][wSword]swinging any sword[/wSword] will create a gust of wind in front of you, propelling entities away from you.")
+//	description = "[wItem][act:item]ing while holding [item][/wItem][wMany] or [/wMany][wSword]swinging any sword[/wSword] will create a gust of wind in front of you, propelling entities away from you.")
+	description = "[use-with-specific-item][act:item]ing while holding [item][/use-with-specific-item][wMany] or [/wMany][use-any-sword]swinging any sword[/use-any-sword] will create a gust of wind in"
+			+ " front of you, propelling entities away from you.")
 public final class AeroBlade extends Power {
 
 	private Map<Snowball, PowerUser> sList;

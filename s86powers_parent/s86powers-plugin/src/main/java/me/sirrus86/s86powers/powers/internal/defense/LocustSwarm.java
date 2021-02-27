@@ -36,7 +36,8 @@ import me.sirrus86.s86powers.users.PowerUser;
 import me.sirrus86.s86powers.utils.PowerTime;
 
 @PowerManifest(name = "Locust Swarm", type = PowerType.DEFENSE, author = "sirrus86", concept = "sirrus86", icon=Material.STONE,
-	description = "[act:item]ing while holding [item] will cause Silverfish to break from any nearby [infestOnly]infested [/infestOnly]stone blocks, targeting nearby entities at random. After [lifespan], spawned Silverfish reform into blocks. [cooldown] cooldown.")
+	description = "[act:item]ing while holding [item] will cause Silverfish to break from any nearby [infested-only]infested [/infested-only]stone blocks,"
+			+ " targeting nearby entities at random. After [silverfish-lifespan], spawned Silverfish reform into blocks. [cooldown] cooldown.")
 public final class LocustSwarm extends Power {
 
 	private final EnumSet<Material> sBlocks = EnumSet.of(Material.CHISELED_STONE_BRICKS, Material.COBBLESTONE, Material.CRACKED_STONE_BRICKS,

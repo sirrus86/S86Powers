@@ -25,7 +25,8 @@ import me.sirrus86.s86powers.users.PowerUser;
 import me.sirrus86.s86powers.utils.PowerTime;
 
 @PowerManifest(name = "Bulwark", type = PowerType.DEFENSE, author = "sirrus86", concept = "Neubulae", icon = Material.SHIELD,
-	description = "Blocking with a shield [parryTime] before being hit will parry melee attacks, or deflect arrows back at the shooter. [doFatigue]Entities that are parried will also be afflicted with fatigue for [fatigueTime]. [/doFatigue][cooldown] cooldown.")
+	description = "Blocking with a shield [parry-window] before being hit will parry melee attacks, or deflect arrows back at the shooter."
+			+ " [fatigue]Entities that are parried will also be afflicted with fatigue for [fatigue-duration]. [/fatigue][cooldown] cooldown.")
 public final class Bulwark extends Power {
 	
 	private Map<PowerUser, Long> parryWindow;

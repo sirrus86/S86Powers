@@ -45,7 +45,7 @@ import me.sirrus86.s86powers.users.PowerUser;
 import me.sirrus86.s86powers.utils.PowerTime;
 
 @PowerManifest(name = "Auto Gun", type = PowerType.OFFENSE, author = "sirrus86", concept = "sirrus86", icon = Material.DISPENSER, usesPackets = true,
-	description = "[act:item]ing against a solid block while holding [item] will place a turret against that block. Turrets will search out and fire upon any living targets within [range] blocks.")
+	description = "[act:item]ing against a solid block while holding [item] will place a turret against that block. Turrets will search out and fire upon any living targets within [turret-range] blocks.")
 public final class AutoGun extends Power {
 
 	private Map<PowerUser, List<Turret>> turrets;
@@ -80,7 +80,7 @@ public final class AutoGun extends Power {
 		arrowsPerVolley = option("arrows-per-volley", 3, "Number of arrows fired at a time by turrets.");
 		consumeItem = option("consume-item", true, "Whether item should be consumed on use.");
 		cooldown = option("cooldown", PowerTime.toMillis(1, 0), "Cooldown between placing turrets.");
-		dmgByTurrets = stat("damage-by-turrets", 150, "Damage done by turrets", "Can now deploy [maxTurrets] turrets at a time.");
+		dmgByTurrets = stat("damage-by-turrets", 150, "Damage done by turrets", "Can now deploy [maximum-turrets] turrets at a time.");
 		fireDelay = option("firing-delay", PowerTime.toMillis(3, 0), "Amount of time before another volley of arrows can be shot by a turret.");
 		ignoreInvis = option("ignore-invisible-targets", true, "Whether invisible targets should be ignored by turrets.");
 		item = option("item", new ItemStack(Material.DISPENSER), "Item used to deploy turrets.");
