@@ -28,16 +28,6 @@ public abstract class GUIAbstract {
 	private final static String GUIHEADER = ChatColor.BOLD.toString() + ChatColor.GOLD + "S86 Powers" + ChatColor.RESET + " v" + plugin.getDescription().getVersion() + " by sirrus86";
 	
 	final static ItemStack BACK = createItem(Material.ARROW, LocaleString.BACK.toString(), null);
-//			CONFIG = Material.CRAFTING_TABLE,
-//			DELETE = Material.BARRIER,
-//			ENABLE = Material.REDSTONE_TORCH,
-//			GROUP = Material.TOTEM_OF_UNDYING,
-//			LIST = Material.FILLED_MAP,
-//			PAGE = Material.PAPER,
-//			PLAYER = Material.PLAYER_HEAD,
-//			POWER = Material.BLAZE_POWDER,
-//			RELOAD = Material.BOOK,
-//			SAVE = Material.WRITABLE_BOOK;
 	
 	Map<Integer, GUIAction> actions = new HashMap<>();
 	private static Map<UUID, GUIAbstract> currentGUI = new HashMap<>();
@@ -66,21 +56,14 @@ public abstract class GUIAbstract {
 	
 	static ItemStack createItem(Material material, String name, List<String> text) {
 		ItemStack item = new ItemStack(material);
-		plugin.showDebug("GUIAbstract.setItem(" + material.toString() + "," + name + "," + (text != null ? text.toString() : "null") + ")");
-		plugin.showDebug("GUIAbstract.setItem() - Created item");
 		ItemMeta meta = item.hasItemMeta() ? item.getItemMeta() : Bukkit.getServer().getItemFactory().getItemMeta(item.getType());
-		plugin.showDebug("GUIAbstract.setItem() - Created meta");
 		meta.setDisplayName(ChatColor.RESET + name);
-		plugin.showDebug("GUIAbstract.setItem() - meta.setDisplayName()");
 		if (text != null
 				&& !text.isEmpty()) {
 			meta.setLore(text);
-			plugin.showDebug("GUIAbstract.setItem() - meta.setLore()");
 		}
 		meta.addItemFlags(ItemFlag.values());
-		plugin.showDebug("GUIAbstract.setItem() - meta.addItemFlags()");
 		item.setItemMeta(meta);
-		plugin.showDebug("GUIAbstract.setItem() - item.setItemMeta()");
 		return item;
 	}
 	
