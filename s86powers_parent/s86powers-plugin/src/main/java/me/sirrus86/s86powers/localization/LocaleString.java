@@ -138,6 +138,7 @@ public enum LocaleString {
 	SHOW_HEARTS_ON_TAMED_CONFIG("config", "Whether to show a health gauge over tamed entities."),
 	SHOW_INPUT_ERRORS_CONFIG("config", "Whether to show when user input results in an error."),
 	SHOW_MESSAGES_IN_ACTION_BAR_CONFIG("config", "Whether to show messages in the action bar as opposed to the chat window."),
+	SHOW_NEUTRALIZING_BEACON_CONFIG("config", "Whether to show neutralizer beacons currently affecting the player to them."),
 	SHOW_PACKET_ERRORS_CONFIG("config", "Whether to show packet-related errors in the console."),
 	USE_GUI_CONFIG("config", "Whether to use the graphic user interface when typing a lone /powers command."),
 	USE_LOOT_TABLES_CONFIG("config", "Whether to insert books that grant powers into loot tables."),

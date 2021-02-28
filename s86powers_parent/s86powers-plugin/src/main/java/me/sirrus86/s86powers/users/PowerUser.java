@@ -101,6 +101,9 @@ public final class PowerUser implements Comparable<PowerUser> {
 			neutralize(LocaleString.NEUTRALIZED_BY_BEACON.toString());
 		}
 		beacons.add(beacon);
+		if (ConfigOption.Powers.SHOW_NEUTRALIZING_BEACON) {
+			PowerTools.addSpectralBlock(getPlayer(), beacon.getBlock(), ChatColor.BLUE);
+		}
 	}
 	
 	void addGroup(PowerGroup group) {
@@ -646,6 +649,7 @@ public final class PowerUser implements Comparable<PowerUser> {
 			beacons.remove(beacon);
 			deneutralize(false);
 		}
+		PowerTools.removeSpectralBlock(getPlayer(), beacon.getBlock());
 	}
 	
 	void removeGroup(PowerGroup group) {
