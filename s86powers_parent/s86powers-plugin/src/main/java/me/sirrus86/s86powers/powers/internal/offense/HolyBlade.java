@@ -21,7 +21,7 @@ import me.sirrus86.s86powers.tools.PowerTools;
 import me.sirrus86.s86powers.users.PowerUser;
 import me.sirrus86.s86powers.utils.PowerTime;
 
-@PowerManifest(name = "Holy Blade", type = PowerType.OFFENSE, author = "sirrus86", concept = "onlycoops", icon=Material.GOLDEN_SWORD,
+@PowerManifest(name = "Holy Blade", type = PowerType.OFFENSE, author = "sirrus86", concept = "onlycoops", icon = Material.GOLDEN_SWORD,
 	description = "[use-specified-item][act:item]ing while holding [item][/use-specified-item][wMany] or [/wMany][use-any-sword]attacking with any sword[/use-any-sword]"
 			+ " creates a beam of light which shoots in the same direction. This beam deals [damage] damage[instantly-kill-undead], and will instantly kill Zombies,"
 			+ " Skeletons and PigZombies[/instantly-kill-undead]. [cooldown] cooldown.")

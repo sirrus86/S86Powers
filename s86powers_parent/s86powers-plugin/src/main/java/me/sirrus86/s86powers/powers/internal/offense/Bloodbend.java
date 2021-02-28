@@ -27,7 +27,7 @@ import me.sirrus86.s86powers.tools.PowerTools;
 import me.sirrus86.s86powers.users.PowerUser;
 import me.sirrus86.s86powers.utils.PowerTime;
 
-@PowerManifest(name = "Bloodbend", type = PowerType.OFFENSE, author = "sirrus86", concept = "TheClownOfCrime", icon=Material.GHAST_TEAR, usesPackets = true,
+@PowerManifest(name = "Bloodbend", type = PowerType.OFFENSE, author = "sirrus86", concept = "TheClownOfCrime", icon = Material.GHAST_TEAR, usesPackets = true,
 	description = "[act:item]ing an entity while holding [item] allows you to momentarily control them, freezing and levitating them while you drain their blood."
 			+ " This damages them while restoring your own hunger, then health. Does not work on undead. Can only be used against a given entity once every [victim-cooldown]. [cooldown] cooldown.")
 public final class Bloodbend extends Power {

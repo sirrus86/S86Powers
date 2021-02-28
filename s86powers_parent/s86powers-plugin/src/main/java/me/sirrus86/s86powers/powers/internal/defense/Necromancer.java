@@ -42,7 +42,7 @@ import me.sirrus86.s86powers.tools.PowerTools;
 import me.sirrus86.s86powers.users.PowerUser;
 import me.sirrus86.s86powers.utils.PowerTime;
 
-@PowerManifest(name = "Necromancer", type = PowerType.DEFENSE, author = "sirrus86", concept = "nazizombies2354", icon=Material.BONE,
+@PowerManifest(name = "Necromancer", type = PowerType.DEFENSE, author = "sirrus86", concept = "nazizombies2354", icon = Material.BONE,
 	description = "[act:item]ing while holding [item] creates an aura of death around you. The aura causes nearby vegetation to decay,"
 			+ " causes weakness to the living, and pulls the dead from their graves. Reanimated undead will follow and defend you. [cooldown] cooldown.")
 public final class Necromancer extends Power {

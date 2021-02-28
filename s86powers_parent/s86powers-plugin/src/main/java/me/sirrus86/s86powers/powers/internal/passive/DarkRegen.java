@@ -23,7 +23,7 @@ import me.sirrus86.s86powers.tools.PowerTools;
 import me.sirrus86.s86powers.users.PowerUser;
 import me.sirrus86.s86powers.utils.PowerTime;
 
-@PowerManifest(name = "Dark Regen", type = PowerType.PASSIVE, author = "sirrus86", concept = "sirrus86", icon=Material.END_CRYSTAL,
+@PowerManifest(name = "Dark Regen", type = PowerType.PASSIVE, author = "sirrus86", concept = "sirrus86", icon = Material.END_CRYSTAL,
 	description = "[regenAny]Regenerate [regenerate-health]health [/regenerate-health][regenBoth]and [/regenBoth][regenerate-hunger]hunger [/regenerate-hunger]while in dark areas."
 			+ " [/regenAny][night-vision]Gain night vision in dark areas.[/night-vision]")
 public final class DarkRegen extends Power {

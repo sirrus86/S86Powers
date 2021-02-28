@@ -22,7 +22,7 @@ import me.sirrus86.s86powers.tools.PowerTools;
 import me.sirrus86.s86powers.users.PowerUser;
 import me.sirrus86.s86powers.utils.PowerTime;
 
-@PowerManifest(name = "Blastwave", type = PowerType.OFFENSE, author = "sirrus86", concept = "brysi", icon=Material.BLAZE_POWDER,
+@PowerManifest(name = "Blastwave", type = PowerType.OFFENSE, author = "sirrus86", concept = "brysi", icon = Material.BLAZE_POWDER,
 	description = "[act:item]ing while holding [item] creates a fiery explosion beneath you, propelling you up and away from the direction you're facing. [cooldown] cooldown.")
 public final class Blastwave extends Power {
 	

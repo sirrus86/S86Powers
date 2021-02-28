@@ -23,7 +23,7 @@ import me.sirrus86.s86powers.powers.PowerType;
 import me.sirrus86.s86powers.tools.PowerTools;
 import me.sirrus86.s86powers.users.PowerUser;
 
-@PowerManifest(name = "Aquaphile", type = PowerType.PASSIVE, author = "sirrus86", concept = "bobby16may", icon=Material.NAUTILUS_SHELL, usesPackets = true,
+@PowerManifest(name = "Aquaphile", type = PowerType.PASSIVE, author = "sirrus86", concept = "bobby16may", icon = Material.NAUTILUS_SHELL, usesPackets = true,
 	description = "Can breath[night-vision] and see better[/night-vision] underwater.[heal-underwater] Healed by water.[/heal-underwater]"
 			+ " Movement while underwater is much faster.[enable-dolphin-form] Sprinting while underwater transforms you into a dolphin.[/enable-dolphin-form]")
 public final class Aquaphile extends Power {

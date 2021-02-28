@@ -20,7 +20,7 @@ import me.sirrus86.s86powers.powers.PowerType;
 import me.sirrus86.s86powers.users.PowerUser;
 import me.sirrus86.s86powers.utils.PowerTime;
 
-@PowerManifest(name = "Ender Soul", type = PowerType.DEFENSE, author = "sirrus86", concept = "sirrus86", icon=Material.ENDER_PEARL,
+@PowerManifest(name = "Ender Soul", type = PowerType.DEFENSE, author = "sirrus86", concept = "sirrus86", icon = Material.ENDER_PEARL,
 	description = "[velOrRefund]Ender pearls [modify-pearl-velocity]are thrown at greater velocity[/modify-pearl-velocity][velAndRefund]"
 			+ " and [/velAndRefund][refund-pearl]are immediately refunded after being thrown[/refund-pearl]."
 			+ " [/velOrRefund][pearl-damage-immunity]Damage from ender pearls is negated. [/pearl-damage-immunity]")

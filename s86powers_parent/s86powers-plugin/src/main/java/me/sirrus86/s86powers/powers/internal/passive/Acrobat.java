@@ -19,7 +19,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
-@PowerManifest(name = "Acrobat", type = PowerType.PASSIVE, author = "sirrus86", concept = "Air_spike", icon=Material.FEATHER,
+@PowerManifest(name = "Acrobat", type = PowerType.PASSIVE, author = "sirrus86", concept = "Air_spike", icon = Material.FEATHER,
 	description = "Jump much higher than other players[negate-fall-damage] and take no damage from falls[/negate-fall-damage]. By [act:item]ing with [item], can adjust jump height.")
 public final class Acrobat extends Power {
 

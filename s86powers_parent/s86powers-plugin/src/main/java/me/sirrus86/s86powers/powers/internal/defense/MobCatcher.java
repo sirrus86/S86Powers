@@ -53,7 +53,7 @@ import me.sirrus86.s86powers.tools.PowerTools;
 import me.sirrus86.s86powers.tools.version.MCVersion;
 import me.sirrus86.s86powers.users.PowerUser;
 
-@PowerManifest(name = "Mob Catcher", type = PowerType.DEFENSE, author = "sirrus86", concept = "kamyarm007", version = MCVersion.v1_14, icon=Material.ZOMBIE_SPAWN_EGG, usesPackets = true,
+@PowerManifest(name = "Mob Catcher", type = PowerType.DEFENSE, author = "sirrus86", concept = "kamyarm007", version = MCVersion.v1_14, icon = Material.ZOMBIE_SPAWN_EGG, usesPackets = true,
 	description = "[act:item]ing while holding [item] throws it. If it hits a capturable entity, it will be stored in the [item] which is returned to you."
 			+ " [act:item]ing a [item] with a stored entity will thorw it, causing it to expel the stored entity on contact.")
 public final class MobCatcher extends Power {

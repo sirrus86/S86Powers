@@ -16,7 +16,7 @@ import me.sirrus86.s86powers.powers.PowerType;
 import me.sirrus86.s86powers.users.PowerUser;
 import me.sirrus86.s86powers.utils.PowerTime;
 
-@PowerManifest(name = "Acid Blood", type = PowerType.PASSIVE, author = "sirrus86", concept = "Gamekills99", icon=Material.EXPERIENCE_BOTTLE,
+@PowerManifest(name = "Acid Blood", type = PowerType.PASSIVE, author = "sirrus86", concept = "Gamekills99", icon = Material.EXPERIENCE_BOTTLE,
 	description = "Absorb [absorb-percentage]% of incoming poison damage.[afflict-attackers] When struck by a melee attack, attacker becomes poisoned for [afflict-duration].[/afflict-attackers]")
 public final class AcidBlood extends Power {
 

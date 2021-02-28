@@ -12,7 +12,7 @@ import me.sirrus86.s86powers.powers.PowerManifest;
 import me.sirrus86.s86powers.powers.PowerType;
 import me.sirrus86.s86powers.users.PowerUser;
 
-@PowerManifest(name = "Haste", type = PowerType.PASSIVE, author = "sirrus86", concept = "JJoiler", icon=Material.ELYTRA,
+@PowerManifest(name = "Haste", type = PowerType.PASSIVE, author = "sirrus86", concept = "JJoiler", icon = Material.ELYTRA,
 	description = "Perform hand-related tasks (mining, digging, attacking, etc) much faster than other players.")
 public final class Haste extends Power {
 
