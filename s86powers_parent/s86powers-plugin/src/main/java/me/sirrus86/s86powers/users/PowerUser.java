@@ -20,8 +20,8 @@ import me.sirrus86.s86powers.events.UserMaxedStatEvent;
 import me.sirrus86.s86powers.localization.LocaleString;
 import me.sirrus86.s86powers.permissions.S86Permission;
 import me.sirrus86.s86powers.powers.Power;
-import me.sirrus86.s86powers.powers.PowerAdapter;
 import me.sirrus86.s86powers.powers.PowerFire;
+import me.sirrus86.s86powers.powers.PowerOption;
 import me.sirrus86.s86powers.powers.PowerStat;
 import me.sirrus86.s86powers.powers.PowerType;
 import me.sirrus86.s86powers.powers.internal.utility.NeutralizerBeacon.Beacon;
@@ -61,6 +61,7 @@ public final class PowerUser implements Comparable<PowerUser> {
 	private Set<Beacon> beacons = new HashSet<>();
 	private Map<Power, Long> cooldowns = new HashMap<>();
 	private Set<PowerGroup> groups = new HashSet<>();
+	private Map<PowerOption, Object> options = new HashMap<>(); //TODO Custom player options
 	private Map<Power, Boolean> powers = new HashMap<>();
 	private Set<NeutralRegion> regions = new HashSet<>();
 	private Map<PowerStat, Integer> stats = new HashMap<>();
@@ -160,11 +161,11 @@ public final class PowerUser implements Comparable<PowerUser> {
 		if (!powers.containsKey(power)) {
 			powers.put(power, enable);
 		}
-		PowerAdapter.getAdapter(power).addUser(this);
-		PowerAdapter.getAdapter(power).enable(this);
+		power.addUser(this);
+		power.enable(this);
 	}
 	
-	void addRegion(NeutralRegion region) {
+	public void addRegion(NeutralRegion region) {
 		if (regions.isEmpty()) {
 			neutralize(LocaleString.NEUTRALIZED_BY_REGION.toString());
 		}
@@ -182,10 +183,10 @@ public final class PowerUser implements Comparable<PowerUser> {
 	 */
 	public boolean allowPower(Power power) {
 		return power.getType() == PowerType.UTILITY ? true :
-			PowerUserAdapter.getAdapter(this).hasPower(power)
-					&& PowerUserAdapter.getAdapter(this).hasPowerEnabled(power)
-					&& PowerUserAdapter.getAdapter(this).hasPowersEnabled()
-					&& !PowerUserAdapter.getAdapter(this).isNeutralized();
+			this.hasPower(power)
+					&& this.hasPowerEnabled(power)
+					&& this.hasPowersEnabled()
+					&& !this.isNeutralized();
 	}
 	
 	private void autosave() {
@@ -270,7 +271,7 @@ public final class PowerUser implements Comparable<PowerUser> {
 		}
 		if (ConfigOption.Plugin.AUTO_SAVE
 				&& System.currentTimeMillis() >= saveTimer) {
-			PowerUserAdapter.getAdapter(this).save();
+			this.save();
 		}
 	}
 
@@ -290,7 +291,7 @@ public final class PowerUser implements Comparable<PowerUser> {
 	}
 	
 	void deneutralize(boolean force) {
-		if (!PowerUserAdapter.getAdapter(this).isNeutralized()
+		if (!this.isNeutralized()
 				|| force) {
 			if (isOnline()) {
 				sendMessage(ChatColor.GREEN + LocaleString.POWERS_RETURN.toString());
@@ -306,11 +307,11 @@ public final class PowerUser implements Comparable<PowerUser> {
 	}
 	
 	void neutralize(String message) {
-		if (!PowerUserAdapter.getAdapter(this).isNeutralized()) {
+		if (!this.isNeutralized()) {
 			this.getPlayer().getWorld().playEffect(this.getPlayer().getEyeLocation(), Effect.STEP_SOUND, Material.BLUE_STAINED_GLASS);
 			this.sendMessage(ChatColor.BLUE + message);
 			for (Power power : powers.keySet()) {
-				PowerAdapter.getAdapter(power).disable(this);
+				power.disable(this);
 			}
 			if (S86Powers.getProtocolLib() != null) {
 				PowerTools.removeDisguise(getPlayer());
@@ -319,7 +320,7 @@ public final class PowerUser implements Comparable<PowerUser> {
 		}
 	}
 	
-	Set<PowerGroup> getAssignedGroups() {
+	public Set<PowerGroup> getAssignedGroups() {
 		return groups;
 	}
 	
@@ -358,7 +359,7 @@ public final class PowerUser implements Comparable<PowerUser> {
 		return PowerTools.getEquipment(getPlayer(), slot);
 	}
 	
-	Set<Power> getGroupPowers() {
+	public Set<Power> getGroupPowers() {
 		Set<Power> tmp = new HashSet<Power>();
 		for (PowerGroup group : getGroups()) {
 			tmp.addAll(group.getPowers());
@@ -366,7 +367,7 @@ public final class PowerUser implements Comparable<PowerUser> {
 		return tmp;
 	}
 	
-	Set<PowerGroup> getGroups() {
+	public Set<PowerGroup> getGroups() {
 		Set<PowerGroup> tmp = new HashSet<PowerGroup>();
 		tmp.addAll(getAssignedGroups());
 		tmp.addAll(getPermissibleGroups());
@@ -386,12 +387,12 @@ public final class PowerUser implements Comparable<PowerUser> {
 		return tmp;
 	}
 	
-	Set<Power> getPermissiblePowers() {
+	public Set<Power> getPermissiblePowers() {
 		Set<Power> tmp = new HashSet<Power>();
 		if (isOnline()
 				&& ConfigOption.Plugin.ENABLE_PERMISSION_ASSIGNMENTS) {
 			for (Power power : S86Powers.getConfigManager().getPowers()) {
-				if (getPlayer().hasPermission(PowerAdapter.getAdapter(power).getUsePermission())) {
+				if (getPlayer().hasPermission(power.getUsePermission())) {
 					tmp.add(power);
 				}
 			}
@@ -417,15 +418,21 @@ public final class PowerUser implements Comparable<PowerUser> {
 		return oPlayer;
 	}
 	
+	// TODO Get custom option value
+	public Object getOption(PowerOption option) {
+		Power power = option.getPower();
+		return options.containsKey(option) ? options.get(option) : power.getOptionValue(option);
+	}
+	
 	public Player getPlayer() {
 		return getOfflinePlayer().getPlayer();
 	}
 	
-	Set<Power> getPowers() {
+	public Set<Power> getPowers() {
 		return getPowers(false);
 	}
 	
-	Set<Power> getPowers(boolean includeUtility) {
+	public Set<Power> getPowers(boolean includeUtility) {
 		Set<Power> tmp = new HashSet<Power>();
 		if (includeUtility) {
 			tmp.addAll(S86Powers.getConfigManager().getPowersByType(PowerType.UTILITY));
@@ -510,15 +517,15 @@ public final class PowerUser implements Comparable<PowerUser> {
 		return false;
 	}
 	
-	boolean hasPowerAssigned(Power power) {
+	public boolean hasPowerAssigned(Power power) {
 		return powers.containsKey(power);
 	}
 	
-	boolean hasPowerEnabled(Power power) {
-		return powers.containsKey(power) ? powers.get(power) : (isOnline() && getPlayer().hasPermission(PowerAdapter.getAdapter(power).getAssignPermission()));
+	public boolean hasPowerEnabled(Power power) {
+		return powers.containsKey(power) ? powers.get(power) : (isOnline() && getPlayer().hasPermission(power.getAssignPermission()));
 	}
 	
-	boolean hasPowersEnabled() {
+	public boolean hasPowersEnabled() {
 		return enabled;
 	}
 	
@@ -554,7 +561,7 @@ public final class PowerUser implements Comparable<PowerUser> {
 			}
 			if (ConfigOption.Plugin.AUTO_SAVE
 					&& System.currentTimeMillis() >= saveTimer) {
-				PowerUserAdapter.getAdapter(this).save();
+				this.save();
 				saveTimer = System.currentTimeMillis() + ConfigOption.Plugin.AUTO_SAVE_COOLDOWN;
 			}
 		}
@@ -564,7 +571,7 @@ public final class PowerUser implements Comparable<PowerUser> {
 		return groups.contains(group);
 	}
 	
-	boolean isAdmin() {
+	public boolean isAdmin() {
 		return isOnline()
 				&& getPlayer().hasPermission(S86Permission.ADMIN);
 	}
@@ -584,7 +591,7 @@ public final class PowerUser implements Comparable<PowerUser> {
 				|| nTask > -1;
 	}
 	
-	void load() {
+	public void load() {
 		if (ConfigOption.Plugin.SHOW_CONFIG_STATUS) {
 			plugin.getLogger().info(LocaleString.LOAD_ATTEMPT.build(cFile));
 		}
@@ -597,9 +604,18 @@ public final class PowerUser implements Comparable<PowerUser> {
 						if (config.contains("powers." + pwr + ".active", false)) {
 							addPowerWithoutSaving(power, config.getBoolean("powers." + pwr + ".active", false));
 						}
+						// TODO Load custom options
+						if (config.contains("powers." + pwr + ".options")) {
+							for (String optName : config.getConfigurationSection("powers." + pwr + ".options").getKeys(false)) {
+								PowerOption option = power.getOption(optName);
+								if (option != null) {
+									options.put(option, config.get("powers." + pwr + ".options." + optName, power.getOptionValue(option)));
+								}
+							}
+						}
 						if (config.contains("powers." + pwr + ".stats")) {
 							for (String statName : config.getConfigurationSection("powers." + pwr + ".stats").getKeys(false)) {
-								PowerStat stat = PowerAdapter.getAdapter(power).getStat(statName);
+								PowerStat stat = power.getStat(statName);
 								if (stat != null) {
 									stats.put(stat, config.getInt("powers." + pwr + ".stats." + statName, 0));
 								}
@@ -672,23 +688,23 @@ public final class PowerUser implements Comparable<PowerUser> {
 		}
 	}
 	
-	void removePower(Power power) {
+	public void removePower(Power power) {
 		if (powers.containsKey(power)) {
 			powers.remove(power);
 		}
-		PowerAdapter.getAdapter(power).removeUser(this);
-		PowerAdapter.getAdapter(power).disable(this);
+		power.removeUser(this);
+		power.disable(this);
 		autosave();
 	}
 	
-	void removeRegion(NeutralRegion region) {
+	public void removeRegion(NeutralRegion region) {
 		if (regions.contains(region)) {
 			regions.remove(region);
 			deneutralize(false);
 		}
 	}
 	
-	void save() {
+	public void save() {
 		if (ConfigOption.Plugin.SHOW_CONFIG_STATUS) {
 			plugin.getLogger().info(LocaleString.SAVE_ATTEMPT.build(cFile));
 		}
@@ -708,6 +724,12 @@ public final class PowerUser implements Comparable<PowerUser> {
 			if (!getAssignedPowers().isEmpty()) {
 				for (Power power : getAssignedPowers()) {
 					config.set("powers." + power.getClass().getSimpleName() + ".active", hasPowerEnabled(power));
+				}
+			}
+			// TODO Save custom options
+			if (!options.isEmpty()) {
+				for (PowerOption option : options.keySet()) {
+					config.set("powers." + option.getPower().getClass().getSimpleName() + ".options." + option.getPath(), options.get(option));
 				}
 			}
 			if (!stats.isEmpty()) {
@@ -755,13 +777,13 @@ public final class PowerUser implements Comparable<PowerUser> {
 	}
 	
 	public void setCooldown(Power power, long time) {
-		if (!PowerUserAdapter.getAdapter(this).isAdmin()
+		if (!this.isAdmin()
 				|| !ConfigOption.Admin.BYPASS_COOLDOWN) {
 			cooldowns.put(power, System.currentTimeMillis() + time);
 			if (ConfigOption.Powers.SHOW_COOLDOWN_ON_ITEM
-					&& PowerAdapter.getAdapter(power).getRequiredItem() != null
+					&& power.getRequiredItem() != null
 					&& S86Powers.getProtocolLib() != null) {
-				PowerTools.showItemCooldown(getPlayer(), PowerAdapter.getAdapter(power).getRequiredItem(), time);
+				PowerTools.showItemCooldown(getPlayer(), power.getRequiredItem(), time);
 			}
 		}
 	}
@@ -784,11 +806,16 @@ public final class PowerUser implements Comparable<PowerUser> {
 		}
 	}
 	
-	void setPowerEnabled(Power power, boolean newState) {
+	// TODO Set option value
+	public void setOption(PowerOption option, Object value) {
+		options.put(option, value);
+	}
+	
+	public void setPowerEnabled(Power power, boolean newState) {
 		if (powers.containsKey(power)) {
 			powers.put(power, newState);
 			if (!newState) {
-				PowerAdapter.getAdapter(power).disable(this);
+				power.disable(this);
 			}
 		}
 		if (ConfigOption.Plugin.AUTO_SAVE
@@ -797,7 +824,7 @@ public final class PowerUser implements Comparable<PowerUser> {
 		}
 	}
 	
-	void setPowersEnabled(boolean newState) {
+	public void setPowersEnabled(boolean newState) {
 		enabled = newState;
 	}
 	
@@ -808,11 +835,11 @@ public final class PowerUser implements Comparable<PowerUser> {
 	}
 	
 	@SuppressWarnings("deprecation")
+	public
 	void supply(Power power) {
 		if (isOnline()) {
-			PowerAdapter pCont = PowerAdapter.getAdapter(power);
-			for (int i = 0; i < pCont.getSupplies().size(); i ++) {
-				ItemStack item = pCont.getSupplies().get(i);
+			for (int i = 0; i < power.getSupplies().size(); i ++) {
+				ItemStack item = power.getSupplies().get(i);
 				for (ItemStack stack : getPlayer().getInventory().getContents()) {
 					if (stack != null
 							&& item != null) {

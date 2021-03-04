@@ -19,7 +19,6 @@ import me.sirrus86.s86powers.localization.LocaleLoader;
 import me.sirrus86.s86powers.localization.LocaleString;
 import me.sirrus86.s86powers.permissions.PermissionHandler;
 import me.sirrus86.s86powers.powers.Power;
-import me.sirrus86.s86powers.powers.PowerAdapter;
 import me.sirrus86.s86powers.powers.PowerType;
 import me.sirrus86.s86powers.utils.Metrics;
 import me.sirrus86.s86powers.utils.PowerExporter;
@@ -63,6 +62,7 @@ public final class S86Powers extends JavaPlugin {
 		new PowerExporter(this, getFile());
 		new PowerLoader(this, getPowerDirectory());
 		log(Level.INFO, LocaleString.POWERS_LOAD_SUCCESS.build(configManager.getPowers().size()));
+		// TODO Load custom powers
 		configManager.loadUsers();
 		configManager.loadGroups();
 		bList = new BlockListener(this);
@@ -92,8 +92,7 @@ public final class S86Powers extends JavaPlugin {
 				Map<String, Integer> valueMap = new HashMap<>();
 				for (Power power : configManager.getPowers()) {
 					if (power.getType() != PowerType.UTILITY) {
-						PowerAdapter pCont = PowerAdapter.getAdapter(power);
-						valueMap.put(power.getName(), pCont.getUsers().size());
+						valueMap.put(power.getName(), power.getUsers().size());
 					}
 				}
 				return valueMap;

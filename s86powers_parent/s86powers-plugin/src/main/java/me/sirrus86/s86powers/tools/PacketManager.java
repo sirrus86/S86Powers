@@ -410,6 +410,12 @@ public final class PacketManager {
 	}
 	
 	protected void addSpectralBlock(Player viewer, Block block, ChatColor color) {
+		if (!spectralBlocks.containsKey(viewer.getUniqueId())) {
+			spectralBlocks.put(viewer.getUniqueId(), new HashMap<>());
+		}
+		if (spectralBlocks.get(viewer.getUniqueId()).containsKey(block)) {
+			removeSpectralBlock(viewer, block);
+		}
 		int id = nms.generateEntityID();
 		UUID uuid = UUID.randomUUID();
 		Location loc = block.getLocation().clone().add(0.5D, 0.0D, 0.5D);
@@ -426,9 +432,6 @@ public final class PacketManager {
 		teamPacket.getEnumModifier(ChatColor.class, 6).write(0, color);
 		teamPacket.getModifier().write(7, Lists.newArrayList(viewer.getName(), uuid.toString()));
 		sendServerPacket(viewer, teamPacket);
-		if (!spectralBlocks.containsKey(viewer.getUniqueId())) {
-			spectralBlocks.put(viewer.getUniqueId(), new HashMap<>());
-		}
 		spectralBlocks.get(viewer.getUniqueId()).put(block, id);
 	}
 	

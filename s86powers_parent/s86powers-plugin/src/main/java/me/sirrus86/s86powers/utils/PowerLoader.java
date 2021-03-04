@@ -13,7 +13,6 @@ import me.sirrus86.s86powers.S86Powers;
 import me.sirrus86.s86powers.config.ConfigOption;
 import me.sirrus86.s86powers.localization.LocaleString;
 import me.sirrus86.s86powers.powers.Power;
-import me.sirrus86.s86powers.powers.PowerAdapter;
 import me.sirrus86.s86powers.powers.PowerManifest;
 import me.sirrus86.s86powers.tools.version.MCServer;
 import me.sirrus86.s86powers.tools.version.MCVersion;
@@ -180,7 +179,7 @@ public class PowerLoader {
 				if (ConfigOption.Plugin.SHOW_CONFIG_STATUS) {
 					plugin.log(Level.INFO, LocaleString.POWER_LOAD_SUCCESS.build(power));
 				}
-				PowerAdapter.getAdapter(power).setEnabled(true);
+				power.setEnabled(true);
 				S86Powers.getConfigManager().addPower(power);
 			}
 			else {

@@ -38,12 +38,10 @@ import me.sirrus86.s86powers.S86Powers;
 import me.sirrus86.s86powers.config.ConfigOption;
 import me.sirrus86.s86powers.localization.LocaleString;
 import me.sirrus86.s86powers.powers.Power;
-import me.sirrus86.s86powers.powers.PowerAdapter;
 import me.sirrus86.s86powers.powers.PowerManifest;
 import me.sirrus86.s86powers.powers.PowerType;
 import me.sirrus86.s86powers.tools.PowerTools;
 import me.sirrus86.s86powers.users.PowerUser;
-import me.sirrus86.s86powers.users.PowerUserAdapter;
 
 @PowerManifest(name = "Power Collector", type = PowerType.UTILITY, author = "sirrus86", concept = "sirrus86", icon = Material.WRITTEN_BOOK,
 	description = "Power books have a chance to drop from mobs, as well as a chance to appear in treasure chests in the world. Power books can be read to learn new powers.")
@@ -86,7 +84,7 @@ public final class PowerCollector extends Power {
 		ItemMeta meta = stack.hasItemMeta() ? stack.getItemMeta() : Bukkit.getItemFactory().getItemMeta(Material.ENCHANTED_BOOK);
 		meta.setDisplayName(ChatColor.RESET.toString() + power.getType().getColor() + power.getName());
 		meta.getPersistentDataContainer().set(powerKey, PersistentDataType.STRING, power.getClass().getSimpleName());
-		String powerDesc = PowerTools.getFilteredText(power, PowerAdapter.getAdapter(power).getDescription());
+		String powerDesc = PowerTools.getFilteredText(power, power.getDescription());
 		List<String> lore = PowerTools.wordSplit(ChatColor.RESET + ChatColor.GRAY.toString(), powerDesc, 30);
 		meta.setLore(lore);
 		stack.setItemMeta(meta);
@@ -96,13 +94,13 @@ public final class PowerCollector extends Power {
 	private boolean canAddPower(PowerUser user, Power power) {
 		if (ConfigOption.Users.ENFORCE_POWER_CAP) {
 			if (user.getAssignedPowers().size() < ConfigOption.Users.POWER_CAP_TOTAL
-					&& user.getPlayer().hasPermission(PowerAdapter.getAdapter(power).getAssignPermission())) {
+					&& user.getPlayer().hasPermission(power.getAssignPermission())) {
 				if (ConfigOption.Users.REPLACE_POWERS_OF_SAME_TYPE
 						&& user.getAssignedPowersByType(power.getType()).size() >= ConfigOption.Users.POWER_CAP_PER_TYPE) {
 					List<Power> powers = Lists.newArrayList(user.getAssignedPowersByType(power.getType()));
 					Collections.shuffle(powers);
 					Power removePower = powers.get(0);
-					PowerUserAdapter.getAdapter(user).removePower(removePower);
+					user.removePower(removePower);
 					user.sendMessage(LocaleString.SELF_REMOVE_POWER_SUCCESS.build(removePower));
 					return true;
 				}
@@ -116,7 +114,7 @@ public final class PowerCollector extends Power {
 			}
 		}
 		else {
-			return user.getPlayer().hasPermission(PowerAdapter.getAdapter(power).getAssignPermission());
+			return user.getPlayer().hasPermission(power.getAssignPermission());
 		}
 	}
 	

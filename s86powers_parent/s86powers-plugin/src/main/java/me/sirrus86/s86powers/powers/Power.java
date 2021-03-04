@@ -19,7 +19,6 @@ import me.sirrus86.s86powers.S86Powers;
 import me.sirrus86.s86powers.config.ConfigOption;
 import me.sirrus86.s86powers.localization.LocaleString;
 import me.sirrus86.s86powers.users.PowerUser;
-import me.sirrus86.s86powers.users.PowerUserAdapter;
 
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
@@ -51,8 +50,8 @@ public abstract class Power implements Comparable<Power>, Listener {
 	private Set<Integer> tasks = new HashSet<>();
 	private Set<PowerUser> users = new HashSet<>();
 	
-	private final File cFile, defLocFile, locFile;
-	private final YamlConfiguration config, defLocConfig, locConfig;
+	File cFile, defLocFile, locFile;
+	YamlConfiguration config, defLocConfig, locConfig;
 	private boolean enabled = true,
 			locked = false;
 	private final Permission aPerm, perm;
@@ -173,7 +172,7 @@ public abstract class Power implements Comparable<Power>, Listener {
 		getDescription();
 	}
 
-	void addUser(PowerUser user) {
+	public void addUser(PowerUser user) {
 		users.add(user);
 	}
 	
@@ -239,7 +238,7 @@ public abstract class Power implements Comparable<Power>, Listener {
 		return new NamespacedKey(plugin, tag.toLowerCase() + "." + key);
 	}
 	
-	void disable() {
+	public void disable() {
 		for (PowerUser user : getUsers()) {
 			disable(user);
 		}
@@ -257,7 +256,7 @@ public abstract class Power implements Comparable<Power>, Listener {
 		enabled = false;
 	}
 	
-	void disable(PowerUser user) {
+	public void disable(PowerUser user) {
 		onDisable(user);
 	}
 	
@@ -276,15 +275,15 @@ public abstract class Power implements Comparable<Power>, Listener {
 		onEnable(user);
 	}
 	
-	final Permission getAssignPermission() {
+	public final Permission getAssignPermission() {
 		return aPerm;
 	}
 	
-	String getAuthor() {
+	public String getAuthor() {
 		return manifest.author();
 	}
 	
-	String getConcept() {
+	public String getConcept() {
 		return manifest.concept();
 	}
 	
@@ -305,11 +304,11 @@ public abstract class Power implements Comparable<Power>, Listener {
 		return config;
 	}
 	
-	String getDescription() {
+	public String getDescription() {
 		return locale("manifest.description", manifest.description());
 	}
 	
-	Object getFieldValue(String option) {
+	public Object getFieldValue(String option) {
 		Field field = null;
 		Object object = null;
 		try {
@@ -332,7 +331,7 @@ public abstract class Power implements Comparable<Power>, Listener {
 		return object;
 	}
 	
-	Material getIcon() {
+	public Material getIcon() {
 		return manifest.icon();
 	}
 
@@ -353,7 +352,7 @@ public abstract class Power implements Comparable<Power>, Listener {
 		return locale("manifest.name", manifest.name());
 	}
 	
-	PowerOption getOption(String path) {
+	public PowerOption getOption(String path) {
 		for (PowerOption option : options.keySet()) {
 			if (option.getPath().equalsIgnoreCase(path)) {
 				return option;
@@ -362,19 +361,19 @@ public abstract class Power implements Comparable<Power>, Listener {
 		return null;
 	}
 	
-	Map<PowerOption, Object> getOptions() {
+	public Map<PowerOption, Object> getOptions() {
 		return options;
 	}
 	
-	Object getOptionValue(PowerOption option) {
+	public Object getOptionValue(PowerOption option) {
 		return options.containsKey(option) ? options.get(option) : null;
 	}
 	
-	ItemStack getRequiredItem() {
+	public ItemStack getRequiredItem() {
 		return item;
 	}
 	
-	PowerStat getStat(String name) {
+	public PowerStat getStat(String name) {
 		for (PowerStat stat : stats.keySet()) {
 			if (stat.getPath().equalsIgnoreCase(name)) {
 				return stat;
@@ -383,7 +382,7 @@ public abstract class Power implements Comparable<Power>, Listener {
 		return null;
 	}
 	
-	Map<PowerStat, Integer> getStats() {
+	public Map<PowerStat, Integer> getStats() {
 		return stats;
 	}
 	
@@ -391,11 +390,11 @@ public abstract class Power implements Comparable<Power>, Listener {
 		return stats.containsKey(stat) ? stats.get(stat) : 0;
 	}
 	
-	List<ItemStack> getSupplies() {
+	public List<ItemStack> getSupplies() {
 		return supplies;
 	}
 	
-	String getTag() {
+	public String getTag() {
 		return locale("manifest.tag", getClass().getSimpleName());
 	}
 
@@ -403,7 +402,7 @@ public abstract class Power implements Comparable<Power>, Listener {
 		return manifest.type();
 	}
 	
-	 final Permission getUsePermission() {
+	 public final Permission getUsePermission() {
 		return perm;
 	}
 
@@ -449,11 +448,11 @@ public abstract class Power implements Comparable<Power>, Listener {
 		return index >= 0 && index < supplies.size();
 	}
 	
-	boolean isEnabled() {
+	public boolean isEnabled() {
 		return enabled;
 	}
 	
-	boolean isLocked() {
+	public boolean isLocked() {
 		return locked;
 	}
 	
@@ -518,7 +517,7 @@ public abstract class Power implements Comparable<Power>, Listener {
 		return (O) options.get(option);
 	}
 	
-	void refreshOptions() {
+	public void refreshOptions() {
 		config();
 	}
 	
@@ -531,17 +530,17 @@ public abstract class Power implements Comparable<Power>, Listener {
 		plugin.getServer().getPluginManager().registerEvents(listener, plugin);
 	}
 	
-	void reload() {
+	public void reload() {
 		onEnable();
 		config();
 	}
 	
-	void removeUser(PowerUser user) {
+	public void removeUser(PowerUser user) {
 		onDisable(user);
 		users.remove(user);
 	}
 	
-	void removeSupply(final int index) {
+	public void removeSupply(final int index) {
 		supplies.remove(index);
 	}
 	
@@ -614,7 +613,7 @@ public abstract class Power implements Comparable<Power>, Listener {
 		}
 	}
 	
-	boolean setEnabled(final boolean enable) {
+	public boolean setEnabled(final boolean enable) {
 		if (!locked) {
 			if (enable) {
 				enable();
@@ -628,11 +627,11 @@ public abstract class Power implements Comparable<Power>, Listener {
 		return false;
 	}
 	
-	void setLocked(boolean lock) {
+	public void setLocked(boolean lock) {
 		locked = lock;
 	}
 	
-	void setOption(PowerOption option, Object value) {
+	public void setOption(PowerOption option, Object value) {
 		options.put(option, value);
 		if (ConfigOption.Plugin.AUTO_SAVE) {
 			saveConfig();
@@ -640,13 +639,13 @@ public abstract class Power implements Comparable<Power>, Listener {
 		refreshOptions();
 	}
 	
-	void setStatValue(PowerStat stat, int value) {
+	public void setStatValue(PowerStat stat, int value) {
 		if (stats.containsKey(stat)) {
 			stats.put(stat, value);
 		}
 	}
 	
-	void setSupply(int index, ItemStack stack) {
+	public void setSupply(int index, ItemStack stack) {
 		if (index >= supplies.size()) {
 			supplies.add(stack);
 		}
@@ -714,12 +713,12 @@ public abstract class Power implements Comparable<Power>, Listener {
 
 	private void updateUsers() {
 		for (PowerUser user : Sets.newHashSet(users)) {
-			if (!PowerUserAdapter.getAdapter(user).hasPower(this)) {
+			if (!user.hasPower(this)) {
 				users.remove(user);
 			}
 		}
 		for (PowerUser user : S86Powers.getConfigManager().getUserList()) {
-			if (PowerUserAdapter.getAdapter(user).hasPower(this)
+			if (user.hasPower(this)
 					&& !users.contains(user)) {
 				users.add(user);
 			}

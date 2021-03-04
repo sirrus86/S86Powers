@@ -14,7 +14,6 @@ import me.sirrus86.s86powers.S86Powers;
 import me.sirrus86.s86powers.config.ConfigOption;
 import me.sirrus86.s86powers.localization.LocaleString;
 import me.sirrus86.s86powers.powers.Power;
-import me.sirrus86.s86powers.powers.PowerAdapter;
 
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.permissions.Permission;
@@ -45,8 +44,8 @@ public class PowerGroup implements Comparable<PowerGroup> {
 	
 	public void addMember(PowerUser user) {
 		members.add(user);
-		if (!PowerUserAdapter.getAdapter(user).inGroup(this)) {
-			PowerUserAdapter.getAdapter(user).addGroup(this);
+		if (!user.inGroup(this)) {
+			user.addGroup(this);
 		}
 	}
 	
@@ -71,7 +70,7 @@ public class PowerGroup implements Comparable<PowerGroup> {
 	public void disband() {
 		List<PowerUser> members = Lists.newArrayList(getMembers());
 		for (int i = 0; i < members.size(); i ++) {
-			PowerUserAdapter.getAdapter(members.get(i)).removeGroup(this);
+			members.get(i).removeGroup(this);
 		}
 		cFile.delete();
 	}
@@ -136,12 +135,12 @@ public class PowerGroup implements Comparable<PowerGroup> {
 	
 	public void removeMember(PowerUser user) {
 		members.remove(user);
-		if (PowerUserAdapter.getAdapter(user).inGroup(this)) {
-			PowerUserAdapter.getAdapter(user).removeGroup(this);
+		if (user.inGroup(this)) {
+			user.removeGroup(this);
 		}
 		for (Power power : powers) {
-			if (!PowerUserAdapter.getAdapter(user).hasPowerAssigned(power)) {
-				PowerAdapter.getAdapter(power).disable(user);
+			if (!user.hasPowerAssigned(power)) {
+				power.disable(user);
 			}
 		}
 	}
@@ -149,8 +148,8 @@ public class PowerGroup implements Comparable<PowerGroup> {
 	public void removePower(Power power) {
 		powers.remove(power);
 		for (PowerUser user : members) {
-			if (!PowerUserAdapter.getAdapter(user).hasPowerAssigned(power)) {
-				PowerAdapter.getAdapter(power).disable(user);
+			if (!user.hasPowerAssigned(power)) {
+				power.disable(user);
 			}
 		}
 	}
@@ -175,7 +174,7 @@ public class PowerGroup implements Comparable<PowerGroup> {
 			if (!powers.isEmpty()) {
 				List<String> pList = new ArrayList<>();
 				for (Power power : powers) {
-					pList.add(PowerAdapter.getAdapter(power).getTag());
+					pList.add(power.getTag());
 				}
 				config.set("powers", pList);
 			}

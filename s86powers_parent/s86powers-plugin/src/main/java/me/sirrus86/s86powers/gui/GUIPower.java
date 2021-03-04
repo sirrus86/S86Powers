@@ -13,7 +13,6 @@ import me.sirrus86.s86powers.S86Powers;
 import me.sirrus86.s86powers.localization.LocaleString;
 import me.sirrus86.s86powers.permissions.S86Permission;
 import me.sirrus86.s86powers.powers.Power;
-import me.sirrus86.s86powers.powers.PowerAdapter;
 import me.sirrus86.s86powers.tools.PowerTools;
 
 public final class GUIPower extends GUIAbstract {
@@ -44,15 +43,13 @@ public final class GUIPower extends GUIAbstract {
 	void setItems() {
 		setItem(0, INFO, player -> {
 			Power power = selectedPower.get(player.getUniqueId());
-			PowerAdapter pCont = PowerAdapter.getAdapter(power);
 			player.closeInventory();
-			player.performCommand("powers power " + pCont.getTag() + " info");
+			player.performCommand("powers power " + power.getTag() + " info");
 		});
 		setItem(2, OPTIONS, player -> {
 			Power power = selectedPower.get(player.getUniqueId());
-			PowerAdapter pCont = PowerAdapter.getAdapter(power);
 			if (player.hasPermission(S86Permission.POWER_OPTION)) {
-				powerOptionList.put(power, GUIAbstractList.createLists(GUIOptionList.class, pCont.getOptions().keySet()));
+				powerOptionList.put(power, GUIAbstractList.createLists(GUIOptionList.class, power.getOptions().keySet()));
 				for (int i = 0; i < powerOptionList.get(power).size(); i ++) {
 					powerOptionList.get(power).get(i).setSourceList(powerOptionList.get(power));
 				}
@@ -60,20 +57,18 @@ public final class GUIPower extends GUIAbstract {
 			}
 			else {
 				player.closeInventory();
-				player.performCommand("powers power " + pCont.getTag() + " option");
+				player.performCommand("powers power " + power.getTag() + " option");
 			}
 		});
 		setItem(7, ENABLE, player -> {
 			Power power = selectedPower.get(player.getUniqueId());
-			PowerAdapter pCont = PowerAdapter.getAdapter(power);
 			player.closeInventory();
-			player.performCommand("powers power " + pCont.getTag() + " enable");
+			player.performCommand("powers power " + power.getTag() + " enable");
 		});
 		setItem(8, DISABLE, player -> {
 			Power power = selectedPower.get(player.getUniqueId());
-			PowerAdapter pCont = PowerAdapter.getAdapter(power);
 			player.closeInventory();
-			player.performCommand("powers power " + pCont.getTag() + " disable");
+			player.performCommand("powers power " + power.getTag() + " disable");
 		});
 		setItem(12, BACK, player -> {
 			openLast(player);
