@@ -39,6 +39,7 @@ import me.sirrus86.s86powers.config.ConfigOption;
 import me.sirrus86.s86powers.localization.LocaleString;
 import me.sirrus86.s86powers.powers.Power;
 import me.sirrus86.s86powers.powers.PowerManifest;
+import me.sirrus86.s86powers.powers.PowerOption;
 import me.sirrus86.s86powers.powers.PowerType;
 import me.sirrus86.s86powers.tools.PowerTools;
 import me.sirrus86.s86powers.users.PowerUser;
@@ -49,10 +50,10 @@ public final class PowerCollector extends Power {
 	
 	private final NamespacedKey powerKey = createNamespacedKey("power-key");
 	
-	private boolean enforceCap;
+	private PowerOption<Boolean> enforceCap;
 	private Firework firework = null;
-	private Map<LootTables, Double> lootChance;
-	private int powerCap;
+	private Map<LootTables, PowerOption<Double>> lootChance;
+	private PowerOption<Integer> powerCap;
 	private List<Power> powerWeight;
 	
 	@Override
@@ -69,8 +70,9 @@ public final class PowerCollector extends Power {
 		}
 		for (Power power : S86Powers.getConfigManager().getPowers()) {
 			if (power.getType() != PowerType.UTILITY) {
-				for (int i = 0; i < Math.max(0, option("power-weight." + power.getClass().getSimpleName(), 1,
-						"Chance that " + power.getName() + " will be the power found. Higher values increase chances.")); i ++) {
+				PowerOption<Integer> weight = option("power-weight." + power.getClass().getSimpleName(), 1,
+						"Chance that " + power.getName() + " will be the power found. Higher values increase chances.");
+				for (int i = 0; i < Math.max(0, getOption(weight)); i ++) {
 					powerWeight.add(power);
 				}
 			}
@@ -146,11 +148,11 @@ public final class PowerCollector extends Power {
 			if (entity.getLootTable() != null
 					&& getLootTables(entity.getLootTable()) != null
 					&& lootChance.containsKey(getLootTables(entity.getLootTable()))
-					&& random.nextDouble() < lootChance.get(getLootTables(entity.getLootTable())) / 100.0D) {
+					&& random.nextDouble() < getOption(lootChance.get(getLootTables(entity.getLootTable()))) / 100.0D) {
 				Collections.shuffle(powerWeight);
 				Power power = powerWeight.get(0);
-				if (!enforceCap
-						|| power.getUsers().size() < powerCap) {
+				if (!getOption(enforceCap)
+						|| power.getUsers().size() < getOption(powerCap)) {
 					event.getDrops().add(createPowerBook(power));
 				}
 			}
@@ -170,11 +172,11 @@ public final class PowerCollector extends Power {
 				if (chest.getLootTable() != null
 						&& getLootTables(chest.getLootTable()) != null
 						&& lootChance.containsKey(getLootTables(chest.getLootTable()))
-						&& random.nextDouble() < lootChance.get(getLootTables(chest.getLootTable())) / 100.0D) {
+						&& random.nextDouble() < getOption(lootChance.get(getLootTables(chest.getLootTable()))) / 100.0D) {
 					Collections.shuffle(powerWeight);
 					Power power = powerWeight.get(0);
-					if (!enforceCap
-							|| power.getUsers().size() < powerCap) {
+					if (!getOption(enforceCap)
+							|| power.getUsers().size() < getOption(powerCap)) {
 						Inventory chestInv = chest.getBlockInventory();
 						boolean deposited = false;
 						for (int i = 0; i < chestInv.getSize(); i ++) {

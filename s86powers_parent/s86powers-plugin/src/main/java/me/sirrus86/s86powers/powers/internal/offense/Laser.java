@@ -20,6 +20,7 @@ import org.bukkit.util.Vector;
 import me.sirrus86.s86powers.events.PowerUseEvent;
 import me.sirrus86.s86powers.powers.Power;
 import me.sirrus86.s86powers.powers.PowerManifest;
+import me.sirrus86.s86powers.powers.PowerOption;
 //import me.sirrus86.s86powers.powers.PowerStat;
 import me.sirrus86.s86powers.powers.PowerType;
 import me.sirrus86.s86powers.tools.PowerTools;
@@ -33,10 +34,9 @@ public final class Laser extends Power {
 
 	private Map<PowerUser, Beam> lasers;
 	
-	private double damage, dist;
-	private int laserBlue, laserGreen, laserRed;
-//	private PowerStat laserDmg;
-	private boolean useConsume;
+	private PowerOption<Double> damage, dist;
+	private PowerOption<Integer> laserBlue, laserGreen, laserRed;
+	private PowerOption<Boolean> useConsume;
 	
 	@Override
 	protected void onEnable() {
@@ -61,9 +61,8 @@ public final class Laser extends Power {
 		laserBlue = option("color.blue", 0, "Blue value for laser color. Values below 0 or above 255 may provide unexpected results.");
 		laserGreen = option("color.green", 255, "Green value for laser color. Values below 0 or above 255 may provide unexpected results.");
 		laserRed = option("color.red", 255, "Red value for laser color. Values below 0 or above 255 may provide unexpected results.");
-//		laserDmg = stat("laser-damage", 150, "Damage done by lasers", "Lasers will now split when shot through glass."); // TODO
 		useConsume = option("use-consumable", true, "Whether consumable item should be required and consumed when laser is used.");
-		supplies(item, new ItemStack(consumable.getType(), consumable.getMaxStackSize()));
+		supplies(getRequiredItem(), new ItemStack(getConsumable().getType(), getConsumable().getMaxStackSize()));
 	}
 	
 	@EventHandler(ignoreCancelled = true)
@@ -100,32 +99,33 @@ public final class Laser extends Power {
 		
 		public void disable() {
 			cancelTask(task);
-			owner.setCooldown(getInstance(), cooldown);
+			owner.setCooldown(getInstance(), owner.getOption(cooldown));
 			lasers.remove(owner);
 		}
 		
 		private Runnable doBeam = new BukkitRunnable() {
 			@Override
 			public void run() {
-				if (!useConsume
-						|| owner.getPlayer().getInventory().containsAtLeast(consumable, 1)) {
+				if (!owner.getOption(useConsume)
+						|| owner.getPlayer().getInventory().containsAtLeast(getConsumable(), 1)) {
 					Location loc = owner.getPlayer().getEyeLocation().add(0.0D, -0.5D, 0.0D);
 					loc.getWorld().playSound(loc, Sound.ENTITY_FIREWORK_ROCKET_LAUNCH, 1.0F, 1.0F);
-					List<Entity> entities = owner.getPlayer().getNearbyEntities(dist, dist, dist);
+					double getDist = owner.getOption(dist);
+					List<Entity> entities = owner.getPlayer().getNearbyEntities(getDist, getDist, getDist);
 					Vector dir = loc.getDirection();
-					for (int i = 0; i < dist * 10; i ++) {
+					for (int i = 0; i < owner.getOption(dist) * 10; i ++) {
 						Vector newDir = dir.clone().multiply(i * 0.1D);
 						loc.add(newDir);
-						PowerTools.playRedstoneEffect(loc, new Vector(0, 0, 0), 1, new DustOptions(Color.fromRGB(laserRed, laserGreen, laserBlue), 1.0F));
+						PowerTools.playRedstoneEffect(loc, new Vector(0, 0, 0), 1, new DustOptions(Color.fromRGB(owner.getOption(laserRed), owner.getOption(laserGreen), owner.getOption(laserBlue)), 1.0F));
 						for (Entity entity : entities) {
 							if (entity instanceof Damageable
 									&& entity.getLocation().distanceSquared(loc) < 1.0D) {
-								owner.causeDamage(getInstance(), (Damageable) entity, DamageCause.PROJECTILE, damage);
+								owner.causeDamage(getInstance(), (Damageable) entity, DamageCause.PROJECTILE, owner.getOption(damage));
 							}
 						}
 					}
-					if (useConsume) {
-						owner.getPlayer().getInventory().removeItem(consumable);
+					if (owner.getOption(useConsume)) {
+						owner.getPlayer().getInventory().removeItem(getConsumable());
 					}
 				}
 				else {

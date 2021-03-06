@@ -22,6 +22,7 @@ import me.sirrus86.s86powers.events.PowerUseEvent;
 import me.sirrus86.s86powers.events.PowerUseOnEntityEvent;
 import me.sirrus86.s86powers.powers.Power;
 import me.sirrus86.s86powers.powers.PowerManifest;
+import me.sirrus86.s86powers.powers.PowerOption;
 import me.sirrus86.s86powers.powers.PowerType;
 import me.sirrus86.s86powers.tools.PowerTools;
 import me.sirrus86.s86powers.users.PowerUser;
@@ -35,9 +36,9 @@ public final class Bloodbend extends Power {
 	private Map<LivingEntity, Long> vCooldown;
 	private Set<BendTarget> targets;
 	
-	private double dmg, heal, range;
-	private long dur, vCD;
-	private int freq;
+	private PowerOption<Double> dmg, heal, range;
+	private PowerOption<Long> dur, vCD;
+	private PowerOption<Integer> freq;
 	private String targetRecent;
 	
 	@Override
@@ -66,7 +67,7 @@ public final class Bloodbend extends Power {
 		range = option("range", 7.5D, "Maximum range which power can be used on targets.");
 		vCD = option("victim-cooldown", PowerTime.toMillis(15, 0), "Amount of time before an entity can be targetted again.");
 		targetRecent = locale("message.target-too-recent", ChatColor.RED + "Entity has been targetted too recently.");
-		supplies(item);
+		supplies(getRequiredItem());
 	}
 	
 	private void doBend(PowerUser user, LivingEntity target) {
@@ -76,8 +77,8 @@ public final class Bloodbend extends Power {
 			if (!vCooldown.containsKey(target)
 					|| vCooldown.get(target) <= System.currentTimeMillis()) {
 				targets.add(new BendTarget(user, target));
-				vCooldown.put(target, System.currentTimeMillis() + vCD);
-				user.setCooldown(this, cooldown);
+				vCooldown.put(target, System.currentTimeMillis() + user.getOption(vCD));
+				user.setCooldown(this, user.getOption(cooldown));
 			}
 			else {
 				user.sendMessage(targetRecent);
@@ -89,7 +90,7 @@ public final class Bloodbend extends Power {
 	private void onTarget(PowerUseEvent event) {
 		if (event.getPower() == this) {
 			if (event.getUser().getCooldown(this) <= 0) {
-				doBend(event.getUser(), event.getUser().getTargetEntity(LivingEntity.class, range));
+				doBend(event.getUser(), event.getUser().getTargetEntity(LivingEntity.class, event.getUser().getOption(range)));
 			}
 			else {
 				event.getUser().showCooldown(this);
@@ -118,7 +119,7 @@ public final class Bloodbend extends Power {
 		protected BendTarget(final PowerUser user, final LivingEntity target) {
 			this.user = user;
 			taskID = runTaskTimer(new Runnable() {
-				long i = PowerTime.toTicks(dur);
+				long i = PowerTime.toTicks(user.getOption(dur));
 				@Override
 				public void run() {
 					if (i > 0
@@ -130,12 +131,12 @@ public final class Bloodbend extends Power {
 						red.setPickupDelay(Integer.MAX_VALUE);
 						PowerTools.fakeCollect(user.getPlayer(), red);
 						red.remove();
-						if (i % freq == 0) {
-							user.causeDamage(getInstance(), target, DamageCause.MAGIC, dmg);
+						if (i % user.getOption(freq) == 0) {
+							user.causeDamage(getInstance(), target, DamageCause.MAGIC, user.getOption(dmg));
 							if (user.getPlayer().getFoodLevel() < 20) {
-								user.regenHunger((int) heal);
+								user.regenHunger((int) Math.round(user.getOption(heal)));
 							}
-							else user.heal(heal);
+							else user.heal(user.getOption(heal));
 						}
 						i --;
 					}

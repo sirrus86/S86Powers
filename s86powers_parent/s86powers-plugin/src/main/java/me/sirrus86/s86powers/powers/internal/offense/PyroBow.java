@@ -19,6 +19,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 import me.sirrus86.s86powers.events.PowerIgniteEvent;
 import me.sirrus86.s86powers.powers.Power;
 import me.sirrus86.s86powers.powers.PowerManifest;
+import me.sirrus86.s86powers.powers.PowerOption;
 import me.sirrus86.s86powers.powers.PowerStat;
 import me.sirrus86.s86powers.powers.PowerType;
 import me.sirrus86.s86powers.tools.PowerTools;
@@ -34,8 +35,8 @@ public final class PyroBow extends Power {
 	private Map<Arrow, Integer> tasks;
 	
 	private PowerStat canExplode;
-	private double explodeRad;
-	private boolean disableIfWet, igniteBlocks;
+	private PowerOption<Double> explodeRad;
+	private PowerOption<Boolean> disableIfWet, igniteBlocks;
 	
 	@Override
 	protected void onEnable() {
@@ -81,12 +82,12 @@ public final class PyroBow extends Power {
 	@EventHandler (ignoreCancelled = true)
 	private void onMove(PlayerMoveEvent event) {
 		PowerUser user = getUser(event.getPlayer());
-		if (disableIfWet
+		if (user.getOption(disableIfWet)
 				&& user.allowPower(this)) {
 			if (event.getTo().getBlock().getType() == Material.WATER
 					|| (PowerTools.isOutside(event.getTo())
 							&& event.getTo().getWorld().hasStorm())) {
-				user.setCooldown(this, cooldown);
+				user.setCooldown(this, user.getOption(cooldown));
 			}
 		}
 	}
@@ -97,7 +98,7 @@ public final class PyroBow extends Power {
 			Arrow arrow = (Arrow) event.getEntity();
 			PowerUser user = getUser((Player)arrow.getShooter());
 			if (event.getHitBlock() != null
-					&& igniteBlocks) {
+					&& user.getOption(igniteBlocks)) {
 				callEvent(new PowerIgniteEvent(this, user, arrow.getLocation().getBlock(), null));
 			}
 			else if (event.getHitEntity() != null) {
@@ -106,7 +107,7 @@ public final class PyroBow extends Power {
 			}
 			if (arrows.get(arrow)) {
 				arrow.getWorld().spawnParticle(Particle.EXPLOSION_HUGE, arrow.getLocation(), 1);
-				for (Block block : PowerTools.getNearbyBlocks(arrow.getLocation(), explodeRad)) {
+				for (Block block : PowerTools.getNearbyBlocks(arrow.getLocation(), user.getOption(explodeRad))) {
 					callEvent(new PowerIgniteEvent(this, user, block, BlockFace.SELF));
 				}
 			}

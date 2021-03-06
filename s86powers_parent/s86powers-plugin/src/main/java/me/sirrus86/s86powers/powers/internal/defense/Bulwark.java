@@ -19,6 +19,7 @@ import org.bukkit.util.Vector;
 
 import me.sirrus86.s86powers.powers.Power;
 import me.sirrus86.s86powers.powers.PowerManifest;
+import me.sirrus86.s86powers.powers.PowerOption;
 import me.sirrus86.s86powers.powers.PowerType;
 import me.sirrus86.s86powers.tools.PowerTools;
 import me.sirrus86.s86powers.users.PowerUser;
@@ -31,10 +32,11 @@ public final class Bulwark extends Power {
 	
 	private Map<PowerUser, Long> parryWindow;
 	
-	private boolean doFatigue;
-	private int fatigueAmp;
-	private double knockback;
-	private long fatigueTime, parryTime;
+	private PowerOption<Boolean> doFatigue;
+	private PowerOption<Integer> fatigueAmp;
+	private PowerOption<Double> knockback;
+	private PowerOption<Long> fatigueTime, parryTime;
+
 	private String didDeflect, didParry, wasParried;
 	
 	@Override
@@ -48,7 +50,7 @@ public final class Bulwark extends Power {
 		doFatigue = option("fatigue", true, "Whether to afflict the parried entity with fatigue.");
 		fatigueAmp = option("fatigue-amplifier", 0, "Amplifier for fatigue effect.");
 		fatigueTime = option("fatigue-duration", PowerTime.toMillis(5, 0), "Duration for fatigue effect.");
-		item = new ItemStack(Material.SHIELD);
+		item = option("item", new ItemStack(Material.SHIELD), "Item used for blocking.", true);
 		knockback = option("knockback", 1.3D, "Velocity modifier for knockback when an attack is parried.");
 		parryTime = option("parry-window", PowerTime.toMillis(1, 0), "Maximum amount of time after blocking to successfully parry an attack.");
 		didDeflect = locale("message.you-deflected", ChatColor.GREEN + "You deflected [name]'s projectile!");
@@ -64,7 +66,7 @@ public final class Bulwark extends Power {
 			if (user.allowPower(this)
 					&& event.getItem() != null
 					&& event.getItem().getType() == Material.SHIELD) {
-				parryWindow.put(user, System.currentTimeMillis() + parryTime);
+				parryWindow.put(user, System.currentTimeMillis() + user.getOption(parryTime));
 			}
 		}
 	}
@@ -81,13 +83,13 @@ public final class Bulwark extends Power {
 				if (event.getDamager() instanceof LivingEntity) {
 					LivingEntity target = (LivingEntity) event.getDamager();
 					Vector difference = target.getLocation().clone().subtract(user.getPlayer().getLocation()).toVector();
-					target.setVelocity(difference.multiply(knockback));
+					target.setVelocity(difference.multiply(user.getOption(knockback)));
 					if (target instanceof Player) {
 						getUser((Player) target).sendMessage(wasParried.replace("[name]", user.getName() + ChatColor.RED));
 					}
 					user.sendMessage(didParry.replace("[name]", PowerTools.getFriendlyName(target) + ChatColor.GREEN));
-					if (doFatigue) {
-						target.addPotionEffect(new PotionEffect(PotionEffectType.SLOW_DIGGING, (int) PowerTime.toTicks(fatigueTime), fatigueAmp));
+					if (user.getOption(doFatigue)) {
+						target.addPotionEffect(new PotionEffect(PotionEffectType.SLOW_DIGGING, (int) PowerTime.toTicks(user.getOption(fatigueTime)), user.getOption(fatigueAmp)));
 					}
 				}
 				else if (event.getDamager() instanceof Arrow
@@ -103,7 +105,7 @@ public final class Bulwark extends Power {
 						newProj.getWorld().playSound(newProj.getLocation(), Sound.BLOCK_ANVIL_PLACE, 1.0F, 1.0F);
 						newProj.setShooter(target);
 						user.sendMessage(didDeflect.replace("[name]", PowerTools.getFriendlyName(target) + ChatColor.GREEN));
-						user.setCooldown(this, cooldown);
+						user.setCooldown(this, user.getOption(cooldown));
 						event.setCancelled(true);
 					}
 				}

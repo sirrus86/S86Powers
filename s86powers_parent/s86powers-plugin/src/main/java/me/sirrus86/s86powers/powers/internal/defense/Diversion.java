@@ -21,6 +21,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 
 import me.sirrus86.s86powers.powers.Power;
 import me.sirrus86.s86powers.powers.PowerManifest;
+import me.sirrus86.s86powers.powers.PowerOption;
 import me.sirrus86.s86powers.powers.PowerStat;
 import me.sirrus86.s86powers.powers.PowerType;
 import me.sirrus86.s86powers.tools.PowerTools;
@@ -35,8 +36,8 @@ public final class Diversion extends Power {
 	private Map<PowerUser, Set<Decoy>> decoys;
 	
 	private PowerStat decoysMade;
-	private long lifespan;
-	private int maxDecoys;
+	private PowerOption<Long> lifespan;
+	private PowerOption<Integer> maxDecoys;
 	
 	@Override
 	protected void onEnable() {
@@ -74,8 +75,8 @@ public final class Diversion extends Power {
 							|| decoys.get(user) == null) {
 						decoys.put(user, new HashSet<>());
 					}
-					if (decoys.get(user).size() < (user.hasStatMaxed(decoysMade) ? maxDecoys : 1)) {
-						for (int i = 0; i < (user.hasStatMaxed(decoysMade) ? maxDecoys : 1); i ++) {
+					if (decoys.get(user).size() < (user.hasStatMaxed(decoysMade) ? user.getOption(maxDecoys) : 1)) {
+						for (int i = 0; i < (user.hasStatMaxed(decoysMade) ? user.getOption(maxDecoys) : 1); i ++) {
 							Vindicator pz = user.getPlayer().getWorld().spawn(user.getPlayer().getLocation(), Vindicator.class);
 							runTask(new BukkitRunnable() {
 								
@@ -120,7 +121,7 @@ public final class Diversion extends Power {
 					kill();
 				}
 				
-			}, PowerTime.toTicks(lifespan)).getTaskId();
+			}, PowerTime.toTicks(owner.getOption(lifespan))).getTaskId();
 		}
 		
 		public void kill() {

@@ -22,6 +22,7 @@ import me.sirrus86.s86powers.config.ConfigOption;
 import me.sirrus86.s86powers.events.PowerUseEvent;
 import me.sirrus86.s86powers.powers.Power;
 import me.sirrus86.s86powers.powers.PowerManifest;
+import me.sirrus86.s86powers.powers.PowerOption;
 import me.sirrus86.s86powers.powers.PowerType;
 import me.sirrus86.s86powers.tools.PowerTools;
 import me.sirrus86.s86powers.users.PowerUser;
@@ -33,7 +34,7 @@ public final class SoulSiphon extends Power {
 
 	private Map<PowerUser, Siphon> siphons;
 	
-	private double drainRange, maxLife;
+	private PowerOption<Double> drainRange, maxLife;
 	
 	@Override
 	protected void onEnable() {
@@ -53,7 +54,7 @@ public final class SoulSiphon extends Power {
 		drainRange = option("drain-range", 15.0D, "Maximum range from which siphons can drain or feed health.");
 		item = option("item", new ItemStack(Material.END_CRYSTAL), "Item used to create soul siphons.");
 		maxLife = option("maximum-life", 10.0D, "Maximum total amount of life siphons can drain from all targets.");
-		supplies(new ItemStack(item.getType(), 1));
+		supplies(new ItemStack(getRequiredItem().getType(), 1));
 	}
 	
 	@EventHandler(ignoreCancelled = true)
@@ -71,7 +72,7 @@ public final class SoulSiphon extends Power {
 				EnderCrystal crystal = block.getWorld().spawn(block.getLocation(), EnderCrystal.class);
 				Siphon siphon = new Siphon(user, crystal);
 				siphons.put(user, siphon);
-				user.setCooldown(this, cooldown);
+				user.setCooldown(this, user.getOption(cooldown));
 			}
 			else {
 				user.showCooldown(this);
@@ -104,7 +105,7 @@ public final class SoulSiphon extends Power {
 				}
 				updateHealth();
 				if (owner.getPlayer().getWorld().equals(crystal.getWorld())
-						&& owner.getPlayer().getLocation().distanceSquared(crystal.getLocation()) < drainRange * drainRange
+						&& owner.getPlayer().getLocation().distanceSquared(crystal.getLocation()) < owner.getOption(drainRange) * owner.getOption(drainRange)
 						&& owner.getPlayer().getHealth() < owner.getPlayer().getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue()
 						&& !owner.getPlayer().isDead()
 						&& life > 0.0D) {
@@ -117,8 +118,8 @@ public final class SoulSiphon extends Power {
 				}
 				else if (target != null
 						&& !target.isDead()
-						&& target.getLocation().distanceSquared(crystal.getLocation()) < drainRange * drainRange
-						&& life < maxLife) {
+						&& target.getLocation().distanceSquared(crystal.getLocation()) < owner.getOption(drainRange) * owner.getOption(drainRange)
+						&& life < owner.getOption(maxLife)) {
 					crystal.setBeamTarget(target.getLocation().clone().subtract(0.0D, 1.0D, 0.0D));
 					if (drainCD <= 0) {
 						life ++;
@@ -128,7 +129,7 @@ public final class SoulSiphon extends Power {
 				}
 				else {
 					crystal.setBeamTarget(null);
-					target = PowerTools.getRandomEntity(crystal, drainRange, owner.getPlayer());
+					target = PowerTools.getRandomEntity(crystal, owner.getOption(drainRange), owner.getPlayer());
 				}
 			}
 			
@@ -145,7 +146,7 @@ public final class SoulSiphon extends Power {
 		private void updateHealth() {
 			String tmp = "";
 			double i = life / 2.0D;
-			double j = maxLife / 2.0D;
+			double j = owner.getOption(maxLife) / 2.0D;
 			for (int k = 0; k < j; k ++) {
 				if (i > 0.0D) {
 					tmp = tmp + ChatColor.RED;

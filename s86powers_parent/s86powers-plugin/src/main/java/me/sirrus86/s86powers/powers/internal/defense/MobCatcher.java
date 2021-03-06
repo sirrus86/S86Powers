@@ -47,6 +47,7 @@ import org.bukkit.persistence.PersistentDataType;
 import me.sirrus86.s86powers.events.PowerUseEvent;
 import me.sirrus86.s86powers.powers.Power;
 import me.sirrus86.s86powers.powers.PowerManifest;
+import me.sirrus86.s86powers.powers.PowerOption;
 import me.sirrus86.s86powers.powers.PowerStat;
 import me.sirrus86.s86powers.powers.PowerType;
 import me.sirrus86.s86powers.tools.PowerTools;
@@ -91,7 +92,7 @@ public final class MobCatcher extends Power {
 	private Map<Item, PowerUser> eggsOnGround;
 	
 	private String cantCapTamed;
-	private boolean captureTamed;
+	private PowerOption<Boolean> captureTamed;
 	private PowerStat eggsThrown;
 	
 	@Override
@@ -108,17 +109,18 @@ public final class MobCatcher extends Power {
 		eggsThrown = stat("eggs-thrown", 50, "Entities relocated", "[item] is now refunded after expelling a stored entity.");
 		item = option("item", new ItemStack(Material.ENDER_EYE, 1), "Item used to catch and store mobs.");
 		for (EntityType eType : capturable) {
-			if (option("capturable." + eType.toString().replaceAll("_", "-").toLowerCase(), true, "Whether " + WordUtils.capitalizeFully(eType.toString().replaceAll("_", " ")) + " should be capturable.")) {
+			PowerOption<Boolean> capturable = option("capturable." + eType.toString().replaceAll("_", "-").toLowerCase(), true, "Whether " + WordUtils.capitalizeFully(eType.toString().replaceAll("_", " ")) + " should be capturable.");
+			if (getOption(capturable)) {
 				allowCapture.add(eType);
 			}
 		}
 		cantCapTamed = locale("message.cant-capture-tamed", ChatColor.RED + "You can't capture entities tamed by other players.");
-		supplies(new ItemStack(item.getType(), item.getMaxStackSize()));
+		supplies(new ItemStack(getRequiredItem().getType(), getRequiredItem().getMaxStackSize()));
 	}
 	
 	private ItemStack createEgg(LivingEntity entity) {
-		ItemStack egg = new ItemStack(item.getType(), 1);
-		ItemMeta meta = egg.hasItemMeta() ? item.getItemMeta() : entity.getServer().getItemFactory().getItemMeta(item.getType());
+		ItemStack egg = new ItemStack(getRequiredItem().getType(), 1);
+		ItemMeta meta = egg.hasItemMeta() ? getRequiredItem().getItemMeta() : entity.getServer().getItemFactory().getItemMeta(getRequiredItem().getType());
 		List<String> stats = new ArrayList<String>();
 		meta.getPersistentDataContainer().set(entityType, PersistentDataType.STRING, entity.getType().toString());
 		meta.getPersistentDataContainer().set(entityHealth, PersistentDataType.DOUBLE, entity.getHealth());
@@ -270,7 +272,7 @@ public final class MobCatcher extends Power {
 						&& capturable.contains(event.getEntity().getType())
 						&& !hasEntityStored(spawnEgg)) {
 					LivingEntity entity = (LivingEntity) event.getEntity();
-					if (captureTamed
+					if (user.getOption(captureTamed)
 							|| !(entity instanceof Tameable)
 							|| (entity instanceof Tameable &&
 									(((Tameable)entity).getOwner() == user.getPlayer() || ((Tameable)entity).getOwner() == null))) {
@@ -287,7 +289,7 @@ public final class MobCatcher extends Power {
 						}
 						eggs.remove(egg);
 					}
-					else if (!captureTamed
+					else if (!user.getOption(captureTamed)
 							&& entity instanceof Tameable
 							&& ((Tameable)entity).getOwner() != null
 							&& ((Tameable)entity).getOwner() != user.getPlayer()) {
@@ -343,9 +345,9 @@ public final class MobCatcher extends Power {
 				createEntity(spawnEgg, egg.getLocation());
 				eggs.remove(egg);
 				if (eggOwners.containsKey(egg)) {
-					Item droppedEgg = egg.getWorld().dropItemNaturally(egg.getLocation(), item);
+					Item droppedEgg = egg.getWorld().dropItemNaturally(egg.getLocation(), getRequiredItem());
 					PowerUser user = eggOwners.get(egg);
-					if (!user.getPlayer().getInventory().addItem(item).containsValue(item)) {
+					if (!user.getPlayer().getInventory().addItem(getRequiredItem()).containsValue(getRequiredItem())) {
 						PowerTools.fakeCollect(user.getPlayer(), droppedEgg);
 						droppedEgg.remove();
 					}

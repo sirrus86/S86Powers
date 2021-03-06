@@ -63,6 +63,7 @@ permissions:
             s86powers.manage.player.help: true
             s86powers.manage.player.info: true
             s86powers.manage.player.list: true
+            s86powers.manage.player.option: true
             s86powers.manage.player.remove: true
             s86powers.manage.player.stats: true
             s86powers.manage.player.stats.set: true
@@ -109,6 +110,7 @@ permissions:
             s86powers.manage.self.info: true
             s86powers.manage.self.join: true
             s86powers.manage.self.leave: true
+            s86powers.manage.self.option: true
             s86powers.manage.self.remove: true
             s86powers.manage.self.stats: true
             s86powers.manage.self.stats.set: true

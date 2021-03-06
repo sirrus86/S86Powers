@@ -9,6 +9,7 @@ import org.bukkit.potion.PotionEffectType;
 
 import me.sirrus86.s86powers.powers.Power;
 import me.sirrus86.s86powers.powers.PowerManifest;
+import me.sirrus86.s86powers.powers.PowerOption;
 import me.sirrus86.s86powers.powers.PowerType;
 import me.sirrus86.s86powers.users.PowerUser;
 
@@ -17,7 +18,7 @@ import me.sirrus86.s86powers.users.PowerUser;
 public final class Haste extends Power {
 
 	private Set<PowerUser> hasHaste;
-	private int deg;
+	private PowerOption<Integer> deg;
 	
 	@Override
 	protected void onEnable() {
@@ -28,7 +29,7 @@ public final class Haste extends Power {
 	protected void onEnable(PowerUser user) {
 		if (user.allowPower(this)
 				&& !hasHaste.contains(user)) {
-			user.addPotionEffect(new PotionEffect(PotionEffectType.FAST_DIGGING, Integer.MAX_VALUE, deg));
+			user.addPotionEffect(new PotionEffect(PotionEffectType.FAST_DIGGING, Integer.MAX_VALUE, user.getOption(deg)));
 			hasHaste.add(user);
 		}
 	}

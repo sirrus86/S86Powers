@@ -21,6 +21,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 
 import me.sirrus86.s86powers.powers.Power;
 import me.sirrus86.s86powers.powers.PowerManifest;
+import me.sirrus86.s86powers.powers.PowerOption;
 import me.sirrus86.s86powers.powers.PowerType;
 import me.sirrus86.s86powers.users.PowerUser;
 import me.sirrus86.s86powers.utils.PowerTime;
@@ -32,10 +33,11 @@ public class SnowMiser extends Power {
 
 	private Map<Snowball, Integer> snowballs;
 	
+	private PowerOption<Boolean> addSnow, freezeWater;
+	private PowerOption<Integer> freezeCap;
+	private PowerOption<Long> freezeDur;
 	@SuppressWarnings("unused")
-	private boolean addSnow, freezeWater, snowAndIce, snowOrIce;
-	private int freezeCap;
-	private long freezeDur;
+	private boolean snowAndIce, snowOrIce;
 
 	@Override
 	protected void onEnable() {
@@ -57,8 +59,8 @@ public class SnowMiser extends Power {
 		freezeCap = option("freeze-amplifier-cap", 6, "Maximum amplifier of slowness effect applied to victims.");
 		freezeDur = option("freeze-duration", PowerTime.toMillis(3, 0), "How long victims of snowballs are slowed.");
 		freezeWater = option("freeze-water", true, "Whether water hit by snowballs should turn into ice.");
-		snowAndIce = addSnow && freezeWater;
-		snowOrIce = addSnow || freezeWater;
+		snowAndIce = getOption(addSnow) && getOption(freezeWater);
+		snowOrIce = getOption(addSnow) || getOption(freezeWater);
 		supplies(new ItemStack(Material.SNOWBALL, 16));
 	}
 	
@@ -70,7 +72,7 @@ public class SnowMiser extends Power {
 				if (snowball.isValid()) {
 					Block block = snowball.getLocation().getBlock();
 					if (block.getType() == Material.WATER
-							&& freezeWater) {
+							&& getOption(freezeWater)) {
 						block.setType(Material.ICE);
 						snowball.remove();
 					}
@@ -94,9 +96,9 @@ public class SnowMiser extends Power {
 					|| !getUser((Player)target).hasPower(this)) {
 				int amplifier = 0;
 				if (target.hasPotionEffect(PotionEffectType.SLOW)) {
-					amplifier = Integer.min(freezeCap, target.getPotionEffect(PotionEffectType.SLOW).getAmplifier() + 1);
+					amplifier = Integer.min(getOption(freezeCap), target.getPotionEffect(PotionEffectType.SLOW).getAmplifier() + 1);
 				}
-				target.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, (int) PowerTime.toTicks(freezeDur), amplifier));
+				target.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, (int) PowerTime.toTicks(getOption(freezeDur)), amplifier));
 			}
 		}
 	}
@@ -109,7 +111,7 @@ public class SnowMiser extends Power {
 					checkBlock = hitBlock.getRelative(BlockFace.DOWN);
 			if (checkBlock.getType().isSolid()
 					&& hitBlock.isEmpty()
-					&& addSnow) {
+					&& getOption(addSnow)) {
 				hitBlock.setType(Material.SNOW);
 			}
 		}
@@ -122,7 +124,7 @@ public class SnowMiser extends Power {
 				&& event.getEntity().getShooter() instanceof Player) {
 			PowerUser user = getUser((Player) event.getEntity().getShooter());
 			if (user.allowPower(this)) {
-				snowballs.put((Snowball) event.getEntity(), freezeWater ? trackSnowball((Snowball) event.getEntity()) : -1);
+				snowballs.put((Snowball) event.getEntity(), user.getOption(freezeWater) ? trackSnowball((Snowball) event.getEntity()) : -1);
 			}
 		}
 	}

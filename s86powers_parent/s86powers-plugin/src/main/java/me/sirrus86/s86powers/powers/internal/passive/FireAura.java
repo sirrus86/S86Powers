@@ -25,6 +25,7 @@ import com.google.common.collect.Lists;
 
 import me.sirrus86.s86powers.powers.Power;
 import me.sirrus86.s86powers.powers.PowerManifest;
+import me.sirrus86.s86powers.powers.PowerOption;
 import me.sirrus86.s86powers.powers.PowerType;
 import me.sirrus86.s86powers.tools.PowerTools;
 import me.sirrus86.s86powers.users.PowerUser;
@@ -39,9 +40,9 @@ public final class FireAura extends Power {
 	private Map<PowerUser, Integer> rainTask, sparkTask, waterTask;
 	private Map<PowerUser, Long> sparkDur;
 	
-	private boolean goBlind;
-	private int rainDmg;
-	private double waterDmg;
+	private PowerOption<Boolean> goBlind;
+	private PowerOption<Integer> rainDmg;
+	private PowerOption<Double> waterDmg;
 	
 	@Override
 	protected void onEnable() {
@@ -89,7 +90,7 @@ public final class FireAura extends Power {
 					user.getPlayer().playEffect(EntityEffect.ENTITY_POOF);
 					int food = user.getPlayer().getFoodLevel();
 					if (food > 0) {
-						user.getPlayer().setFoodLevel(food - rainDmg);
+						user.getPlayer().setFoodLevel(food - user.getOption(rainDmg));
 					}
 					rainTask(user);
 				}
@@ -126,7 +127,7 @@ public final class FireAura extends Power {
 				@Override
 				public void run() {
 					user.getPlayer().playEffect(EntityEffect.ENTITY_POOF);
-					EntityDamageEvent event = new EntityDamageEvent(user.getPlayer(), DamageCause.DROWNING, waterDmg);
+					EntityDamageEvent event = new EntityDamageEvent(user.getPlayer(), DamageCause.DROWNING, user.getOption(waterDmg));
 					callEvent(event);
 					if (!event.isCancelled()) {
 						user.getPlayer().damage(event.getDamage());
@@ -198,7 +199,7 @@ public final class FireAura extends Power {
 		PowerUser user = getUser(event.getPlayer());
 		if (user.allowPower(this)) {
 			if (inLava(user)
-					&& goBlind) {
+					&& user.getOption(goBlind)) {
 				user.addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, Integer.MAX_VALUE, 0));
 				isBlind.add(user);
 			}

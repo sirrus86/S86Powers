@@ -15,6 +15,7 @@ import org.bukkit.util.Vector;
 
 import me.sirrus86.s86powers.powers.Power;
 import me.sirrus86.s86powers.powers.PowerManifest;
+import me.sirrus86.s86powers.powers.PowerOption;
 import me.sirrus86.s86powers.powers.PowerType;
 import me.sirrus86.s86powers.tools.PowerTools;
 import me.sirrus86.s86powers.users.PowerUser;
@@ -26,8 +27,8 @@ public final class Dodge extends Power {
 
 	private Map<PowerUser, Double> dodge;
 	
-	private double base, dpl, max;
-	private int steps;
+	private PowerOption<Double> base, max;
+	private PowerOption<Integer> steps;
 	private String chanceDecrease, chanceIncrease, playerDodged, youDodged;
 	
 	@Override
@@ -51,7 +52,6 @@ public final class Dodge extends Power {
 		chanceIncrease = locale("message.dodge-chance-increase", ChatColor.GREEN + "Dodge chance increased to [amount]%.");
 		playerDodged = locale("message.player-dodged", ChatColor.RED + "[player] dodged your attack.");
 		youDodged = locale("message.you-dodged", ChatColor.GREEN + "You dodged [name]'s attack!");
-		dpl = (max - base) / steps;
 	}
 	
 	@EventHandler(ignoreCancelled = true)
@@ -61,7 +61,7 @@ public final class Dodge extends Power {
 			PowerUser user = getUser((Player) event.getEntity());
 			if (user.allowPower(this)) {
 				if (!dodge.containsKey(user)) {
-					dodge.put(user, base);
+					dodge.put(user, user.getOption(base));
 				}
 				double chance = random.nextDouble();
 				if (chance < dodge.get(user) / 100.0D) {
@@ -74,9 +74,10 @@ public final class Dodge extends Power {
 					user.getPlayer().setVelocity(difference);
 					event.setCancelled(true);
 				}
-				else if (dodge.get(user) < max) {
+				else if (dodge.get(user) < user.getOption(max)) {
+					double dpl = (user.getOption(max) - user.getOption(base)) / user.getOption(steps);
 					double newDodge = dodge.get(user) + dpl;
-					dodge.put(user, newDodge <= max ? newDodge : max);
+					dodge.put(user, newDodge <= user.getOption(max) ? newDodge : user.getOption(max));
 					user.sendMessage(chanceIncrease.replace("[amount]", Double.toString(dodge.get(user))));
 				}
 			}
@@ -87,7 +88,7 @@ public final class Dodge extends Power {
 	private void onDeath(PlayerDeathEvent event) {
 		PowerUser user = getUser(event.getEntity());
 		if (user.allowPower(this)) {
-			dodge.put(user, base);
+			dodge.put(user, user.getOption(base));
 			user.sendMessage(chanceDecrease.replace("[amount]", Double.toString(dodge.get(user))));
 		}
 	}

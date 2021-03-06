@@ -14,11 +14,11 @@ import me.sirrus86.s86powers.powers.Power;
 import me.sirrus86.s86powers.powers.PowerOption;
 import me.sirrus86.s86powers.tools.PowerTools;
 
-public class GUIOptionList extends GUIAbstractList<PowerOption> {
+public class GUIOptionList extends GUIAbstractList<PowerOption<?>> {
 	
-	static Map<PowerOption, ItemStack> optionItems = new HashMap<>();
+	static Map<PowerOption<?>, ItemStack> optionItems = new HashMap<>();
 
-	public GUIOptionList(int page, Collection<PowerOption> list) {
+	public GUIOptionList(int page, Collection<PowerOption<?>> list) {
 		super(page, list);
 	}
 
@@ -27,12 +27,12 @@ public class GUIOptionList extends GUIAbstractList<PowerOption> {
 		if (page > 0) {
 			int index = page * 45 - 45;
 			for (int i = index; i < Math.min(list.size(), index + 45); i ++) {
-				PowerOption option = list.get(i);
+				PowerOption<?> option = list.get(i);
 				if (!optionItems.containsKey(option)) {
 					Power power = option.getPower();
 					String optionName = option.getPath();
 					String optionDesc = option.getDescription();
-					String optionValue = ChatColor.RESET + LocaleString.VALUE.toString() + ": " + ChatColor.GRAY + power.getOptionValue(option).toString();
+					String optionValue = ChatColor.RESET + LocaleString.VALUE.toString() + ": " + ChatColor.GRAY + power.getOption(option).toString();
 					List<String> lore = PowerTools.wordSplit(ChatColor.RESET.toString() + ChatColor.GRAY.toString(), optionDesc, 30);
 					lore.add(optionValue);
 					optionItems.put(option, createItem(Material.PAPER, ChatColor.RESET + optionName, lore));

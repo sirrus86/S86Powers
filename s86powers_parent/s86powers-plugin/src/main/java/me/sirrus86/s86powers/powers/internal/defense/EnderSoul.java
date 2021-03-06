@@ -16,6 +16,7 @@ import org.bukkit.util.Vector;
 
 import me.sirrus86.s86powers.powers.Power;
 import me.sirrus86.s86powers.powers.PowerManifest;
+import me.sirrus86.s86powers.powers.PowerOption;
 import me.sirrus86.s86powers.powers.PowerType;
 import me.sirrus86.s86powers.users.PowerUser;
 import me.sirrus86.s86powers.utils.PowerTime;
@@ -26,11 +27,11 @@ import me.sirrus86.s86powers.utils.PowerTime;
 			+ " [/velOrRefund][pearl-damage-immunity]Damage from ender pearls is negated. [/pearl-damage-immunity]")
 public final class EnderSoul extends Power {
 
-	private boolean doPot, immunePearl, modVel, refundPearl;
+	private PowerOption<Boolean> doPot, immunePearl, modVel, refundPearl;
 	@SuppressWarnings("unused")
 	private boolean velAndRefund, velOrRefund;
-	private long potDur;
-	private double velMod;
+	private PowerOption<Long> potDur;
+	private PowerOption<Double> velMod;
 	
 	@Override
 	protected void config() {
@@ -40,8 +41,8 @@ public final class EnderSoul extends Power {
 		potDur = option("slowfall.effect-duration", PowerTime.toMillis(1, 0), "Amount of ticks slow fall is in effect after teleporting.");
 		refundPearl = option("refund-pearl", true, "Whether ender pearls should be refunded immediately after use.");
 		velMod = option("velocity-modifier", 2.0D, "Modifier for pearl velocity. Higher value leads to faster, but less accurate throws.");
-		velAndRefund = modVel && refundPearl;
-		velOrRefund = modVel || refundPearl;
+		velAndRefund = getOption(modVel) && getOption(refundPearl);
+		velOrRefund = getOption(modVel) || getOption(refundPearl);
 		supplies(new ItemStack(Material.ENDER_PEARL, 16));
 	}
 	
@@ -51,7 +52,7 @@ public final class EnderSoul extends Power {
 				&& event.getEntity() instanceof Player) {
 			PowerUser user = getUser((Player)event.getEntity());
 			if (user.allowPower(this)) {
-				event.setCancelled(immunePearl);
+				event.setCancelled(user.getOption(immunePearl));
 			}
 		}
 	}
@@ -59,10 +60,10 @@ public final class EnderSoul extends Power {
 	@EventHandler
 	private void onTeleport(PlayerTeleportEvent event) {
 		PowerUser user = getUser(event.getPlayer());
-		if (doPot
+		if (user.getOption(doPot)
 				&& user.allowPower(this)
 				&& event.getCause() == TeleportCause.ENDER_PEARL) {
-			user.getPlayer().addPotionEffect(new PotionEffect(PotionEffectType.SLOW_FALLING, (int) PowerTime.toTicks(potDur), 0, false, false));
+			user.getPlayer().addPotionEffect(new PotionEffect(PotionEffectType.SLOW_FALLING, (int) PowerTime.toTicks(user.getOption(potDur)), 0, false, false));
 		}
 	}
 
@@ -73,7 +74,7 @@ public final class EnderSoul extends Power {
 			if (pearl.getShooter() instanceof Player) {
 				PowerUser user = getUser((Player)pearl.getShooter());
 				if (user.allowPower(this)) {
-					if (refundPearl
+					if (user.getOption(refundPearl)
 							&& user.getCooldown(this) <= 0) {
 						user.setCooldown(this, 50L);
 						runTask(new BukkitRunnable() {
@@ -83,9 +84,9 @@ public final class EnderSoul extends Power {
 							}
 						});
 					}
-					if (modVel) {
+					if (user.getOption(modVel)) {
 						Vector dir = user.getPlayer().getEyeLocation().getDirection().clone();
-						pearl.setVelocity(dir.normalize().multiply(velMod));
+						pearl.setVelocity(dir.normalize().multiply(user.getOption(velMod)));
 					}
 				}
 			}

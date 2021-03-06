@@ -24,6 +24,7 @@ import com.google.common.collect.Sets;
 
 import me.sirrus86.s86powers.powers.Power;
 import me.sirrus86.s86powers.powers.PowerManifest;
+import me.sirrus86.s86powers.powers.PowerOption;
 import me.sirrus86.s86powers.powers.PowerStat;
 import me.sirrus86.s86powers.powers.PowerType;
 import me.sirrus86.s86powers.tools.PowerTools;
@@ -41,8 +42,8 @@ public final class OreDetector extends Power {
 	private Map<PowerUser, Set<Block>> detectBlocks;
 	
 	private PowerStat copperMined, goldMined, ironMined, lapisMined, quartzMined;
-	private double range;
-	private boolean useProgression;
+	private PowerOption<Double> range;
+	private PowerOption<Boolean> useProgression;
 	
 	@Override
 	protected void onEnable() {
@@ -79,7 +80,7 @@ public final class OreDetector extends Power {
 		quartzMined = stat("quartz-mined", 500, "Quartz mined while detecting", "You can now detect ancient debris.");
 		range = option("detect-range", 10.0D, "Maximum range to detect ores.");
 		useProgression = option("use-progression", true, "Whether a progression system should require users to earn the ability to detect better ores.");
-		supplies(item);
+		supplies(getRequiredItem());
 	}
 	
 	private void refreshDetect(PowerUser user) {
@@ -89,9 +90,9 @@ public final class OreDetector extends Power {
 		}
 		Set<Block> blockMap = detectBlocks.get(user);
 		if (user.allowPower(this)
-				&& user.isHoldingItem(item)) {
-			user.setCooldown(this, cooldown);
-			Set<Block> blockCheck = PowerTools.getNearbyBlocks(user.getPlayer().getEyeLocation(), range, detectable);
+				&& user.isHoldingItem(user.getOption(item))) {
+			user.setCooldown(this, user.getOption(cooldown));
+			Set<Block> blockCheck = PowerTools.getNearbyBlocks(user.getPlayer().getEyeLocation(), user.getOption(range), detectable);
 			for (Block block : Sets.newConcurrentHashSet(blockMap)) {
 				if (!blockCheck.contains(block)
 						|| !detectable.contains(block.getType())) {
@@ -105,39 +106,39 @@ public final class OreDetector extends Power {
 				if (!blockMap.contains(block)) {
 					ChatColor color = ChatColor.BLACK;
 					if (block.getType() == Material.getMaterial("ANCIENT_DEBRIS")) {
-						showBlock = !useProgression || user.hasStatMaxed(quartzMined);
+						showBlock = !user.getOption(useProgression) || user.hasStatMaxed(quartzMined);
 						color = ChatColor.GOLD;
 					}
 					else if (block.getType() == Material.COAL_ORE) {
 						color = ChatColor.DARK_GRAY;
 					}
 					else if (block.getType() == Material.DIAMOND_ORE) {
-						showBlock = !useProgression || user.hasStatMaxed(ironMined);
+						showBlock = !user.getOption(useProgression) || user.hasStatMaxed(ironMined);
 						color = ChatColor.AQUA;
 					}
 					else if (block.getType() == Material.EMERALD_ORE) {
-						showBlock = !useProgression || user.hasStatMaxed(lapisMined);
+						showBlock = !user.getOption(useProgression) || user.hasStatMaxed(lapisMined);
 						color = ChatColor.GREEN;
 					}
 					else if (block.getType() == Material.GOLD_ORE
 							|| block.getType() == Material.getMaterial("NETHER_GOLD_ORE")) {
-						showBlock = !useProgression || user.hasStatMaxed(copperMined);
+						showBlock = !user.getOption(useProgression) || user.hasStatMaxed(copperMined);
 						color = ChatColor.YELLOW;
 					}
 					else if (block.getType() == Material.IRON_ORE) {
-						showBlock = !useProgression || user.hasStatMaxed(copperMined);
+						showBlock = !user.getOption(useProgression) || user.hasStatMaxed(copperMined);
 						color = ChatColor.GOLD;
 					}
 					else if (block.getType() == Material.LAPIS_ORE) {
-						showBlock = !useProgression || user.hasStatMaxed(goldMined);
+						showBlock = !user.getOption(useProgression) || user.hasStatMaxed(goldMined);
 						color = ChatColor.BLUE;
 					}
 					else if (block.getType() == Material.NETHER_QUARTZ_ORE) {
-						showBlock = !useProgression || user.hasStatMaxed(goldMined);
+						showBlock = !user.getOption(useProgression) || user.hasStatMaxed(goldMined);
 						color = ChatColor.WHITE;
 					}
 					else if (block.getType() == Material.REDSTONE_ORE) {
-						showBlock = !useProgression || user.hasStatMaxed(goldMined);
+						showBlock = !user.getOption(useProgression) || user.hasStatMaxed(goldMined);
 						color = ChatColor.RED;
 					}
 					if (showBlock) {
@@ -161,10 +162,10 @@ public final class OreDetector extends Power {
 			if (detectBlocks.get(user).contains(event.getBlock())) {
 				if (user.isOnline()
 						&& user.allowPower(this)
-						&& user.isHoldingItem(item)
+						&& user.isHoldingItem(user.getOption(item))
 						&& event.getPlayer() == user.getPlayer()
 						&& detectable.contains(event.getBlock().getType())
-						&& useProgression) {
+						&& user.getOption(useProgression)) {
 					if (event.getBlock().getType() == Material.COAL_ORE) {
 						user.increaseStat(copperMined, 1);
 					}

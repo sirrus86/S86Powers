@@ -34,6 +34,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 import me.sirrus86.s86powers.events.PowerUseEvent;
 import me.sirrus86.s86powers.powers.Power;
 import me.sirrus86.s86powers.powers.PowerManifest;
+import me.sirrus86.s86powers.powers.PowerOption;
 import me.sirrus86.s86powers.powers.PowerType;
 import me.sirrus86.s86powers.tools.PowerTools;
 import me.sirrus86.s86powers.users.PowerUser;
@@ -48,7 +49,7 @@ public final class Summoner extends Power {
 	
 	private final EnumSet<EntityType> nMobs = EnumSet.of(EntityType.BLAZE, EntityType.GHAST, EntityType.MAGMA_CUBE, PowerTools.resolveEntityType("PIGZOMBIE"), EntityType.WITHER_SKELETON);
 	
-	private int bSpawn, gSpawn, pjSpawn, pzSpawn, wsSpawn;
+	private PowerOption<Integer> bSpawn, gSpawn, pjSpawn, pzSpawn, wsSpawn;
 	private String noRoom;
 	
 	private final Orientable portalData = (Orientable) Material.NETHER_PORTAL.createBlockData();
@@ -76,7 +77,7 @@ public final class Summoner extends Power {
 		pzSpawn = option("summon-chance.pigzombie", 30, "Chance pigzombies will be summoned. Higher number means greater chance, 0 means no chance.");
 		wsSpawn = option("summon-chance.wither-skeleton", 10, "Chance blazes will be summoned. Higher number means greater chance, 0 means no chance.");
 		noRoom = locale("message.no-room", ChatColor.RED + "No room to summon anything!");
-		supplies(item);
+		supplies(getRequiredItem());
 	}
 	
 	private SummonType getSummonType(Location loc, BlockFace face) {
@@ -88,9 +89,13 @@ public final class Summoner extends Power {
 					|| type == SummonType.PIG_ZOMBIE) {
 				if (!testLoc.getBlock().getType().isSolid()
 						&& !testLoc.getBlock().getRelative(BlockFace.UP).getType().isSolid()) {
-					int max = bSpawn;
-					if (type == SummonType.PIG_JOCKEY) max = pjSpawn;
-					else if (type == SummonType.PIG_ZOMBIE) max = pzSpawn;
+					int max = getOption(bSpawn);
+					if (type == SummonType.PIG_JOCKEY) {
+						max = getOption(pjSpawn);
+					}
+					else if (type == SummonType.PIG_ZOMBIE) {
+						max = getOption(pzSpawn);
+					}
 					for (int i = 0; i < max - 1; i ++) {
 						tmp.add(type);
 					}
@@ -110,7 +115,7 @@ public final class Summoner extends Power {
 					}
 				}
 				if (canSpawn) {
-					for (int i = 0; i < gSpawn - 1; i ++) {
+					for (int i = 0; i < getOption(gSpawn) - 1; i ++) {
 						tmp.add(type);
 					}
 				}
@@ -119,7 +124,7 @@ public final class Summoner extends Power {
 				if (!testLoc.getBlock().getType().isSolid()
 						&& !testLoc.getBlock().getRelative(BlockFace.UP).getType().isSolid()
 						&& !testLoc.getBlock().getRelative(BlockFace.UP, 2).getType().isSolid()) {
-					for (int i = 0; i < wsSpawn - 1; i ++) {
+					for (int i = 0; i < getOption(wsSpawn) - 1; i ++) {
 						tmp.add(type);
 					}
 				}
@@ -190,7 +195,7 @@ public final class Summoner extends Power {
 							}
 						}
 						new SummonPortal(user, event.getClickedBlock().getLocation(), frame, portal, dir, type);
-						user.setCooldown(this, cooldown);
+						user.setCooldown(this, user.getOption(cooldown));
 					}
 					else {
 						user.getPlayer().sendMessage(noRoom);

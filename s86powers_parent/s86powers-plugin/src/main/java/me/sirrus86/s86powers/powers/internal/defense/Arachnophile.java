@@ -31,6 +31,7 @@ import me.sirrus86.s86powers.events.PowerUseOnEntityEvent;
 import me.sirrus86.s86powers.events.UserMaxedStatEvent;
 import me.sirrus86.s86powers.powers.Power;
 import me.sirrus86.s86powers.powers.PowerManifest;
+import me.sirrus86.s86powers.powers.PowerOption;
 import me.sirrus86.s86powers.powers.PowerStat;
 import me.sirrus86.s86powers.powers.PowerType;
 import me.sirrus86.s86powers.tools.PowerTools;
@@ -42,11 +43,11 @@ import me.sirrus86.s86powers.utils.PowerTime;
 			+ " and fall damage is reduced by [fall-damage-reduction]%. [act:item]ing a spider while holding [item] will allow you to tame it. Tamed spiders will follow and defend you.")
 public final class Arachnophile extends Power {
 
-	private double fallRed;
-	private boolean noPoison;
+	private PowerOption<Double> fallRed;
+	private PowerOption<Boolean> noPoison;
 	private Map<PowerUser, TamedSpider> spiders;
 	private PowerStat spiderDmg;
-	private long webCooldown, webDur;
+	private PowerOption<Long> webCooldown, webDur;
 	private final ItemStack webItem = new ItemStack(Material.COBWEB, 1);
 	
 	@Override
@@ -70,7 +71,7 @@ public final class Arachnophile extends Power {
 		spiderDmg = stat("damage-by-tamed-spiders", 50, "Damage caused by tamed spiders", "Tamed spiders will occassionally shoot webs at targets, slowing them down.");
 		webCooldown = option("web-cooldown", PowerTime.toMillis(5, 0), "Amount of time between webs shot by tamed spiders.");
 		webDur = option("web-duration", PowerTime.toMillis(3, 0), "How long webs should slow down targets.");
-		supplies(new ItemStack(item.getType(), 1));
+		supplies(new ItemStack(getRequiredItem().getType(), 1));
 	}
 	
 	@EventHandler(ignoreCancelled = true)
@@ -79,10 +80,10 @@ public final class Arachnophile extends Power {
 			PowerUser user = getUser((Player)event.getEntity());
 			if (user.allowPower(this)) {
 				if (event.getCause() == DamageCause.FALL) {
-					event.setDamage(event.getDamage() * (1.0D - (fallRed / 100.0D)));
+					event.setDamage(event.getDamage() * (1.0D - (user.getOption(fallRed) / 100.0D)));
 				}
 				else if (event.getCause() == DamageCause.POISON
-						&& noPoison) {
+						&& user.getOption(noPoison)) {
 					event.setCancelled(true);
 				}
 			}
@@ -143,7 +144,7 @@ public final class Arachnophile extends Power {
 					PowerTools.addDisguise(web, webItem);
 					webs.add(web);
 				}
-				task = getInstance().runTaskLater(shootWeb, PowerTime.toTicks(webCooldown)).getTaskId();
+				task = getInstance().runTaskLater(shootWeb, PowerTime.toTicks(owner.getOption(webCooldown))).getTaskId();
 			}
 			
 		};
@@ -179,7 +180,7 @@ public final class Arachnophile extends Power {
 				if (event.getHitEntity() != null
 						&& event.getHitEntity() instanceof LivingEntity) {
 					LivingEntity entity = (LivingEntity) event.getHitEntity();
-					entity.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, (int) PowerTime.toTicks(webDur), 1));
+					entity.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, (int) PowerTime.toTicks(owner.getOption(webDur)), 1));
 				}
 				webs.remove(event.getEntity());
 			}

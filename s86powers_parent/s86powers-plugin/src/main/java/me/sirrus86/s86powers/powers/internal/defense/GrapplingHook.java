@@ -24,6 +24,7 @@ import org.bukkit.util.Vector;
 
 import me.sirrus86.s86powers.powers.Power;
 import me.sirrus86.s86powers.powers.PowerManifest;
+import me.sirrus86.s86powers.powers.PowerOption;
 import me.sirrus86.s86powers.powers.PowerStat;
 import me.sirrus86.s86powers.powers.PowerType;
 import me.sirrus86.s86powers.users.PowerUser;
@@ -37,9 +38,9 @@ public final class GrapplingHook extends Power {
 	private Map<PowerUser, Hook> hooks;
 	private Map<Hook, Integer> tasks;
 	
-	private double hookVel, minDist, reelVel;
-	private boolean pullHooked;
-	private long pullTime;
+	private PowerOption<Double> hookVel, minDist, reelVel;
+	private PowerOption<Boolean> pullHooked;
+	private PowerOption<Long> pullTime;
 	private PowerStat travels;
 	
 	@Override
@@ -68,10 +69,10 @@ public final class GrapplingHook extends Power {
 				if (entity.isValid()
 						&& !entity.isDead()
 						&& entity.getLocation().getWorld() == loc.getWorld()
-						&& entity.getLocation().distanceSquared(loc) > minDist * minDist
-						&& i < PowerTime.toTicks(pullTime)) {
+						&& entity.getLocation().distanceSquared(loc) > getOption(minDist) * getOption(minDist)
+						&& i < PowerTime.toTicks(getOption(pullTime))) {
 					double dist = entity.getLocation().distance(loc);
-					Vector incr = loc.clone().subtract(entity.getLocation()).toVector().multiply(reelVel / dist);
+					Vector incr = loc.clone().subtract(entity.getLocation()).toVector().multiply(getOption(reelVel) / dist);
 					entity.setVelocity(incr);
 					i ++;
 				}
@@ -106,12 +107,12 @@ public final class GrapplingHook extends Power {
 			if (event.getState() == State.CAUGHT_ENTITY
 					&& event.getCaught() != null
 					&& event.getCaught() != event.getPlayer()
-					&& pullHooked) {
+					&& user.getOption(pullHooked)) {
 				hook = new Hook(event.getCaught());
 			}
 			else if (event.getState() == State.IN_GROUND) {
 				hook = new Hook(event.getHook().getLocation());
-				user.setCooldown(this, cooldown);
+				user.setCooldown(this, user.getOption(cooldown));
 			}
 			hooks.put(user, hook);
 			if (hook != null) {
@@ -129,7 +130,7 @@ public final class GrapplingHook extends Power {
 			FishHook hook = (FishHook) event.getEntity();
 			PowerUser user = getUser((Player) hook.getShooter());
 			if (user.allowPower(this)) {
-				hook.setVelocity(hook.getVelocity().multiply(hookVel));
+				hook.setVelocity(hook.getVelocity().multiply(user.getOption(hookVel)));
 				hook.setBounce(false);
 			}
 		}

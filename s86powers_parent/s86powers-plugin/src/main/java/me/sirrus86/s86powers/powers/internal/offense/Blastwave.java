@@ -17,6 +17,7 @@ import me.sirrus86.s86powers.events.PowerIgniteEvent;
 import me.sirrus86.s86powers.events.PowerUseEvent;
 import me.sirrus86.s86powers.powers.Power;
 import me.sirrus86.s86powers.powers.PowerManifest;
+import me.sirrus86.s86powers.powers.PowerOption;
 import me.sirrus86.s86powers.powers.PowerType;
 import me.sirrus86.s86powers.tools.PowerTools;
 import me.sirrus86.s86powers.users.PowerUser;
@@ -28,9 +29,9 @@ public final class Blastwave extends Power {
 	
 	private Map<PowerUser, Long> fallCDs;
 	
-	private double blastRad, hVec, vVec;
-	private boolean consume;
-	private long fallCD;
+	private PowerOption<Double> blastRad, hVec, vVec;
+	private PowerOption<Boolean> consume;
+	private PowerOption<Long> fallCD;
 	
 	@Override
 	protected void onEnable() {
@@ -46,7 +47,7 @@ public final class Blastwave extends Power {
 		hVec = option("horizontal-momentum", -1.5D, "Vector modifier for horizontal movement after blast is initiated.");
 		item = option("item", new ItemStack(Material.BLAZE_ROD), "Item used to create blasts.");
 		vVec = option("vertical-momentum", 1.0D, "Vector modifier for vertical movement after blast is initiated.");
-		supplies(new ItemStack(item.getType(), item.getMaxStackSize() / 4));
+		supplies(new ItemStack(getRequiredItem().getType(), getRequiredItem().getMaxStackSize() / 4));
 	}
 	
 	@EventHandler(ignoreCancelled = true)
@@ -54,17 +55,17 @@ public final class Blastwave extends Power {
 		if (event.getPower() == this) {
 			PowerUser user = event.getUser();
 			if (user.getCooldown(this) <= 0) {
-				for (Block block : PowerTools.getNearbyBlocks(user.getPlayer().getLocation(), blastRad)) {
+				for (Block block : PowerTools.getNearbyBlocks(user.getPlayer().getLocation(), user.getOption(blastRad))) {
 					PowerIgniteEvent pEvent = new PowerIgniteEvent(this, user, block, BlockFace.SELF);
 					callEvent(pEvent);
 				}
 				Vector dir = user.getPlayer().getLocation().getDirection();
-				user.getPlayer().setVelocity(new Vector(dir.getX() * hVec, vVec, dir.getZ() * hVec));
-				user.setCooldown(this, cooldown);
-				if (consume) {
+				user.getPlayer().setVelocity(new Vector(dir.getX() * user.getOption(hVec), user.getOption(vVec), dir.getZ() * user.getOption(hVec)));
+				user.setCooldown(this, user.getOption(cooldown));
+				if (user.getOption(consume)) {
 					event.consumeItem();
 				}
-				fallCDs.put(user, System.currentTimeMillis() + fallCD);
+				fallCDs.put(user, System.currentTimeMillis() + user.getOption(fallCD));
 			}
 			else {
 				user.showCooldown(this);

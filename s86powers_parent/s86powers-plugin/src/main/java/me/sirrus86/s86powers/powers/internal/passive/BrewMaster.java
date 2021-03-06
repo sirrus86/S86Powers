@@ -14,6 +14,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 
 import me.sirrus86.s86powers.powers.Power;
 import me.sirrus86.s86powers.powers.PowerManifest;
+import me.sirrus86.s86powers.powers.PowerOption;
 import me.sirrus86.s86powers.powers.PowerType;
 import me.sirrus86.s86powers.tools.PowerTools;
 import me.sirrus86.s86powers.users.PowerUser;
@@ -23,7 +24,7 @@ import me.sirrus86.s86powers.users.PowerUser;
 public class BrewMaster extends Power {
 	
 	private final EnumSet<Material> potMats = EnumSet.of(Material.POTION, Material.SPLASH_POTION, Material.LINGERING_POTION);
-	private int stack;
+	private PowerOption<Integer> stack;
 
 	@Override
 	protected void config() {
@@ -63,7 +64,7 @@ public class BrewMaster extends Power {
 				for (ItemStack slot : user.getPlayer().getInventory().getContents()) {
 					if (slot != null
 							&& slot.isSimilar(item)
-							&& slot.getAmount() < stack) {
+							&& slot.getAmount() < user.getOption(stack)) {
 						slot.setAmount(slot.getAmount() + 1);
 						PowerTools.fakeCollect(event.getEntity(), event.getItem());
 						event.getItem().remove();

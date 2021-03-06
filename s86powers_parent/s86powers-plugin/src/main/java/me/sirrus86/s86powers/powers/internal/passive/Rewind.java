@@ -16,6 +16,7 @@ import com.google.common.collect.Sets;
 import me.sirrus86.s86powers.events.PowerUseEvent;
 import me.sirrus86.s86powers.powers.Power;
 import me.sirrus86.s86powers.powers.PowerManifest;
+import me.sirrus86.s86powers.powers.PowerOption;
 import me.sirrus86.s86powers.powers.PowerType;
 import me.sirrus86.s86powers.users.PowerUser;
 import me.sirrus86.s86powers.utils.PowerTime;
@@ -28,7 +29,7 @@ public final class Rewind extends Power {
 	private Map<PowerUser, TreeMap<Long, Location>> locs;
 	private Map<PowerUser, Integer> rewindTask;
 	
-	private long rewindTime, storeCD;
+	private PowerOption<Long> rewindTime, storeCD;
 	
 	@Override
 	protected void onEnable() {
@@ -50,7 +51,7 @@ public final class Rewind extends Power {
 		item = option("item", new ItemStack(Material.CLOCK), "Item used to rewind time.");
 		rewindTime = option("rewind-time", PowerTime.toMillis(5, 0), "Maximum amount of time that can be rewound.");
 		storeCD = option("time-storage-cooldown", PowerTime.toMillis(250), "Minimum time required before storing another location.");
-		supplies(item);
+		supplies(getRequiredItem());
 	}
 	
 	private void doRewind(PowerUser user, TreeMap<Long, Location> locations) {
@@ -74,10 +75,10 @@ public final class Rewind extends Power {
 		}
 	}
 	
-	private void trimMap(Map<Long, Location> map) {
+	private void trimMap(Map<Long, Location> map, long amt) {
 		if (!map.isEmpty()) {
 			for (Long time : Sets.newHashSet(map.keySet())) {
-				if (time < System.currentTimeMillis() - rewindTime) {
+				if (time < System.currentTimeMillis() - amt) {
 					map.remove(time);
 				}
 			}
@@ -90,13 +91,13 @@ public final class Rewind extends Power {
 				|| event.getTo().distanceSquared(event.getFrom()) > 0.0D) {
 			PowerUser user = getUser(event.getPlayer());
 			if (user.allowPower(this)
-					&& user.getCooldown(this) <= rewindTime
+					&& user.getCooldown(this) <= user.getOption(rewindTime)
 					&& (!locCD.containsKey(user)
 							|| locCD.get(user) <= System.currentTimeMillis())) {
 				locs.putIfAbsent(user, new TreeMap<>());
-				trimMap(locs.get(user));
+				trimMap(locs.get(user), user.getOption(rewindTime));
 				locs.get(user).put(System.currentTimeMillis(), event.getFrom());
-				locCD.put(user, System.currentTimeMillis() + storeCD);
+				locCD.put(user, System.currentTimeMillis() + user.getOption(storeCD));
 			}
 		}
 	}
@@ -107,10 +108,10 @@ public final class Rewind extends Power {
 			PowerUser user = event.getUser();
 			if (user.getCooldown(this) <= 0L) {
 				locs.putIfAbsent(user, new TreeMap<>());
-				trimMap(locs.get(user));
+				trimMap(locs.get(user), user.getOption(rewindTime));
 				if (!locs.get(user).isEmpty()) {
 					doRewind(user, locs.get(user));
-					user.setCooldown(this, cooldown);
+					user.setCooldown(this, user.getOption(cooldown));
 				}
 			}
 			else {

@@ -61,7 +61,7 @@ public final class PowerUser implements Comparable<PowerUser> {
 	private Set<Beacon> beacons = new HashSet<>();
 	private Map<Power, Long> cooldowns = new HashMap<>();
 	private Set<PowerGroup> groups = new HashSet<>();
-	private Map<PowerOption, Object> options = new HashMap<>(); //TODO Custom player options
+	private Map<PowerOption<?>, Object> options = new HashMap<>(); //TODO Custom player options
 	private Map<Power, Boolean> powers = new HashMap<>();
 	private Set<NeutralRegion> regions = new HashSet<>();
 	private Map<PowerStat, Integer> stats = new HashMap<>();
@@ -374,6 +374,38 @@ public final class PowerUser implements Comparable<PowerUser> {
 		return tmp;
 	}
 	
+	/**
+	 * Gets the name of the user's player. This will show the name the player used when most recently active on this server.
+	 */
+	public String getName() {
+		if (getOfflinePlayer().getName() != null) {
+			name = getOfflinePlayer().getName();
+		}
+		return name;
+	}
+	
+	public OfflinePlayer getOfflinePlayer() {
+		if (oPlayer == null
+				|| oPlayer.getUniqueId() != uuid) {
+			oPlayer = plugin.getServer().getOfflinePlayer(uuid);
+		}
+		return oPlayer;
+	}
+	
+	@SuppressWarnings("unchecked")
+	public <O> O getOption(PowerOption<O> option) {
+		Power power = option.getPower();
+		return options.containsKey(option) ? (O) options.get(option) : (O) power.getOption(option);
+	}
+	
+	public Map<PowerOption<?>, Object> getOptions() {
+		return options;
+	}
+	
+	public Object getOptionValue(PowerOption<?> option) {
+		return options.containsKey(option) ? options.get(option) : null;
+	}
+	
 	Set<PowerGroup> getPermissibleGroups() {
 		Set<PowerGroup> tmp = new HashSet<PowerGroup>();
 		if (isOnline()
@@ -398,30 +430,6 @@ public final class PowerUser implements Comparable<PowerUser> {
 			}
 		}
 		return tmp;
-	}
-	
-	/**
-	 * Gets the name of the user's player. This will show the name the player used when most recently active on this server.
-	 */
-	public String getName() {
-		if (getOfflinePlayer().getName() != null) {
-			name = getOfflinePlayer().getName();
-		}
-		return name;
-	}
-	
-	public OfflinePlayer getOfflinePlayer() {
-		if (oPlayer == null
-				|| oPlayer.getUniqueId() != uuid) {
-			oPlayer = plugin.getServer().getOfflinePlayer(uuid);
-		}
-		return oPlayer;
-	}
-	
-	// TODO Get custom option value
-	public Object getOption(PowerOption option) {
-		Power power = option.getPower();
-		return options.containsKey(option) ? options.get(option) : power.getOptionValue(option);
 	}
 	
 	public Player getPlayer() {
@@ -607,9 +615,9 @@ public final class PowerUser implements Comparable<PowerUser> {
 						// TODO Load custom options
 						if (config.contains("powers." + pwr + ".options")) {
 							for (String optName : config.getConfigurationSection("powers." + pwr + ".options").getKeys(false)) {
-								PowerOption option = power.getOption(optName);
+								PowerOption<?> option = power.getOptionByName(optName);
 								if (option != null) {
-									options.put(option, config.get("powers." + pwr + ".options." + optName, power.getOptionValue(option)));
+									options.put(option, config.get("powers." + pwr + ".options." + optName, power.getOption(option)));
 								}
 							}
 						}
@@ -676,6 +684,12 @@ public final class PowerUser implements Comparable<PowerUser> {
 		autosave();
 	}
 	
+	public void removeOption(PowerOption<?> option) {
+		if (options.containsKey(option)) {
+			options.remove(option);
+		}
+	}
+	
 	/**
 	 * Shortcut method to remove a potion effect from the user.
 	 * <p>
@@ -728,7 +742,7 @@ public final class PowerUser implements Comparable<PowerUser> {
 			}
 			// TODO Save custom options
 			if (!options.isEmpty()) {
-				for (PowerOption option : options.keySet()) {
+				for (PowerOption<?> option : options.keySet()) {
 					config.set("powers." + option.getPower().getClass().getSimpleName() + ".options." + option.getPath(), options.get(option));
 				}
 			}
@@ -807,7 +821,7 @@ public final class PowerUser implements Comparable<PowerUser> {
 	}
 	
 	// TODO Set option value
-	public void setOption(PowerOption option, Object value) {
+	public void setOption(PowerOption<?> option, Object value) {
 		options.put(option, value);
 	}
 	
@@ -835,34 +849,38 @@ public final class PowerUser implements Comparable<PowerUser> {
 	}
 	
 	@SuppressWarnings("deprecation")
-	public
-	void supply(Power power) {
+	public void supply(Power power) {
 		if (isOnline()) {
 			for (int i = 0; i < power.getSupplies().size(); i ++) {
 				ItemStack item = power.getSupplies().get(i);
+				boolean filled = false;
 				for (ItemStack stack : getPlayer().getInventory().getContents()) {
 					if (stack != null
 							&& item != null) {
 						if (PowerTools.usesDurability(item)
 								&& item.getType() == stack.getType()) {
 							stack.setDurability((short) 0);
-							return;
+							filled = true;
+							break;
 						}
 						else if (item.getType() == stack.getType()
 								&& item.getDurability() == stack.getDurability()) {
 							if (stack.getAmount() < item.getAmount()) {
 								stack.setAmount(item.getAmount());
 							}
-							return;
+							filled = true;
+							break;
 						}
 					}
 				}
-				int j = getPlayer().getInventory().firstEmpty();
-				if (j > -1) {
-					getPlayer().getInventory().setItem(j, item);
-				}
-				else {
-					getPlayer().getWorld().dropItem(getPlayer().getLocation(), item);
+				if (!filled) {
+					int j = getPlayer().getInventory().firstEmpty();
+					if (j > -1) {
+						getPlayer().getInventory().setItem(j, item);
+					}
+					else {
+						getPlayer().getWorld().dropItem(getPlayer().getLocation(), item);
+					}
 				}
 			}
 		}

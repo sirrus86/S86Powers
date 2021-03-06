@@ -24,19 +24,20 @@ import com.google.common.collect.Lists;
 
 import me.sirrus86.s86powers.powers.Power;
 import me.sirrus86.s86powers.powers.PowerManifest;
+import me.sirrus86.s86powers.powers.PowerOption;
 import me.sirrus86.s86powers.powers.PowerType;
 import me.sirrus86.s86powers.tools.PowerTools;
 import me.sirrus86.s86powers.tools.version.MCVersion;
 import me.sirrus86.s86powers.users.PowerUser;
 import me.sirrus86.s86powers.utils.PowerTime;
 
-@PowerManifest(name = "Polar Blade", type = PowerType.OFFENSE, author = "sirrus86", concept = "bobby16may", version=MCVersion.v1_14, icon=Material.IRON_SWORD,
+@PowerManifest(name = "Polar Blade", type = PowerType.OFFENSE, author = "sirrus86", concept = "bobby16may", version = MCVersion.v1_14, icon = Material.IRON_SWORD,
 	description = "Able to craft Polar Blades. Polar Blades require a sword and snow materials. When crafted, comes equipped with a Sharpness enchant. Attacks with a Polar Blade also slow enemies.")
 public final class PolarBlade extends Power {
 
 	private final EnumSet<Material> snowMats = EnumSet.of(Material.ICE, Material.SNOWBALL, Material.SNOW_BLOCK);
-	private int maxSharp;
-	private long slowDur;
+	private PowerOption<Integer> maxSharp;
+	private PowerOption<Long> slowDur;
 	private String slowDesc;
 	
 	private final NamespacedKey isPolar = createNamespacedKey("is-polar-blade"),
@@ -73,16 +74,16 @@ public final class PolarBlade extends Power {
 			}
 		}
 		if (sword != null) {
-			ItemMeta meta = sword.hasItemMeta() ? item.getItemMeta() : Bukkit.getServer().getItemFactory().getItemMeta(sword.getType());
+			ItemMeta meta = sword.hasItemMeta() ? getRequiredItem().getItemMeta() : Bukkit.getServer().getItemFactory().getItemMeta(sword.getType());
 			meta.setDisplayName(ChatColor.RESET + this.getName());
 			meta.getPersistentDataContainer().set(isPolar, PersistentDataType.BYTE, (byte) 0x1);
 			if (slow > 0) {
 				meta.getPersistentDataContainer().set(slowFactor, PersistentDataType.INTEGER, slow - 1);
-				String slowing = slowDesc.replace("[power]", PowerTools.getRomanNumeral(slow)).replace("[time]", PowerTime.asClock(slowDur, false, false, true, true, false));
+				String slowing = slowDesc.replace("[power]", PowerTools.getRomanNumeral(slow)).replace("[time]", PowerTime.asClock(getOption(slowDur), false, false, true, true, false));
 				meta.setLore(Lists.newArrayList(slowing));
 			}
 			if (sharp > 0) {
-				meta.addEnchant(Enchantment.DAMAGE_ALL, sharp < maxSharp ? sharp : maxSharp, true);
+				meta.addEnchant(Enchantment.DAMAGE_ALL, sharp < getOption(maxSharp) ? sharp : getOption(maxSharp), true);
 			}
 			sword.setItemMeta(meta);
 		}
@@ -122,7 +123,9 @@ public final class PolarBlade extends Power {
 						break;
 					}
 				}
-				else if (snowMats.contains(stack.getType())) hasSnow = true;
+				else if (snowMats.contains(stack.getType())) {
+					hasSnow = true;
+				}
 				else {
 					broken = true;
 					break;
@@ -146,7 +149,7 @@ public final class PolarBlade extends Power {
 				int slow = getPBladeSlow(sword);
 				if (slow >= 0) {
 					LivingEntity entity = (LivingEntity) event.getEntity();
-					entity.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, (int) PowerTime.toTicks(slowDur), slow, true));
+					entity.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, (int) PowerTime.toTicks(getOption(slowDur)), slow, true));
 				}
 			}
 		}

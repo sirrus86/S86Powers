@@ -25,6 +25,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 import me.sirrus86.s86powers.events.PowerUseEvent;
 import me.sirrus86.s86powers.powers.Power;
 import me.sirrus86.s86powers.powers.PowerManifest;
+import me.sirrus86.s86powers.powers.PowerOption;
 import me.sirrus86.s86powers.powers.PowerStat;
 import me.sirrus86.s86powers.powers.PowerType;
 import me.sirrus86.s86powers.tools.PowerTools;
@@ -42,20 +43,18 @@ public final class Lycanthropy extends Power {
 
 	private Set<PowerUser> isWolf;
 	
-//	private final Map<Integer, Object> angryMeta = new HashMap<>();
 	private final MCMetadata angryMeta = new MCMetadata();
 	
-	private double dmgIncr, infectChance, ironDmg;
-	@SuppressWarnings("unused")
-	private boolean control, either, infect, noControl, nv, speed;
-	private int moonEnd, moonStart, spdIncr;
+	private PowerOption<Double> dmgIncr, infectChance, ironDmg;
+	private PowerOption<Boolean> control, infect, nv, speed;
+	private PowerOption<Integer> moonEnd, moonStart, spdIncr;
 	private PowerStat transforms;
 	private String infected, noArmor, turnToHuman, turnToWolf;
+	@SuppressWarnings("unused")
+	private boolean either, noControl;
 	
 	@Override
 	protected void onEnable() {
-//		angryMeta.put(MCVersion.isLessThan(MCVersion.v1_14) ? 13 : 15, (byte) 0x02);
-//		angryMeta.put(MCMetadata.TAMEABLE_STATE.getIndex(), (byte) 0x02);
 		angryMeta.setEntry(EntityMeta.TAMEABLE_STATE, (byte) 0x02);
 		isWolf = new HashSet<>();
 		runTaskTimer(manage, 0L, 0L);
@@ -86,8 +85,8 @@ public final class Lycanthropy extends Power {
 		noArmor = locale("message.cant-wear-armor", ChatColor.RED + "Your power prevents you from wearing armor.");
 		turnToHuman = locale("message.turn-to-human", ChatColor.YELLOW + "You return to human form.");
 		turnToWolf = locale("message.turn-to-wolf", ChatColor.GREEN + "You transform into a wolf.");
-		noControl = !control;
-		either = nv || speed;
+		noControl = !getOption(control);
+		either = getOption(nv) || getOption(speed);
 	}
 	
 	private Runnable manage = new BukkitRunnable() {
@@ -128,7 +127,7 @@ public final class Lycanthropy extends Power {
 	};
 	
 	private boolean canControl(PowerUser user) {
-		return control
+		return user.getOption(control)
 				|| user.hasStatMaxed(transforms);
 	}
 	
@@ -137,8 +136,8 @@ public final class Lycanthropy extends Power {
 			double days = world.getFullTime() / 24000L;
 			int phase = (int) (days % 8);
 			return phase == 0
-					&& world.getTime() < moonEnd
-					&& world.getTime() > moonStart;
+					&& world.getTime() < getOption(moonEnd)
+					&& world.getTime() > getOption(moonStart);
 		}
 		return false;
 	}
@@ -156,7 +155,7 @@ public final class Lycanthropy extends Power {
 	
 	private void transform(PowerUser user) {
 		if (user.isOnline()) {
-			if (nv) {
+			if (user.getOption(nv)) {
 				user.addPotionEffect(new PotionEffect(PotionEffectType.NIGHT_VISION, Short.MAX_VALUE, 0));
 			}
 			user.getPlayer().getWorld().playSound(user.getPlayer().getEyeLocation(), Sound.ENTITY_WOLF_HOWL, 1.0F, 1.0F);
@@ -180,7 +179,7 @@ public final class Lycanthropy extends Power {
 					&& attacker.getEquipment() != null
 					&& attacker.getEquipment().getItemInMainHand() != null
 					&& attacker.getEquipment().getItemInMainHand().getType().toString().startsWith("IRON_")) {
-				event.setDamage(event.getDamage() * (ironDmg / 100));
+				event.setDamage(event.getDamage() * (user.getOption(ironDmg) / 100));
 			}
 		}
 		if (event.getDamager() instanceof Player) {
@@ -188,14 +187,14 @@ public final class Lycanthropy extends Power {
 			if (user.allowPower(this)
 					&& isWolf.contains(user)
 					&& user.getEquipment(EquipmentSlot.HAND).getType() == Material.AIR) {
-				event.setDamage(event.getDamage() * (dmgIncr / 100));
+				event.setDamage(event.getDamage() * (user.getOption(dmgIncr) / 100));
 				PowerTools.playParticleEffect(event.getEntity().getLocation(), Particle.CRIT, 5);
 				if (event.getEntity() instanceof Player
-						&& infect) {
+						&& user.getOption(infect)) {
 					PowerUser victim = getUser((Player) event.getEntity());
 					if (!victim.hasPower(this)
 							&& !victim.hasPower("Vampirism")
-							&& random.nextDouble() < (infectChance / 100.0D)) {
+							&& random.nextDouble() < (user.getOption(infectChance) / 100.0D)) {
 						victim.sendMessage(infected.replace("[power]", this.getName()));
 						victim.addPower(this, true);
 					}
@@ -210,12 +209,12 @@ public final class Lycanthropy extends Power {
 		if (user.allowPower(this)
 				&& isWolf.contains(user)) {
 			if (event.isSprinting()) {
-				if (speed) {
-					user.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, Short.MAX_VALUE, spdIncr));
+				if (user.getOption(speed)) {
+					user.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, Short.MAX_VALUE, user.getOption(spdIncr)));
 				}
 			}
 			else {
-				if (speed) {
+				if (user.getOption(speed)) {
 					user.getPlayer().removePotionEffect(PotionEffectType.SPEED);
 				}
 			}

@@ -29,6 +29,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 import me.sirrus86.s86powers.events.UserMaxedStatEvent;
 import me.sirrus86.s86powers.powers.Power;
 import me.sirrus86.s86powers.powers.PowerManifest;
+import me.sirrus86.s86powers.powers.PowerOption;
 import me.sirrus86.s86powers.powers.PowerStat;
 import me.sirrus86.s86powers.powers.PowerType;
 import me.sirrus86.s86powers.tools.PowerTools;
@@ -43,19 +44,16 @@ public final class Vampirism extends Power {
 
 	private Set<PowerUser> sprinting, transformed;
 	
-//	private final Map<Integer, Object> flyingMeta = new HashMap<>();
 	private final MCMetadata flyingMeta = new MCMetadata();
 	
-	private boolean helmProt, infect;
-	private int food, jmp, spd;
-	private double infectChance, wMult;
+	private PowerOption<Boolean> helmProt, infect;
+	private PowerOption<Integer> food, jmp, spd;
+	private PowerOption<Double> infectChance, wMult;
 	private PowerStat kills;
 	private String infected, turnToBat, turnToHuman;
 	
 	@Override
 	protected void onEnable() {
-//		flyingMeta.put(MCVersion.isLessThan(MCVersion.v1_14) ? 12 : 14, (byte) 0x00);
-//		flyingMeta.put(MCMetadata.BAT_HANGING.getIndex(), (byte) 0x00);
 		flyingMeta.setEntry(EntityMeta.BAT_IS_HANGING, (byte) 0x00);
 		sprinting = new HashSet<>();
 		transformed = new HashSet<>();
@@ -113,7 +111,7 @@ public final class Vampirism extends Power {
 							user.getPlayer().setFoodLevel(user.getPlayer().getFoodLevel() - 1);
 							user.getPlayer().getWorld().playEffect(user.getPlayer().getEyeLocation(), Effect.SMOKE, BlockFace.UP);
 						}
-						else if (!helmProt
+						else if (!user.getOption(helmProt)
 								|| user.getPlayer().getInventory().getHelmet() == null
 								|| user.getPlayer().getInventory().getHelmet().getType() == Material.AIR) {
 							user.getPlayer().setFireTicks(20);
@@ -183,16 +181,16 @@ public final class Vampirism extends Power {
 				}
 				if (used != null
 						&& used.getType().toString().startsWith("WOOD")) {
-					event.setDamage(event.getDamage() * wMult);
+					event.setDamage(event.getDamage() * user.getOption(wMult));
 				}
 			}
 			else if (attacker instanceof Player
-					&& infect) {
+					&& user.getOption(infect)) {
 				PowerUser pAttacker = getUser((Player) attacker);
 				if (pAttacker.allowPower(this)
 						&& !user.hasPower(this)
 						&& !user.hasPower("Lycanthropy")
-						&& random.nextDouble() < (infectChance / 100.0D)) {
+						&& random.nextDouble() < (user.getOption(infectChance) / 100.0D)) {
 					user.sendMessage(infected.replace("[power]", this.getName()));
 					user.addPower(this, true);
 				}
@@ -207,7 +205,7 @@ public final class Vampirism extends Power {
 			PowerUser user = getUser(entity.getKiller());
 			if (user.allowPower(this)) {
 				user.increaseStat(kills, 1);
-				user.regenHunger(food);
+				user.regenHunger(user.getOption(food));
 			}
 		}
 		if (entity instanceof Player) {
@@ -243,8 +241,8 @@ public final class Vampirism extends Power {
 		if (user.allowPower(this)) {
 			if (event.isSprinting()) {
 				sprinting.add(user);
-				user.addPotionEffect(new PotionEffect(PotionEffectType.JUMP, Integer.MAX_VALUE, jmp));
-				user.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, Integer.MAX_VALUE, spd));
+				user.addPotionEffect(new PotionEffect(PotionEffectType.JUMP, Integer.MAX_VALUE, user.getOption(jmp)));
+				user.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, Integer.MAX_VALUE, user.getOption(spd)));
 			}
 			else if (sprinting.contains(user)) {
 				sprinting.remove(user);

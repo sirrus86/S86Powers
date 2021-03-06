@@ -30,6 +30,7 @@ import org.bukkit.util.Vector;
 
 import me.sirrus86.s86powers.powers.Power;
 import me.sirrus86.s86powers.powers.PowerManifest;
+import me.sirrus86.s86powers.powers.PowerOption;
 import me.sirrus86.s86powers.powers.PowerType;
 import me.sirrus86.s86powers.tools.PowerTools;
 import me.sirrus86.s86powers.users.PowerUser;
@@ -42,8 +43,8 @@ public class NeutralizerBeacon extends Power {
 	
 	private Map<Block, Beacon> beacons;
 	
-	private boolean canExclude, showAura;
-	private double radius;
+	private PowerOption<Boolean> canExclude, showAura;
+	private PowerOption<Double> radius;
 	
 	@Override
 	protected void onEnable() {
@@ -246,15 +247,15 @@ public class NeutralizerBeacon extends Power {
 			double oldRange = range;
 			if (lapis.getType() == Material.LAPIS_BLOCK
 					&& lapis.getBlockPower() > 0) {
-				double power = lapis.getBlockPower() / 15.0D;
-				range = radius * power;
+				double strength = lapis.getBlockPower() / 15.0D;
+				range = getInstance().getOption(radius) * strength;
 				auraCoords = PowerTools.getSphereCoords(range);
 			}
 			else {
 				terminate();
 				return;
 			}
-			if (showAura) {
+			if (getInstance().getOption(showAura)) {
 				if (oldRange != range
 						&& auraTask > -1) {
 					cancelTask(auraTask);
@@ -268,7 +269,7 @@ public class NeutralizerBeacon extends Power {
 				cancelTask(auraTask);
 			}
 			excluded.clear();
-			if (canExclude) {
+			if (getInstance().getOption(canExclude)) {
 				for (BlockFace face : adjacent) {
 					if (lapis.getRelative(face).getState() instanceof Sign) {
 						Sign sign = (Sign) lapis.getRelative(face).getState();

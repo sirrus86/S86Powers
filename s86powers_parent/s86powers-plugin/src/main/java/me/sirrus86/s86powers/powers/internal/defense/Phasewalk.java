@@ -23,6 +23,7 @@ import org.bukkit.util.Vector;
 import me.sirrus86.s86powers.events.PowerUseEvent;
 import me.sirrus86.s86powers.powers.Power;
 import me.sirrus86.s86powers.powers.PowerManifest;
+import me.sirrus86.s86powers.powers.PowerOption;
 import me.sirrus86.s86powers.powers.PowerType;
 import me.sirrus86.s86powers.tools.PowerTools;
 import me.sirrus86.s86powers.users.PowerUser;
@@ -40,9 +41,9 @@ public final class Phasewalk extends Power {
 	private Map<PowerUser, Integer> tasks;
 	
 	private String beginDestab, phaseBack, phaseOut;
-	private boolean consume, destabilize;
-	private long destabFreq, destabTimer;
-	private int speedDegree;
+	private PowerOption<Boolean> consume, destabilize;
+	private PowerOption<Long> destabFreq, destabTimer;
+	private PowerOption<Integer> speedDegree;
 	
 	@Override
 	protected void onEnable() {
@@ -69,7 +70,7 @@ public final class Phasewalk extends Power {
 		beginDestab = locale("message.begin-destabilizing", ChatColor.RED + "Phasewalk begins destabilizing.");
 		phaseBack = locale("message.phase-back", ChatColor.RED + "You phase back into reality.");
 		phaseOut = locale("message.phase-out", ChatColor.GREEN + "You phase out of reality...");
-		supplies(new ItemStack(item.getType(), item.getMaxStackSize()));
+		supplies(new ItemStack(getRequiredItem().getType(), getRequiredItem().getMaxStackSize()));
 	}
 	
 	private Runnable phasewalk(PowerUser user) {
@@ -81,10 +82,10 @@ public final class Phasewalk extends Power {
 					user.sendMessage(beginDestab);
 					destabilizing.add(user);
 				}
-				if (user.getPlayer().getInventory().containsAtLeast(item, 1)) {
-					user.getPlayer().getInventory().removeItem(new ItemStack[] {item});
+				if (user.getPlayer().getInventory().containsAtLeast(getRequiredItem(), 1)) {
+					user.getPlayer().getInventory().removeItem(new ItemStack[] {getRequiredItem()});
 					user.getPlayer().getWorld().spawnParticle(Particle.ITEM_CRACK, user.getPlayer().getEyeLocation().add(user.getPlayer().getLocation().getDirection()), 1, item);
-					tasks.put(user, getInstance().runTaskLater(phasewalk(user), PowerTime.toTicks(destabFreq)).getTaskId());
+					tasks.put(user, getInstance().runTaskLater(phasewalk(user), PowerTime.toTicks(user.getOption(destabFreq))).getTaskId());
 				}
 				else {
 					unphase(user);
@@ -104,7 +105,7 @@ public final class Phasewalk extends Power {
 			cancelTask(tasks.get(user));
 		}
 		tasks.remove(user);
-		user.setCooldown(this, cooldown);
+		user.setCooldown(this, user.getOption(cooldown));
 	}
 	
 	@EventHandler (ignoreCancelled = true)
@@ -143,14 +144,14 @@ public final class Phasewalk extends Power {
 			if (user.getCooldown(this) <= 0) {
 				if (!tasks.containsKey(user)) {
 					user.addPotionEffect(new PotionEffect(PotionEffectType.NIGHT_VISION, Integer.MAX_VALUE, 0));
-					user.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, Integer.MAX_VALUE, speedDegree));
+					user.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, Integer.MAX_VALUE, user.getOption(speedDegree)));
 					PowerTools.addGhost(user.getPlayer());
 					user.sendMessage(phaseOut);
-					if (consume) {
+					if (user.getOption(consume)) {
 						event.consumeItem();
 					}
-					if (destabilize) {
-						tasks.put(user, runTaskLater(phasewalk(user), PowerTime.toTicks(destabTimer)).getTaskId());
+					if (user.getOption(destabilize)) {
+						tasks.put(user, runTaskLater(phasewalk(user), PowerTime.toTicks(user.getOption(destabTimer))).getTaskId());
 					}
 				}
 				else {

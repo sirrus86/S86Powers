@@ -14,6 +14,7 @@ import org.bukkit.util.Vector;
 import me.sirrus86.s86powers.events.PowerUseEvent;
 import me.sirrus86.s86powers.powers.Power;
 import me.sirrus86.s86powers.powers.PowerManifest;
+import me.sirrus86.s86powers.powers.PowerOption;
 import me.sirrus86.s86powers.powers.PowerType;
 import me.sirrus86.s86powers.tools.PowerTools;
 import me.sirrus86.s86powers.users.PowerUser;
@@ -27,7 +28,7 @@ public final class AeroBlade extends Power {
 
 	private Map<Snowball, PowerUser> sList;
 	
-	private double fSpread, fVel;
+	private PowerOption<Double> fSpread, fVel;
 	@SuppressWarnings("unused")
 	private boolean wMany;
 	
@@ -44,8 +45,8 @@ public final class AeroBlade extends Power {
 		item = option("item", new ItemStack(Material.IRON_SWORD), "Item used to trigger power.");
 		wItem = option("use-with-specific-item", false, "Whether power will work with the specified item.");
 		wSword = option("use-any-sword", true, "Whether power will work with any sword.");
-		wMany = wItem && wSword;
-		supplies(item);
+		wMany = getOption(wItem) && getOption(wSword);
+		supplies(getRequiredItem());
 	}
 	
 	@EventHandler
@@ -67,11 +68,11 @@ public final class AeroBlade extends Power {
 				for (int i = 0; i < 10; i ++) {
 					Snowball snowball = user.getPlayer().launchProjectile(Snowball.class);
 					Vector sVel = snowball.getVelocity().clone();
-					snowball.setVelocity(sVel.add(new Vector(random.nextGaussian() * fSpread, 0, random.nextGaussian() * fSpread)).multiply(fVel));
+					snowball.setVelocity(sVel.add(new Vector(random.nextGaussian() * user.getOption(fSpread), 0, random.nextGaussian() * user.getOption(fSpread))).multiply(user.getOption(fVel)));
 					PowerTools.addDisguise(snowball, new ItemStack(Material.FEATHER, 1));
 					sList.put(snowball, user);
 				}
-				user.setCooldown(this, cooldown);
+				user.setCooldown(this, user.getOption(cooldown));
 			}
 		}
 	}

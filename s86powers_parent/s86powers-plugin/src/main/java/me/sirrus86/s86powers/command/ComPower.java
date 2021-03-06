@@ -5,7 +5,6 @@ import java.util.Set;
 import me.sirrus86.s86powers.localization.LocaleString;
 import me.sirrus86.s86powers.permissions.S86Permission;
 import me.sirrus86.s86powers.powers.Power;
-import me.sirrus86.s86powers.powers.PowerAdapter;
 import me.sirrus86.s86powers.powers.PowerOption;
 import me.sirrus86.s86powers.powers.PowerStat;
 import me.sirrus86.s86powers.powers.PowerType;
@@ -30,44 +29,43 @@ public final class ComPower extends ComAbstract {
 		else {
 			Power power = config.getPower(args[1]);
 			if (power != null) {
-				PowerAdapter pCont = PowerAdapter.getAdapter(power);
 				if (args.length <= 2
 						|| args[2].equalsIgnoreCase("info")) {
-					comPowerInfo(pCont);
+					comPowerInfo(power);
 				}
 				else if (args[2].equalsIgnoreCase("block")
 						|| args[2].equalsIgnoreCase("unblock")) {
-					comPowerBlock(pCont, args[2].equalsIgnoreCase("block"));
+					comPowerBlock(power, args[2].equalsIgnoreCase("block"));
 				}
 				else if (args[2].equalsIgnoreCase("disable")
 						|| args[2].equalsIgnoreCase("enable")) {
-					comPowerEnable(pCont, args[2].equalsIgnoreCase("enable"));
+					comPowerEnable(power, args[2].equalsIgnoreCase("enable"));
 				}
 				else if (args[2].equalsIgnoreCase("kill")) {
-					comPowerKill(pCont);
+					comPowerKill(power);
 				}
 				else if (args[2].equalsIgnoreCase("lock")
 						|| args[2].equalsIgnoreCase("unlock")) {
-					comPowerLock(pCont, args[2].equalsIgnoreCase("lock"));
+					comPowerLock(power, args[2].equalsIgnoreCase("lock"));
 				}
 				else if (args[2].equalsIgnoreCase("option")) {
-					comPowerOption(pCont, args.length > 3 ? args[3] : null,
-							args.length > 3 ? pCont.getOption(args[3]) : null,
+					comPowerOption(power, args.length > 3 ? args[3] : null,
+							args.length > 3 ? power.getOptionByName(args[3]) : null,
 							args.length > 4 ? args[4] : null);
 				}
 				else if (args[2].equalsIgnoreCase("reload")) {
-					comPowerReload(pCont);
+					comPowerReload(power);
 				}
 				else if (args[2].equalsIgnoreCase("save")) {
-					comPowerSave(pCont);
+					comPowerSave(power);
 				}
 				else if (args[2].equalsIgnoreCase("stats")) {
-					comPowerStats(pCont, args.length > 3 ? args[3] : null,
-							args.length > 3 ? pCont.getStat(args[3]) : null,
+					comPowerStats(power, args.length > 3 ? args[3] : null,
+							args.length > 3 ? power.getStat(args[3]) : null,
 							args.length > 4 ? args[4] : null);
 				}
 				else if (args[2].equalsIgnoreCase("supply")) {
-					comPowerSupply(pCont, args.length > 3 ? args[3] : null,
+					comPowerSupply(power, args.length > 3 ? args[3] : null,
 							args.length > 4 ? args[4] : null,
 							args.length > 5 ? args[5] : null);
 				}
@@ -81,14 +79,14 @@ public final class ComPower extends ComAbstract {
 		}
 	}
 	
-	private final void comPowerBlock(PowerAdapter power, boolean isBlock) {
+	private final void comPowerBlock(Power power, boolean isBlock) {
 		if (isBlock) {
 			if (sender.hasPermission(S86Permission.POWER_BLOCK)) {
-				if (config.blockPower(power.getPower())) {
-					sender.sendMessage(SUCCESS + LocaleString.POWER_BLOCK_SUCCESS.build(power.getPower()));
+				if (config.blockPower(power)) {
+					sender.sendMessage(SUCCESS + LocaleString.POWER_BLOCK_SUCCESS.build(power));
 				}
 				else {
-					sender.sendMessage(ERROR + LocaleString.POWER_BLOCK_FAIL.build(power.getPower()));
+					sender.sendMessage(ERROR + LocaleString.POWER_BLOCK_FAIL.build(power));
 				}
 			}
 			else {
@@ -98,10 +96,10 @@ public final class ComPower extends ComAbstract {
 		else {
 			if (sender.hasPermission(S86Permission.POWER_UNBLOCK)) {
 				if (config.unblockPower(power.getTag())) {
-					sender.sendMessage(SUCCESS + LocaleString.POWER_UNBLOCK_SUCCESS.build(power.getPower()));
+					sender.sendMessage(SUCCESS + LocaleString.POWER_UNBLOCK_SUCCESS.build(power));
 				}
 				else {
-					sender.sendMessage(ERROR + LocaleString.POWER_UNBLOCK_FAIL.build(power.getPower()));
+					sender.sendMessage(ERROR + LocaleString.POWER_UNBLOCK_FAIL.build(power));
 				}
 			}
 			else {
@@ -110,19 +108,19 @@ public final class ComPower extends ComAbstract {
 		}
 	}
 	
-	private final void comPowerEnable(PowerAdapter power, boolean isEnable) {
+	private final void comPowerEnable(Power power, boolean isEnable) {
 		if (isEnable) {
 			if (sender.hasPermission(S86Permission.POWER_ENABLE)) {
 				if (!power.isEnabled()) {
 					if (power.setEnabled(true)) {
-						sender.sendMessage(SUCCESS + LocaleString.POWER_ENABLE_SUCCESS.build(power.getPower()));
+						sender.sendMessage(SUCCESS + LocaleString.POWER_ENABLE_SUCCESS.build(power));
 					}
 					else {
-						sender.sendMessage(ERROR + LocaleString.POWER_ENABLE_FAIL.build(power.getPower()));
+						sender.sendMessage(ERROR + LocaleString.POWER_ENABLE_FAIL.build(power));
 					}
 				}
 				else {
-					sender.sendMessage(ERROR + LocaleString.POWER_ALREADY_ENABLED.build(power.getPower()));
+					sender.sendMessage(ERROR + LocaleString.POWER_ALREADY_ENABLED.build(power));
 				}
 			}
 			else {
@@ -133,14 +131,14 @@ public final class ComPower extends ComAbstract {
 			if (sender.hasPermission(S86Permission.POWER_DISABLE)) {
 				if (power.isEnabled()) {
 					if (power.setEnabled(false)) {
-						sender.sendMessage(SUCCESS + LocaleString.POWER_DISABLE_SUCCESS.build(power.getPower()));
+						sender.sendMessage(SUCCESS + LocaleString.POWER_DISABLE_SUCCESS.build(power));
 					}
 					else {
-						sender.sendMessage(ERROR + LocaleString.POWER_DISABLE_FAIL.build(power.getPower()));
+						sender.sendMessage(ERROR + LocaleString.POWER_DISABLE_FAIL.build(power));
 					}
 				}
 				else {
-					sender.sendMessage(ERROR + LocaleString.POWER_ALREADY_DISABLED.build(power.getPower()));
+					sender.sendMessage(ERROR + LocaleString.POWER_ALREADY_DISABLED.build(power));
 				}
 			}
 			else {
@@ -168,10 +166,10 @@ public final class ComPower extends ComAbstract {
 		}
 	}
 	
-	private final void comPowerInfo(PowerAdapter power) {
+	private final void comPowerInfo(Power power) {
 		if (sender.hasPermission(S86Permission.POWER_INFO)) {
-			sender.sendMessage(ChatColor.GREEN + power.getPower().getName() + ChatColor.RESET + " (" + ChatColor.GRAY + power.getTag() + ChatColor.RESET + ")");
-			sender.sendMessage(LocaleString.TYPE + ": " + power.getPower().getType().getColor() + power.getPower().getType().getName() + ChatColor.RESET + ".");
+			sender.sendMessage(ChatColor.GREEN + power.getName() + ChatColor.RESET + " (" + ChatColor.GRAY + power.getTag() + ChatColor.RESET + ")");
+			sender.sendMessage(LocaleString.TYPE + ": " + power.getType().getColor() + power.getType().getName() + ChatColor.RESET + ".");
 			sender.sendMessage(LocaleString.AUTHOR + ": " + ChatColor.GRAY + power.getAuthor() + ChatColor.RESET + " "
 					+ LocaleString.CONCEPT + ": " + ChatColor.GRAY + power.getConcept());
 			sender.sendMessage(LocaleString.DESCRIPTION + ": " + ChatColor.GRAY + getPowerDesc(power));
@@ -182,12 +180,12 @@ public final class ComPower extends ComAbstract {
 		}
 	}
 	
-	private final void comPowerKill(PowerAdapter power) {
+	private final void comPowerKill(Power power) {
 		if (sender.hasPermission(S86Permission.POWER_KILL)) {
-			String pName = power.getPower().getName();
-			config.removePower(power.getPower());
+			String pName = power.getName();
+			config.removePower(power);
 			power.setEnabled(false);
-			killPower(power.getPower());
+			killPower(power);
 			sender.sendMessage(SUCCESS + LocaleString.POWER_KILL_SUCCESS.build(pName));
 		}
 		else {
@@ -224,15 +222,15 @@ public final class ComPower extends ComAbstract {
 		}
 	}
 	
-	private final void comPowerLock(PowerAdapter power, boolean isLock) {
+	private final void comPowerLock(Power power, boolean isLock) {
 		if (isLock) {
 			if (sender.hasPermission(S86Permission.POWER_LOCK)) {
 				if (!power.isLocked()) {
 					power.setLocked(true);
-					sender.sendMessage(SUCCESS + LocaleString.POWER_LOCK_SUCCESS.build(power.getPower()));
+					sender.sendMessage(SUCCESS + LocaleString.POWER_LOCK_SUCCESS.build(power));
 				}
 				else {
-					sender.sendMessage(ERROR + LocaleString.POWER_LOCK_FAIL.build(power.getPower()));
+					sender.sendMessage(ERROR + LocaleString.POWER_LOCK_FAIL.build(power));
 				}
 			}
 			else {
@@ -243,10 +241,10 @@ public final class ComPower extends ComAbstract {
 			if (sender.hasPermission(S86Permission.POWER_UNLOCK)) {
 				if (power.isLocked()) {
 					power.setLocked(false);
-					sender.sendMessage(SUCCESS + LocaleString.POWER_UNLOCK_SUCCESS.build(power.getPower()));
+					sender.sendMessage(SUCCESS + LocaleString.POWER_UNLOCK_SUCCESS.build(power));
 				}
 				else {
-					sender.sendMessage(ERROR + LocaleString.POWER_UNLOCK_FAIL.build(power.getPower()));
+					sender.sendMessage(ERROR + LocaleString.POWER_UNLOCK_FAIL.build(power));
 				}
 			}
 			else {
@@ -255,37 +253,42 @@ public final class ComPower extends ComAbstract {
 		}
 	}
 	
-	private final void comPowerOption(PowerAdapter power, String page, PowerOption option, String valueStr) {
+	private final void comPowerOption(Power power, String page, PowerOption<?> option, String valueStr) {
 		if (sender.hasPermission(S86Permission.POWER_OPTION)) {
 			if (option != null) {
 				if (valueStr != null) {
 					Object value = validate(option, valueStr);
-					if (value != null) {
-						power.setOption(option, option.getDefaultValue() instanceof Long ? (Long) value : value);
-						sender.sendMessage(SUCCESS + LocaleString.SET_OPTION_SUCCESS.build(option.getPath(), value));
+					if (!option.isLocked()) {
+						if (value != null) {
+							power.setOption(option, option.getDefaultValue() instanceof Long ? (Long) value : value);
+							sender.sendMessage(SUCCESS + LocaleString.SET_OPTION_SUCCESS.build(option.getPath(), value));
+						}
+						else {
+							sender.sendMessage(ERROR + LocaleString.SET_OPTION_FAIL.build(option.getPath(), option.getDefaultValue().getClass(), valueStr));
+						}
 					}
 					else {
-						sender.sendMessage(ERROR + LocaleString.SET_OPTION_FAIL.build(option.getPath(), option.getDefaultValue().getClass(), valueStr));
+						sender.sendMessage(ERROR + LocaleString.SET_OPTION_LOCKED.build(option.getPath(), valueStr));
 					}
 				}
 				else {
 					sender.sendMessage(ChatColor.GREEN + option.getPath());
 					sender.sendMessage(LocaleString.DESCRIPTION + ": " + ChatColor.GRAY + option.getDescription());
-					sender.sendMessage(LocaleString.TYPE + ": " + ChatColor.GRAY + power.getOptionValue(option).getClass().getSimpleName());
-					sender.sendMessage(LocaleString.VALUE + ": " + ChatColor.BLUE + (power.getOptionValue(option) instanceof ItemStack ? PowerTools.getItemName((ItemStack) power.getOptionValue(option)) : power.getOptionValue(option).toString()) + ChatColor.RESET + " " + LocaleString.DEFAULT + ": " + ChatColor.GRAY + option.getDefaultValue());
+					sender.sendMessage(LocaleString.TYPE + ": " + ChatColor.GRAY + option.getDefaultValue().getClass().getSimpleName());
+					sender.sendMessage(LocaleString.VALUE + ": " + ChatColor.BLUE + (power.getOption(option) instanceof ItemStack ? PowerTools.getItemName((ItemStack) power.getOption(option)) : power.getOption(option).toString()) + ChatColor.RESET + " " + LocaleString.DEFAULT + ": " + ChatColor.GRAY + option.getDefaultValue());
 				}
 			}
 			else if (page != null) {
 				try {
 					int i = Integer.parseInt(page);
-					PageMaker pm = new PageMaker(HELP + ChatColor.GREEN + power.getPower().getName() + " " + LocaleString.OPTIONS, getOptions(power), i);
+					PageMaker pm = new PageMaker(HELP + ChatColor.GREEN + power.getName() + " " + LocaleString.OPTIONS, getOptions(power), i);
 					pm.send(sender);
 				} catch (NumberFormatException e) {
-					sender.sendMessage(ERROR + LocaleString.POWER_MISSING_OPTION.build(power.getPower(), page));
+					sender.sendMessage(ERROR + LocaleString.POWER_MISSING_OPTION.build(power, page));
 				}
 			}
 			else {
-				PageMaker pm = new PageMaker(INFO + ChatColor.GREEN + power.getPower().getName() + " " + LocaleString.OPTIONS, getOptions(power), 1);
+				PageMaker pm = new PageMaker(INFO + ChatColor.GREEN + power.getName() + " " + LocaleString.OPTIONS, getOptions(power), 1);
 				pm.send(sender);
 			}
 		}
@@ -294,27 +297,27 @@ public final class ComPower extends ComAbstract {
 		}
 	}
 	
-	private final void comPowerReload(PowerAdapter power) {
+	private final void comPowerReload(Power power) {
 		if (sender.hasPermission(S86Permission.POWER_RELOAD)) {
 			power.reload();
-			sender.sendMessage(SUCCESS + LocaleString.POWER_RELOAD_SUCCESS.build(power.getPower()));
+			sender.sendMessage(SUCCESS + LocaleString.POWER_RELOAD_SUCCESS.build(power));
 		}
 		else {
 			sender.sendMessage(ERROR + LocaleString.NO_PERMISSION);
 		}
 	}
 	
-	private final void comPowerSave(PowerAdapter power) {
+	private final void comPowerSave(Power power) {
 		if (sender.hasPermission(S86Permission.POWER_SAVE)) {
-			power.getPower().saveConfig();
-			sender.sendMessage(SUCCESS + LocaleString.POWER_SAVE_SUCCESS.build(power.getPower()));
+			power.saveConfig();
+			sender.sendMessage(SUCCESS + LocaleString.POWER_SAVE_SUCCESS.build(power));
 		}
 		else {
 			sender.sendMessage(ERROR + LocaleString.NO_PERMISSION);
 		}
 	}
 	
-	private final void comPowerStats(PowerAdapter power, String page, PowerStat stat, String valueStr) {
+	private final void comPowerStats(Power power, String page, PowerStat stat, String valueStr) {
 		if (sender.hasPermission(S86Permission.POWER_STATS)) {
 			if (stat != null) {
 				if (valueStr != null) {
@@ -331,14 +334,14 @@ public final class ComPower extends ComAbstract {
 			else if (page != null) {
 				try {
 					int i = Integer.parseInt(page);
-					PageMaker pm = new PageMaker(HELP + ChatColor.GREEN + power.getPower().getName() + " " + LocaleString.STATS, getStats(power), i);
+					PageMaker pm = new PageMaker(HELP + ChatColor.GREEN + power.getName() + " " + LocaleString.STATS, getStats(power), i);
 					pm.send(sender);
 				} catch (NumberFormatException e) {
 					sender.sendMessage(ERROR + LocaleString.POWER_MISSING_STAT.build(power, page));
 				}
 			}
 			else {
-				PageMaker pm = new PageMaker(INFO + ChatColor.GREEN + power.getPower().getName() + " " + LocaleString.STATS, getStats(power), 1);
+				PageMaker pm = new PageMaker(INFO + ChatColor.GREEN + power.getName() + " " + LocaleString.STATS, getStats(power), 1);
 				pm.send(sender);
 			}
 		}
@@ -347,7 +350,7 @@ public final class ComPower extends ComAbstract {
 		}
 	}
 	
-	private final void comPowerSupply(PowerAdapter power, String index, String value, String quantity) {
+	private final void comPowerSupply(Power power, String index, String value, String quantity) {
 		if (sender.hasPermission(S86Permission.POWER_SUPPLY)) {
 			if (index != null) {
 				int i = -1;
@@ -393,7 +396,7 @@ public final class ComPower extends ComAbstract {
 				}
 			}
 			else {
-				PageMaker pm = new PageMaker(INFO + ChatColor.GREEN + power.getPower().getName() + " " + LocaleString.SUPPLIES, getSupplies(power), 1);
+				PageMaker pm = new PageMaker(INFO + ChatColor.GREEN + power.getName() + " " + LocaleString.SUPPLIES, getSupplies(power), 1);
 				pm.send(sender);
 			}
 		}

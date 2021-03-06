@@ -12,6 +12,7 @@ import org.bukkit.potion.PotionEffectType;
 
 import me.sirrus86.s86powers.powers.Power;
 import me.sirrus86.s86powers.powers.PowerManifest;
+import me.sirrus86.s86powers.powers.PowerOption;
 import me.sirrus86.s86powers.powers.PowerType;
 import me.sirrus86.s86powers.users.PowerUser;
 import me.sirrus86.s86powers.utils.PowerTime;
@@ -20,10 +21,10 @@ import me.sirrus86.s86powers.utils.PowerTime;
 	description = "Absorb [absorb-percentage]% of incoming poison damage.[afflict-attackers] When struck by a melee attack, attacker becomes poisoned for [afflict-duration].[/afflict-attackers]")
 public final class AcidBlood extends Power {
 
-	private double absorb;
-	private long affDur;
-	private int affInt;
-	private boolean afflict;
+	private PowerOption<Double> absorb;
+	private PowerOption<Long> affDur;
+	private PowerOption<Integer> affInt;
+	private PowerOption<Boolean> afflict;
 	
 	@Override
 	protected void config() {
@@ -40,16 +41,16 @@ public final class AcidBlood extends Power {
 			PowerUser user = getUser((Player) event.getEntity());
 			if (user.allowPower(this)) {
 				if (event.getCause() == DamageCause.POISON) {
-					double abs = event.getDamage() * (absorb / 100.0D);
+					double abs = event.getDamage() * (user.getOption(absorb) / 100.0D);
 					user.heal(abs);
 					event.setCancelled(true);
 				}
 				else if (event instanceof EntityDamageByEntityEvent) {
 					if (((EntityDamageByEntityEvent) event).getDamager() instanceof LivingEntity
-							&& afflict && user.getCooldown(this) <= 0) {
+							&& user.getOption(afflict) && user.getCooldown(this) <= 0) {
 						LivingEntity target = (LivingEntity) ((EntityDamageByEntityEvent) event).getDamager();
-						target.addPotionEffect(new PotionEffect(PotionEffectType.POISON, (int) PowerTime.toTicks(affDur), affInt));
-						user.setCooldown(this, cooldown);
+						target.addPotionEffect(new PotionEffect(PotionEffectType.POISON, (int) PowerTime.toTicks(user.getOption(affDur)), user.getOption(affInt)));
+						user.setCooldown(this, user.getOption(cooldown));
 					}
 				}
 			}

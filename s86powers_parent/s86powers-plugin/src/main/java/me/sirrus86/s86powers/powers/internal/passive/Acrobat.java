@@ -6,6 +6,7 @@ import java.util.Map;
 import me.sirrus86.s86powers.events.PowerUseEvent;
 import me.sirrus86.s86powers.powers.Power;
 import me.sirrus86.s86powers.powers.PowerManifest;
+import me.sirrus86.s86powers.powers.PowerOption;
 import me.sirrus86.s86powers.powers.PowerType;
 import me.sirrus86.s86powers.users.PowerUser;
 
@@ -24,8 +25,8 @@ import org.bukkit.potion.PotionEffectType;
 public final class Acrobat extends Power {
 
 	private Map<PowerUser, Integer> jumpPower;
-	private int maxJump;
-	private boolean noDmg;
+	private PowerOption<Integer> maxJump;
+	private PowerOption<Boolean> noDmg;
 	private String jumpPwr, jumpOff;
 	
 	@Override
@@ -49,7 +50,7 @@ public final class Acrobat extends Power {
 		noDmg = option("negate-fall-damage", true, "Whether fall damage should be ignored.");
 		jumpOff = locale("message.jump-off", ChatColor.YELLOW + "Jump power turned off.");
 		jumpPwr = locale("message.jump-power", ChatColor.YELLOW + "Jump power set to [amount].");
-		supplies(item);
+		supplies(getRequiredItem());
 	}
 	
 	@EventHandler(ignoreCancelled = true)
@@ -58,7 +59,7 @@ public final class Acrobat extends Power {
 			PowerUser user = getUser((Player) event.getEntity());
 			if (user.allowPower(this)
 					&& event.getCause() == DamageCause.FALL
-					&& noDmg) {
+					&& user.getOption(noDmg)) {
 				event.setCancelled(true);
 			}
 		}
@@ -71,7 +72,7 @@ public final class Acrobat extends Power {
 			if (!jumpPower.containsKey(user)) {
 				jumpPower.put(user, -1);
 			}
-			jumpPower.put(user, jumpPower.get(user) < maxJump ? jumpPower.get(user) + 1 : -1);
+			jumpPower.put(user, jumpPower.get(user) < user.getOption(maxJump) ? jumpPower.get(user) + 1 : -1);
 			if (jumpPower.get(user) >= 0) {
 				user.sendMessage(jumpPwr.replace("[amount]", Integer.toString(jumpPower.get(user) + 1)));
 				user.addPotionEffect(new PotionEffect(PotionEffectType.JUMP, Integer.MAX_VALUE, jumpPower.get(user)));

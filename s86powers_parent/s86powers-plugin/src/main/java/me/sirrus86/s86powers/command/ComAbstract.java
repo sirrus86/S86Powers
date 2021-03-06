@@ -1,6 +1,7 @@
 package me.sirrus86.s86powers.command;
 
 import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -9,7 +10,6 @@ import me.sirrus86.s86powers.S86Powers;
 import me.sirrus86.s86powers.config.ConfigManager;
 import me.sirrus86.s86powers.localization.LocaleString;
 import me.sirrus86.s86powers.powers.Power;
-import me.sirrus86.s86powers.powers.PowerAdapter;
 import me.sirrus86.s86powers.powers.PowerOption;
 import me.sirrus86.s86powers.powers.PowerStat;
 import me.sirrus86.s86powers.powers.PowerType;
@@ -17,7 +17,6 @@ import me.sirrus86.s86powers.regions.NeutralRegion;
 import me.sirrus86.s86powers.tools.PowerTools;
 import me.sirrus86.s86powers.users.PowerGroup;
 import me.sirrus86.s86powers.users.PowerUser;
-import me.sirrus86.s86powers.users.PowerUserAdapter;
 import me.sirrus86.s86powers.utils.PowerTime;
 
 import org.bukkit.ChatColor;
@@ -85,7 +84,7 @@ public abstract class ComAbstract {
 		return tmp == "" ? LocaleString.NONE.toString() : tmp;
 	}
 
-	protected final String getGroups(PowerUserAdapter user) {
+	protected final String getGroups(PowerUser user) {
 		String tmp = "";
 		List<PowerGroup> pList = Lists.newArrayList(user.getGroups());
 		Collections.sort(pList);
@@ -102,14 +101,14 @@ public abstract class ComAbstract {
 		return tmp.equalsIgnoreCase("") ? LocaleString.NONE.toString() : tmp;
 	}
 
-	protected final String getOptions(PowerAdapter pCont) {
-		List<PowerOption> options = Lists.newArrayList(pCont.getOptions().keySet());
+	protected final String getOptions(Power power) {
+		List<PowerOption<?>> options = Lists.newArrayList(power.getOptions().keySet());
 		Collections.sort(options);
 		String tmp = "";
 		for (int i = 0; i < options.size(); i ++) {
-			PowerOption option = options.get(i);
+			PowerOption<?> option = options.get(i);
 			tmp = tmp + ChatColor.GREEN + option.getPath() + ChatColor.GRAY + ": " + ChatColor.WHITE
-					+ (pCont.getOptionValue(option) instanceof ItemStack ? PowerTools.getItemName((ItemStack) pCont.getOptionValue(option)) : pCont.getOptionValue(option).toString()) + "\n";
+					+ (power.getOption(option) instanceof ItemStack ? PowerTools.getItemName((ItemStack) power.getOption(option)) : power.getOption(option).toString()) + "\n";
 		}
 		if (tmp.endsWith("\n")) {
 			tmp = tmp.substring(0, tmp.lastIndexOf("\n"));
@@ -118,9 +117,30 @@ public abstract class ComAbstract {
 		return tmp == "" ? LocaleString.NONE.toString() : tmp;
 	}
 
-	protected final String getPowerDesc(PowerAdapter pCont) {
-		pCont.refreshOptions();
-		return PowerTools.getFilteredText(pCont.getPower(), pCont.getDescription());
+	protected final String getOptions(Power power, PowerUser user) {
+		List<PowerOption<?>> options = new ArrayList<>();
+		for (PowerOption<?> option : user.getOptions().keySet()) {
+			if (option.getPower() == power) {
+				options.add(option);
+			}
+		}
+		Collections.sort(options);
+		String tmp = "";
+		for (int i = 0; i < options.size(); i ++) {
+			PowerOption<?> option = options.get(i);
+			tmp = tmp + ChatColor.GREEN + option.getPath() + ChatColor.GRAY + ": " + ChatColor.WHITE
+					+ (user.getOption(option) instanceof ItemStack ? PowerTools.getItemName((ItemStack) user.getOption(option)) : user.getOption(option).toString()) + "\n";
+		}
+		if (tmp.endsWith("\n")) {
+			tmp = tmp.substring(0, tmp.lastIndexOf("\n"));
+		}
+		tmp.split("\n");
+		return tmp == "" ? LocaleString.NONE.toString() : tmp;
+	}
+
+	protected final String getPowerDesc(Power power) {
+		power.refreshOptions();
+		return PowerTools.getFilteredText(power, power.getDescription());
 	}
 
 	protected final String getPowerList(Set<Power> list) {
@@ -128,8 +148,8 @@ public abstract class ComAbstract {
 		List<Power> powers = Lists.newArrayList(list);
 		Collections.sort(powers);
 		for (int i = 0; i < powers.size(); i ++) {
-			PowerAdapter pCont = PowerAdapter.getAdapter(powers.get(i));
-			tmp = tmp + powers.get(i).getType().getColor() + pCont.getTag() + ChatColor.GRAY;
+			Power power = powers.get(i);
+			tmp = tmp + power.getType().getColor() + power.getTag() + ChatColor.GRAY;
 			if (i < powers.size() - 1) {
 				tmp = tmp + ", ";
 			}
@@ -142,8 +162,8 @@ public abstract class ComAbstract {
 		List<Power> pList = Lists.newArrayList(group.getPowers());
 		Collections.sort(pList);
 		for (int i = 0; i < pList.size(); i ++) {
-			PowerAdapter pCont = PowerAdapter.getAdapter(pList.get(i));
-			tmp = tmp + pList.get(i).getType().getColor() + pCont.getTag() + ChatColor.RESET;
+			Power power = pList.get(i);
+			tmp = tmp + power.getType().getColor() + power.getTag() + ChatColor.RESET;
 			if (i < pList.size() - 1) {
 				tmp = tmp + ChatColor.GRAY + ", ";
 			}
@@ -151,13 +171,13 @@ public abstract class ComAbstract {
 		return tmp.equalsIgnoreCase("") ? LocaleString.NONE.toString() : tmp;
 	}
 
-	protected final String getPowers(PowerUserAdapter user) {
+	protected final String getPowers(PowerUser user) {
 		String tmp = "";
 		List<Power> pList = Lists.newArrayList(user.getPowers());
 		Collections.sort(pList);
 		for (int i = 0; i < pList.size(); i ++) {
-			PowerAdapter pCont = PowerAdapter.getAdapter(pList.get(i));
-			tmp = tmp + pList.get(i).getType().getColor() + pCont.getTag() + ChatColor.RESET;
+			Power power = pList.get(i);
+			tmp = tmp + power.getType().getColor() + power.getTag() + ChatColor.RESET;
 			if (!user.getAssignedPowers().contains(pList.get(i))) {
 				if (user.getGroupPowers().contains(pList.get(i))) {
 					tmp = tmp + "(" + ChatColor.GRAY + "G" + ChatColor.RESET + ")";
@@ -181,7 +201,7 @@ public abstract class ComAbstract {
 		return !powers.isEmpty() ? powers.get(0) : null;
 	}
 	
-	protected final Power getRandomPower(PowerUserAdapter user) {
+	protected final Power getRandomPower(PowerUser user) {
 		List<Power> powers = Lists.newArrayList(config.getPowers());
 		powers.removeAll(config.getPowersByType(PowerType.UTILITY));
 		powers.removeAll(user.getAssignedPowers());
@@ -203,7 +223,7 @@ public abstract class ComAbstract {
 		return tmp == "" ? LocaleString.NONE.toString() : tmp;
 	}
 
-	protected final String getStats(PowerAdapter power) {
+	protected final String getStats(Power power) {
 		List<PowerStat> stats = Lists.newArrayList(power.getStats().keySet());
 		Collections.sort(stats);
 		String tmp = "";
@@ -218,7 +238,7 @@ public abstract class ComAbstract {
 		return tmp == "" ? LocaleString.NONE.toString() : tmp;
 	}
 	
-	protected final String getSupplies(PowerAdapter power) {
+	protected final String getSupplies(Power power) {
 		String tmp = "";
 		for (int i = 0; i < power.getSupplies().size(); i ++) {
 			tmp = tmp + ChatColor.GREEN + i + ChatColor.RESET + ": " + ChatColor.GRAY + PowerTools.getItemName(power.getSupplies().get(i)) + " x" + power.getSupplies().get(i).getAmount() + "\n";
@@ -230,7 +250,7 @@ public abstract class ComAbstract {
 		return tmp;
 	}
 
-	protected final String getUserName(PowerUserAdapter user) {
+	protected final String getUserName(PowerUser user) {
 		ChatColor color = ChatColor.GREEN;
 		if (user.isAdmin()) {
 			color = ChatColor.GOLD;
@@ -238,7 +258,7 @@ public abstract class ComAbstract {
 		else if (user.getPowers().isEmpty()) {
 			color = ChatColor.GRAY;
 		}
-		return color + (user.getUser().getName() != null ? user.getUser().getName() : "NULL") + ChatColor.RESET;
+		return color + (user.getName() != null ? user.getName() : "NULL") + ChatColor.RESET;
 	}
 
 	protected final String getUsers() {
@@ -246,7 +266,7 @@ public abstract class ComAbstract {
 		Collections.sort(users);
 		String tmp = "";
 		for (int i = 0; i < users.size(); i ++) {
-			PowerUserAdapter user = PowerUserAdapter.getAdapter(users.get(i));
+			PowerUser user = users.get(i);
 			tmp = tmp + getUserName(user) + ChatColor.GRAY;
 			if (i < users.size() - 1) {
 				tmp = tmp + ", ";
@@ -255,12 +275,12 @@ public abstract class ComAbstract {
 		return tmp == "" ? LocaleString.NONE.toString() : tmp;
 	}
 
-	protected final String getUsers(PowerAdapter power) {
+	protected final String getUsers(Power power) {
 		List<PowerUser> users = Lists.newArrayList(power.getUsers());
 		Collections.sort(users);
 		String tmp = "";
 		for (int i = 0; i < users.size(); i ++) {
-			PowerUserAdapter user = PowerUserAdapter.getAdapter(users.get(i));
+			PowerUser user = users.get(i);
 			tmp = tmp + getUserName(user) + ChatColor.GRAY;
 			if (i < users.size() - 1) {
 				tmp = tmp + ", ";
@@ -274,7 +294,7 @@ public abstract class ComAbstract {
 		Collections.sort(users);
 		String tmp = "";
 		for (int i = 0; i < users.size(); i ++) {
-			PowerUserAdapter user = PowerUserAdapter.getAdapter(users.get(i));
+			PowerUser user = users.get(i);
 			tmp = tmp + getUserName(user) + ChatColor.GRAY;
 			if (i < users.size() - 1) {
 				tmp = tmp + ", ";
@@ -311,11 +331,11 @@ public abstract class ComAbstract {
 		return tmp;
 	}
 
-	protected final void supply(PowerUserAdapter user, Power power) {
+	protected final void supply(PowerUser user, Power power) {
 		user.supply(power);
 	}
 
-	protected final Object validate(PowerOption option, String value) {
+	protected final Object validate(PowerOption<?> option, String value) {
 		if (option.getDefaultValue() instanceof Boolean
 				&& (value.equalsIgnoreCase("false") || value.equalsIgnoreCase("true"))) {
 			return Boolean.parseBoolean(value);

@@ -29,6 +29,7 @@ import org.bukkit.util.Vector;
 
 import me.sirrus86.s86powers.powers.Power;
 import me.sirrus86.s86powers.powers.PowerManifest;
+import me.sirrus86.s86powers.powers.PowerOption;
 import me.sirrus86.s86powers.powers.PowerStat;
 import me.sirrus86.s86powers.powers.PowerType;
 import me.sirrus86.s86powers.tools.PowerTools;
@@ -43,9 +44,9 @@ public final class Trickshot extends Power {
 	private Map<Entity, Integer> arrows;
 	private Map<PowerUser, LivingEntity> targets;
 	
-	private double maxDist, maxAngle;
-	private boolean targetAnimals, targetMonsters, targetPlayers, targetVillagers;
-	private long targetDelay;
+	private PowerOption<Double> maxDist, maxAngle;
+	private PowerOption<Boolean> targetAnimals, targetMonsters, targetPlayers, targetVillagers;
+	private PowerOption<Long> targetDelay;
 	private PowerStat targetsHit;
 	
 	@Override
@@ -101,11 +102,11 @@ public final class Trickshot extends Power {
 					double angle = dirVelocity.angle(dirToTarget);
 					double newSpeed = 0.9D * speed + 0.14D;
 					Vector newVelocity;
-					if (angle < maxAngle) {
+					if (angle < getOption(maxAngle)) {
 						newVelocity = dirVelocity.clone().multiply(newSpeed);
 					}
 					else {
-						Vector newDir = dirVelocity.clone().multiply((angle - maxAngle) / angle).add(dirToTarget.clone().multiply(maxAngle / angle));
+						Vector newDir = dirVelocity.clone().multiply((angle - getOption(maxAngle)) / angle).add(dirToTarget.clone().multiply(getOption(maxAngle) / angle));
 						newDir.normalize();
 						newVelocity = newDir.clone().multiply(newSpeed);
 					}
@@ -123,7 +124,7 @@ public final class Trickshot extends Power {
 			@Override
 			public void run() {
 				if (aiming.containsKey(user)) {
-					LivingEntity target = user.getTargetEntity(LivingEntity.class, maxDist);
+					LivingEntity target = user.getTargetEntity(LivingEntity.class, user.getOption(maxDist));
 					if (target != null) {
 						if (targets.containsKey(user)
 								&& targets.get(user) != target) {
@@ -172,7 +173,7 @@ public final class Trickshot extends Power {
 				&& event.getItem() != null
 				&& event.getItem().getType() == Material.BOW
 				&& event.getAction().name().startsWith("RIGHT")) {
-			aiming.put(user, runTaskLater(targetTask(user), PowerTime.toTicks(targetDelay)).getTaskId());
+			aiming.put(user, runTaskLater(targetTask(user), PowerTime.toTicks(user.getOption(targetDelay))).getTaskId());
 		}
 	}
 	
@@ -198,20 +199,21 @@ public final class Trickshot extends Power {
 								return entity instanceof LivingEntity
 										&& entity != arrow
 										&& entity != user.getPlayer()
-										&& (targetAnimals || !(entity instanceof Animals))
-										&& (targetMonsters || !(entity instanceof Monster))
-										&& (targetPlayers || !(entity instanceof Player))
-										&& (targetVillagers || !(entity instanceof AbstractVillager));
+										&& (user.getOption(targetAnimals) || !(entity instanceof Animals))
+										&& (user.getOption(targetMonsters) || !(entity instanceof Monster))
+										&& (user.getOption(targetPlayers) || !(entity instanceof Player))
+										&& (user.getOption(targetVillagers) || !(entity instanceof AbstractVillager));
 							};
 							LivingEntity target = null;
 							Vector direction = null;
-							List<Entity> entities = arrow.getNearbyEntities(maxDist / 3.0D, maxDist / 3.0D, maxDist / 3.0D);
+							double getMaxDist = user.getOption(maxDist);
+							List<Entity> entities = arrow.getNearbyEntities(getMaxDist / 3.0D, getMaxDist / 3.0D, getMaxDist / 3.0D);
 							Collections.shuffle(entities);
 							for (Entity entity : entities) {
 								if (entity instanceof LivingEntity) {
 									Location targetLoc = entity.getLocation().clone();
 									direction = targetLoc.subtract(arrow.getLocation()).toVector().normalize();
-									target = PowerTools.getTargetEntity(LivingEntity.class, arrow.getLocation(), direction, maxDist / 3.0D, pred);
+									target = PowerTools.getTargetEntity(LivingEntity.class, arrow.getLocation(), direction, getMaxDist / 3.0D, pred);
 									if (target != null) {
 										break;
 									}

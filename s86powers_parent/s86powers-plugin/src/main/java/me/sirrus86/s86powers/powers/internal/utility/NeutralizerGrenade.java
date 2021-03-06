@@ -15,6 +15,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 import me.sirrus86.s86powers.events.PowerUseEvent;
 import me.sirrus86.s86powers.powers.Power;
 import me.sirrus86.s86powers.powers.PowerManifest;
+import me.sirrus86.s86powers.powers.PowerOption;
 import me.sirrus86.s86powers.powers.PowerType;
 import me.sirrus86.s86powers.tools.PowerTools;
 import me.sirrus86.s86powers.users.PowerUser;
@@ -27,8 +28,8 @@ public final class NeutralizerGrenade extends Power {
 	
 	private Map<Snowball, Integer> gList;
 	
-	private long nDur;
-	private double range;
+	private PowerOption<Long> nDur;
+	private PowerOption<Double> range;
 	
 	@Override
 	protected void onEnable() {
@@ -58,7 +59,7 @@ public final class NeutralizerGrenade extends Power {
 			event.consumeItem();
 			Snowball grenade = user.getPlayer().launchProjectile(Snowball.class);
 			gList.put(grenade, runTaskTimer(sparkle(grenade), 0L, 1L).getTaskId());
-			PowerTools.addDisguise(grenade, item);
+			PowerTools.addDisguise(grenade, getRequiredItem());
 		}
 	}
 	
@@ -67,9 +68,9 @@ public final class NeutralizerGrenade extends Power {
 		if (gList.containsKey(event.getEntity())) {
 			cancelTask(gList.get(event.getEntity()));
 			PowerTools.fakeExplosion(event.getEntity().getLocation(), 1);
-			for (Player player : PowerTools.getNearbyEntities(Player.class, event.getEntity().getLocation(), range)) {
+			for (Player player : PowerTools.getNearbyEntities(Player.class, event.getEntity().getLocation(), getOption(range))) {
 				PowerUser user = getUser(player);
-				user.setNeutralizedByPower(this, nDur);
+				user.setNeutralizedByPower(this, getOption(nDur));
 			}
 		}
 	}

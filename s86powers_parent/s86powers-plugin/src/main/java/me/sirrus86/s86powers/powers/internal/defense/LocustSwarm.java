@@ -29,6 +29,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 import me.sirrus86.s86powers.events.PowerUseEvent;
 import me.sirrus86.s86powers.powers.Power;
 import me.sirrus86.s86powers.powers.PowerManifest;
+import me.sirrus86.s86powers.powers.PowerOption;
 import me.sirrus86.s86powers.powers.PowerStat;
 import me.sirrus86.s86powers.powers.PowerType;
 import me.sirrus86.s86powers.tools.PowerTools;
@@ -47,11 +48,11 @@ public final class LocustSwarm extends Power {
 	
 	private Map<PowerUser, Set<Swarm>> swarms;
 	
-	private boolean infestOnly;
-	private long lifespan;
+	private PowerOption<Boolean> infestOnly;
+	private PowerOption<Long> lifespan;
 	private PowerStat summonCount;
-	private int summonMax;
-	private double summonRad;
+	private PowerOption<Integer> summonMax;
+	private PowerOption<Double> summonRad;
 	
 	@Override
 	protected void onEnable() {
@@ -78,7 +79,7 @@ public final class LocustSwarm extends Power {
 		summonRad = option("summon-radius", 10.0D, "Radius at which silverfish are summoned.");
 		summonCount = stat("summon-count", 100, "Silverfish summoned",
 				"Can now mine infested stone using a Silk Touch pickaxe. Left-clicking while holding a stack of infested stone in your main hand will cause the entire stack to hatch.");
-		supplies(item);
+		supplies(getRequiredItem());
 	}
 	
 	@EventHandler (ignoreCancelled = true)
@@ -111,7 +112,7 @@ public final class LocustSwarm extends Power {
 				ItemStack item = event.getItem();
 				int count = item.getAmount();
 				Map<Silverfish, Material> sList = new HashMap<>();
-				for (int i = 0; i < Math.min(count, summonMax); i ++) {
+				for (int i = 0; i < Math.min(count, user.getOption(summonMax)); i ++) {
 					Silverfish sfish = user.getPlayer().getWorld().spawn(user.getPlayer().getLocation(), Silverfish.class);
 					sList.put(sfish, item.getType());
 					item.setAmount(item.getAmount() - 1);
@@ -122,7 +123,7 @@ public final class LocustSwarm extends Power {
 					swarms.put(user, new HashSet<>());
 				}
 				swarms.get(user).add(swarm);
-				user.setCooldown(this, cooldown);
+				user.setCooldown(this, user.getOption(cooldown));
 			}
 			else {
 				user.showCooldown(this);
@@ -152,7 +153,7 @@ public final class LocustSwarm extends Power {
 					swarms.put(user, new HashSet<>());
 				}
 				swarms.get(user).add(swarm);
-				user.setCooldown(this, cooldown);
+				user.setCooldown(this, user.getOption(cooldown));
 			}
 			else {
 				user.showCooldown(this);
@@ -183,10 +184,10 @@ public final class LocustSwarm extends Power {
 		
 		public Swarm(PowerUser owner, Location loc) {
 			this.owner = owner;
-			for (int i = 0; i < summonRad; i ++) {
+			for (int i = 0; i < owner.getOption(summonRad); i ++) {
 				for (Block block : PowerTools.getNearbyBlocks(loc, i, sBlocks)) {
-					if (sList.size() < summonMax
-							&& (!infestOnly || block.getType().name().startsWith("INFESTED"))) {
+					if (sList.size() < owner.getOption(summonMax)
+							&& (!owner.getOption(infestOnly) || block.getType().name().startsWith("INFESTED"))) {
 						Material mat = block.getState().getType();
 						loc.getWorld().playEffect(block.getLocation(), Effect.STEP_SOUND, block.getType());
 						block.setType(Material.AIR);
@@ -229,7 +230,7 @@ public final class LocustSwarm extends Power {
 				public void run() {
 					killOff();
 				}
-			}, PowerTime.toTicks(lifespan)).getTaskId();
+			}, PowerTime.toTicks(owner.getOption(lifespan))).getTaskId();
 		}
 		
 		@EventHandler (ignoreCancelled = true)
@@ -241,7 +242,7 @@ public final class LocustSwarm extends Power {
 				for (Silverfish fish : sList.keySet()) {
 					if (fish.isValid()
 							&& fish.getWorld().equals(sfish.getWorld())
-							&& fish.getLocation().distanceSquared(sfish.getLocation()) < summonRad * summonRad) {
+							&& fish.getLocation().distanceSquared(sfish.getLocation()) < owner.getOption(summonRad) * owner.getOption(summonRad)) {
 						sList.put(sfish, Material.STONE);
 						PowerTools.setTamed(sfish, owner);
 						owner.increaseStat(summonCount, 1);

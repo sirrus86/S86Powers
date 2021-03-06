@@ -26,6 +26,7 @@ import org.bukkit.loot.Lootable;
 
 import me.sirrus86.s86powers.powers.Power;
 import me.sirrus86.s86powers.powers.PowerManifest;
+import me.sirrus86.s86powers.powers.PowerOption;
 import me.sirrus86.s86powers.powers.PowerStat;
 import me.sirrus86.s86powers.powers.PowerType;
 import me.sirrus86.s86powers.tools.PowerTools;
@@ -39,8 +40,8 @@ public final class Pickpocket extends Power {
 
 	private Set<LivingEntity> noDrop;
 	private Set<PowerUser> stealth;
-	private double brChance;
-	private boolean dontDrop, goToInv, lookAtThief, repeat;
+	private PowerOption<Double> brChance;
+	private PowerOption<Boolean> dontDrop, goToInv, lookAtThief, repeat;
 	private PowerStat thefts;
 	private String caught, detected, failedToSteal, stealthBroken, triedToSteal;
 	
@@ -122,7 +123,7 @@ public final class Pickpocket extends Power {
 	@EventHandler
 	private void onDeath(EntityDeathEvent event) {
 		if (noDrop.contains(event.getEntity())
-				&& dontDrop) {
+				&& getOption(dontDrop)) {
 			event.getDrops().clear();
 		}
 	}
@@ -153,13 +154,13 @@ public final class Pickpocket extends Power {
 				if (!noDrop.contains(target)) {
 					ItemStack drop = getDrop(target, user.getPlayer());
 					if (drop != null) {
-						if (goToInv) {
+						if (user.getOption(goToInv)) {
 							user.addItems(drop);
 						}
 						else {
 							target.getWorld().dropItemNaturally(target.getLocation(), drop);
 						}
-						if (random.nextDouble() < (brChance / 100.0D)
+						if (random.nextDouble() < (user.getOption(brChance) / 100.0D)
 								&& !user.hasStatMaxed(thefts)) {
 							if (target instanceof Monster) {
 								if (target instanceof PigZombie) {
@@ -170,7 +171,7 @@ public final class Pickpocket extends Power {
 							else if (target instanceof Player) {
 								PowerUser victim = getUser((Player) target);
 								victim.sendMessage(triedToSteal.replace("[name]", user.getName()));
-								if (lookAtThief) {
+								if (user.getOption(lookAtThief)) {
 									PowerTools.setLook((Player) target, user.getPlayer().getEyeLocation());
 								}
 							}
@@ -178,11 +179,11 @@ public final class Pickpocket extends Power {
 							removeStealth(user);
 						}
 						if (!(target instanceof Player)
-								&& !repeat) {
+								&& !user.getOption(repeat)) {
 							noDrop.add(target);
 						}
 						user.increaseStat(thefts, 1);
-						user.setCooldown(this, cooldown);
+						user.setCooldown(this, user.getOption(cooldown));
 					}
 					else {
 						user.sendMessage(failedToSteal);

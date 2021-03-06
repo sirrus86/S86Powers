@@ -13,6 +13,7 @@ public enum HelpTopic {
 	
 	SELF_ADD(S86Permission.SELF_ADD, "/powers add <power>"),
 	SELF_INFO(S86Permission.SELF_INFO, "/powers info"),
+	SELF_OPTION(S86Permission.SELF_OPTION, "/powers option [#|power] [option] [value]"),
 	SELF_REMOVE(S86Permission.SELF_REMOVE, "/powers remove <power>"),
 	SELF_STATS(S86Permission.SELF_STATS, "/powers stats [power]"),
 	SELF_SUPPLY(S86Permission.SELF_SUPPLY, "/powers supply [power]"),
@@ -39,6 +40,7 @@ public enum HelpTopic {
 	PLAYER_HELP(S86Permission.PLAYER_HELP, "/powers player help [#]"),
 	PLAYER_INFO(S86Permission.PLAYER_INFO, "/powers player <player> info"),
 	PLAYER_LIST(S86Permission.PLAYER_LIST, "/powers player list [#]"),
+	PLAYER_OPTION(S86Permission.PLAYER_OPTION, "/powers player option [#|power] [option] [value]"),
 	PLAYER_REMOVE(S86Permission.PLAYER_REMOVE, "/powers player <player> remove <power>"),
 	PLAYER_STATS(S86Permission.PLAYER_STATS, "/powers player <player> stats [power]"),
 	PLAYER_SUPPLY(S86Permission.PLAYER_SUPPLY, "/powers player <player> supply [power]"),

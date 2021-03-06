@@ -14,6 +14,7 @@ import org.bukkit.inventory.ItemStack;
 import me.sirrus86.s86powers.events.PowerUseEvent;
 import me.sirrus86.s86powers.powers.Power;
 import me.sirrus86.s86powers.powers.PowerManifest;
+import me.sirrus86.s86powers.powers.PowerOption;
 import me.sirrus86.s86powers.powers.PowerType;
 import me.sirrus86.s86powers.tools.PowerTools;
 import me.sirrus86.s86powers.users.PowerUser;
@@ -25,8 +26,8 @@ import me.sirrus86.s86powers.utils.PowerTime;
 public final class Decoy extends Power {
 
 	private Map<LivingEntity, PowerUser> decoys;
-	private boolean consume;
-	private double range;
+	private PowerOption<Boolean> consume;
+	private PowerOption<Double> range;
 	
 	@Override
 	protected void onEnable() {
@@ -48,23 +49,23 @@ public final class Decoy extends Power {
 		cooldown = option("cooldown", PowerTime.toMillis(0), "Amount of time before power can be used again.");
 		item = option("item", new ItemStack(Material.BLAZE_ROD), "Item used to create decoys.");
 		range = option("range", 5.0D, "How far away user can be to turn an entity into a decoy.");
-		supplies(item);
+		supplies(getRequiredItem());
 	}
 	
 	@EventHandler(ignoreCancelled = true)
 	private void onUse(PowerUseEvent event) {
 		if (event.getPower() == this) {
 			PowerUser user = event.getUser();
-			LivingEntity target = user.getTargetEntity(LivingEntity.class, range);
+			LivingEntity target = user.getTargetEntity(LivingEntity.class, user.getOption(range));
 			if (target != null
 					&& !(target instanceof Player)) {
 				if (user.getCooldown(this) <= 0) {
 					user.getPlayer().playEffect(EntityEffect.ENTITY_POOF);
 					PowerTools.addDisguise(target, user.getPlayer());
-					if (consume) {
+					if (user.getOption(consume)) {
 						event.consumeItem();
 					}
-					user.setCooldown(this, cooldown);
+					user.setCooldown(this, user.getOption(cooldown));
 					decoys.put(target, user);
 				}
 				else {

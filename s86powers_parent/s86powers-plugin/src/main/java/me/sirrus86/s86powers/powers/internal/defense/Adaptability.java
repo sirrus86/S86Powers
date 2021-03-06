@@ -14,6 +14,7 @@ import org.bukkit.inventory.ItemStack;
 
 import me.sirrus86.s86powers.powers.Power;
 import me.sirrus86.s86powers.powers.PowerManifest;
+import me.sirrus86.s86powers.powers.PowerOption;
 import me.sirrus86.s86powers.powers.PowerType;
 import me.sirrus86.s86powers.users.PowerUser;
 import me.sirrus86.s86powers.utils.PowerTime;
@@ -26,10 +27,11 @@ public final class Adaptability extends Power {
 
 	private Map<PowerUser, AdaptUser> aUsers;
 	
-	private boolean noArmor;
-	private double dmgIncr, incrAmt, initAmt, maxAmt;
+	private double incrAmt;
+	private PowerOption<Boolean> noArmor;
+	private PowerOption<Double> dmgIncr, initAmt, maxAmt;
+	private PowerOption<Integer> steps;
 	private String nowAdapting, resistIncrease, preventArmor;
-	private int steps;
 	
 	@Override
 	protected void onEnable() {
@@ -52,26 +54,26 @@ public final class Adaptability extends Power {
 		nowAdapting = locale("message.now-adapting", ChatColor.YELLOW + "Now adapting to [type] damage.");
 		preventArmor = locale("message.prevents-armor", ChatColor.RED + "Your power prevents you from wearing armor.");
 		resistIncrease = locale("message.resistance-increase", ChatColor.YELLOW + "Resistance to [type] increased to [amount]%.");
-		incrAmt = (maxAmt - initAmt) / steps;
 	}
 	
 	private double adapt(PowerUser user, AdaptType type) {
 		double amt = 1.0D;
 		if (aUsers.get(user).getType() != type) {
-			amt = dmgIncr;
+			amt = user.getOption(dmgIncr);
 			if (user.getCooldown(this) <= 0L) {
 				user.sendMessage(nowAdapting.replace("[type]", type.name().toLowerCase()));
-				aUsers.get(user).setType(type).setAmount(initAmt);
-				user.setCooldown(this, cooldown);
+				aUsers.get(user).setType(type).setAmount(user.getOption(initAmt));
+				user.setCooldown(this, user.getOption(cooldown));
 			}
 		}
 		else {
 			amt = aUsers.get(user).getAmount();
 			if (user.getCooldown(this) <= 0L
-					&& aUsers.get(user).getAmount() < maxAmt) {
+					&& aUsers.get(user).getAmount() < user.getOption(maxAmt)) {
+				incrAmt = (user.getOption(maxAmt) - user.getOption(initAmt)) / user.getOption(steps);
 				aUsers.get(user).increaseAmount(incrAmt);
 				user.sendMessage(resistIncrease.replace("[type]", type.name().toLowerCase()).replace("[amount]", Double.toString(aUsers.get(user).getAmount())));
-				user.setCooldown(this, cooldown);
+				user.setCooldown(this, user.getOption(cooldown));
 			}
 		}
 		return (amt <= 100.0D ? (100.0D - amt) : amt) / 100.0D;
@@ -82,7 +84,7 @@ public final class Adaptability extends Power {
 		if (event.getPlayer() instanceof Player) {
 			PowerUser user = getUser((Player) event.getPlayer());
 			if (user.allowPower(this)
-					&& noArmor
+					&& user.getOption(noArmor)
 					&& user.getPlayer().getInventory().getArmorContents() != null) {
 				boolean hadArmor = false;
 				for (ItemStack armor : user.getPlayer().getInventory().getArmorContents()) {

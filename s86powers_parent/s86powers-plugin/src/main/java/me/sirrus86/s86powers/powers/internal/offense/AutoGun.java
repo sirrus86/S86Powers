@@ -38,6 +38,7 @@ import org.bukkit.util.Vector;
 import me.sirrus86.s86powers.events.PowerUseEvent;
 import me.sirrus86.s86powers.powers.Power;
 import me.sirrus86.s86powers.powers.PowerManifest;
+import me.sirrus86.s86powers.powers.PowerOption;
 import me.sirrus86.s86powers.powers.PowerStat;
 import me.sirrus86.s86powers.powers.PowerType;
 import me.sirrus86.s86powers.tools.PowerTools;
@@ -50,14 +51,14 @@ public final class AutoGun extends Power {
 
 	private Map<PowerUser, List<Turret>> turrets;
 
-	private int arrowsPerVolley, maxTurrets;
+	private PowerOption<Integer> arrowsPerVolley, maxTurrets;
 	private final MultipleFacing baseData = (MultipleFacing) Material.DARK_OAK_FENCE.createBlockData();
 	private final Directional cartData = (Directional) Material.DISPENSER.createBlockData();
-	private boolean consumeItem, ignoreInvis;
+	private PowerOption<Boolean> consumeItem, ignoreInvis;
 	private final Vector cartCenter = new Vector(0.0D, 0.8D, 0.0D);
 	private PowerStat dmgByTurrets;
-	private long fireDelay;
-	private double range;
+	private PowerOption<Long> fireDelay;
+	private PowerOption<Double> range;
 
 	@Override
 	protected void onEnable() {
@@ -86,7 +87,7 @@ public final class AutoGun extends Power {
 		item = option("item", new ItemStack(Material.DISPENSER), "Item used to deploy turrets.");
 		maxTurrets = option("maximum-turrets", 3, "Maximum number of turrets that can be deployed at one time.");
 		range = option("turret-range", 25.0D, "Maximum range which turrets can detect targets.");
-		supplies(new ItemStack(item.getType(), item.getMaxStackSize() / 4));
+		supplies(new ItemStack(getRequiredItem().getType(), getRequiredItem().getMaxStackSize() / 4));
 	}
 	
 	@EventHandler (ignoreCancelled = true)
@@ -101,7 +102,7 @@ public final class AutoGun extends Power {
 					turrets.put(event.getUser(), new ArrayList<Turret>());
 				}
 				if ((!event.getUser().hasStatMaxed(dmgByTurrets) && turrets.get(event.getUser()).size() >= 1)
-						|| (event.getUser().hasStatMaxed(dmgByTurrets) && turrets.get(event.getUser()).size() >= maxTurrets)) {
+						|| (event.getUser().hasStatMaxed(dmgByTurrets) && turrets.get(event.getUser()).size() >= event.getUser().getOption(maxTurrets))) {
 					turrets.get(event.getUser()).get(0).destroy();
 				}
 				for (BlockFace blockFace : baseData.getAllowedFaces()) {
@@ -116,8 +117,8 @@ public final class AutoGun extends Power {
 				cart.setDisplayBlockData(cartData);
 				Turret turret = new Turret(event.getUser(), cart, base);
 				turrets.get(event.getUser()).add(turret);
-				event.getUser().setCooldown(this, cooldown);
-				if (consumeItem) {
+				event.getUser().setCooldown(this, event.getUser().getOption(cooldown));
+				if (event.getUser().getOption(consumeItem)) {
 					event.consumeItem();
 				}
 			}
@@ -158,7 +159,7 @@ public final class AutoGun extends Power {
 				if (target != null) {
 					lookAt(target.getEyeLocation());
 					fireVolley(target);
-					task = getInstance().runTaskLater(cycleActions, PowerTime.toTicks(fireDelay)).getTaskId();
+					task = getInstance().runTaskLater(cycleActions, PowerTime.toTicks(owner.getOption(fireDelay))).getTaskId();
 				}
 				else {
 					randomLook();
@@ -185,14 +186,15 @@ public final class AutoGun extends Power {
 		}
 		
 		private LivingEntity findTarget() {
-			List<Entity> nearby = cart.getNearbyEntities(range, range, range);
+			double getRange = owner.getOption(range);
+			List<Entity> nearby = cart.getNearbyEntities(getRange, getRange, getRange);
 			Collections.shuffle(nearby);
 			for (Entity entity : nearby) {
 				if (entity instanceof LivingEntity
 						&& entity != owner.getPlayer()) {
 					LivingEntity lEntity = (LivingEntity) entity;
 					if (haveLineOfSight(lEntity)) {
-						if (!ignoreInvis
+						if (!owner.getOption(ignoreInvis)
 								|| !lEntity.hasPotionEffect(PotionEffectType.INVISIBILITY)) {
 							lookAt(lEntity.getEyeLocation());
 							return lEntity;
@@ -206,7 +208,7 @@ public final class AutoGun extends Power {
 		private void fireVolley(LivingEntity entity) {
 			final Vector direction = PowerTools.getDirection(cart.getLocation(), entity.getEyeLocation());
 			final float arrowPower = (float) (cart.getLocation().distance(target.getEyeLocation()) * 0.1F);
-			for (int i = 0; i < arrowsPerVolley; i ++) {
+			for (int i = 0; i < owner.getOption(arrowsPerVolley); i ++) {
 				runTaskLater(new BukkitRunnable() {
 					
 					private Vector newDir = direction;
@@ -228,7 +230,7 @@ public final class AutoGun extends Power {
 		
 		private boolean haveLineOfSight(LivingEntity entity) {
 			Vector direction = PowerTools.getDirection(cart.getLocation().add(cartCenter), entity.getLocation());
-			return PowerTools.getTargetEntity(LivingEntity.class, cart.getLocation().clone().add(direction).add(cartCenter), direction, range, predEntity) != null;
+			return PowerTools.getTargetEntity(LivingEntity.class, cart.getLocation().clone().add(direction).add(cartCenter), direction, owner.getOption(range), predEntity) != null;
 		}
 		
 		private void lookAt(Location loc) {
@@ -244,9 +246,10 @@ public final class AutoGun extends Power {
 		}
 		
 		private void randomLook() {
-			double randX = random.nextDouble() * random.nextInt((int) range) - range / 2.0D,
-					randY = random.nextDouble() * random.nextInt((int) range) - range / 2.0D,
-					randZ = random.nextDouble() * random.nextInt((int) range) - range / 2.0D;
+			double getRange = owner.getOption(range);
+			double randX = random.nextDouble() * random.nextInt((int) getRange) - getRange / 2.0D,
+					randY = random.nextDouble() * random.nextInt((int) getRange) - getRange / 2.0D,
+					randZ = random.nextDouble() * random.nextInt((int) getRange) - getRange / 2.0D;
 			lookAt(new Location(cart.getWorld(), cart.getLocation().getX() + randX, cart.getLocation().getY() + randY, cart.getLocation().getZ() + randZ));
 		}
 		

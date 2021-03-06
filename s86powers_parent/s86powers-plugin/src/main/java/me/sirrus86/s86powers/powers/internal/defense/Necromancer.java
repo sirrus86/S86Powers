@@ -36,6 +36,7 @@ import com.google.common.collect.Sets;
 import me.sirrus86.s86powers.events.PowerUseEvent;
 import me.sirrus86.s86powers.powers.Power;
 import me.sirrus86.s86powers.powers.PowerManifest;
+import me.sirrus86.s86powers.powers.PowerOption;
 import me.sirrus86.s86powers.powers.PowerStat;
 import me.sirrus86.s86powers.powers.PowerType;
 import me.sirrus86.s86powers.tools.PowerTools;
@@ -52,9 +53,9 @@ public final class Necromancer extends Power {
 	private Set<Aura> auras;
 	private Map<Monster, PowerUser> minions;
 	
-	private long auraDur;
-	private int auraRad, maxMinions, wkLvl;
-	private boolean noIgnite;
+	private PowerOption<Long> auraDur;
+	private PowerOption<Integer> auraRad, maxMinions, wkLvl;
+	private PowerOption<Boolean> noIgnite;
 	private PowerStat summons;
 	
 	@Override
@@ -94,7 +95,7 @@ public final class Necromancer extends Power {
 		noIgnite = option("prevent-ignition", true, "Whether to prevent undead from igniting in sunlight.");
 		summons = stat("undead-reanimated", 75, "Undead reanimated", "Players killed while in your aura will immediately be resurrected as an undead wearing their equipment.");
 		wkLvl = option("weakness-amplifier", 4, "Amplification of weakness effect on living entities within an aura.");
-		supplies(item, new ItemStack(item.getType(), item.getMaxStackSize()));
+		supplies(new ItemStack(getRequiredItem().getType(), getRequiredItem().getMaxStackSize()));
 	}
 	
 	private boolean hasTooManyMinions(PowerUser user) {
@@ -104,14 +105,16 @@ public final class Necromancer extends Power {
 					&&entry.getKey().isValid()) {
 				i ++;
 			}
-			if (i >= maxMinions) return true;
+			if (i >= user.getOption(maxMinions)) {
+				return true;
+			}
 		}
 		return false;
 	}
 	
 	@EventHandler(ignoreCancelled = true)
 	private void onIgnite(EntityCombustEvent event) {
-		if (noIgnite
+		if (getOption(noIgnite)
 				&& !(event instanceof EntityCombustByBlockEvent)
 				&& !(event instanceof EntityCombustByEntityEvent)
 				&& minions.containsKey(event.getEntity())) {
@@ -197,7 +200,7 @@ public final class Necromancer extends Power {
 			if (user.allowPower(this)) {
 				if (user.getCooldown(this) <= 0) {
 					auras.add(new Aura(user));
-					user.setCooldown(this, cooldown);
+					user.setCooldown(this, user.getOption(cooldown));
 				}
 				else {
 					user.showCooldown(this);
@@ -217,7 +220,7 @@ public final class Necromancer extends Power {
 		public Aura(PowerUser user) {
 			this.user = user;
 			loc = user.getPlayer().getEyeLocation();
-			time = System.currentTimeMillis() + auraDur;
+			time = System.currentTimeMillis() + user.getOption(auraDur);
 			task = runTaskTimer(createAura, 0L, 5L).getTaskId();
 		}
 		
@@ -239,7 +242,7 @@ public final class Necromancer extends Power {
 			@Override
 			public void run() {
 				int j = random.nextInt(5);
-				if (i <= auraRad) {
+				if (i <= user.getOption(auraRad)) {
 					blocks.addAll(PowerTools.getNearbyBlocks(loc, i));
 					i ++;
 				}
@@ -270,7 +273,7 @@ public final class Necromancer extends Power {
 				for (LivingEntity entity : PowerTools.getNearbyEntities(LivingEntity.class, loc, i)) {
 					if (!(entity instanceof Skeleton || entity instanceof Zombie)
 							&& entity != user.getPlayer()) {
-						entity.addPotionEffect(new PotionEffect(PotionEffectType.WEAKNESS, 20, wkLvl));
+						entity.addPotionEffect(new PotionEffect(PotionEffectType.WEAKNESS, 20, user.getOption(wkLvl)));
 					}
 				}
 				if (System.currentTimeMillis() >= time) {

@@ -17,6 +17,7 @@ import org.bukkit.inventory.ItemStack;
 import me.sirrus86.s86powers.events.PowerUseEvent;
 import me.sirrus86.s86powers.powers.Power;
 import me.sirrus86.s86powers.powers.PowerManifest;
+import me.sirrus86.s86powers.powers.PowerOption;
 import me.sirrus86.s86powers.powers.PowerType;
 import me.sirrus86.s86powers.tools.PowerTools;
 import me.sirrus86.s86powers.users.PowerUser;
@@ -29,9 +30,10 @@ public final class Shuriken extends Power {
 
 	private Map<Snowball, PowerUser> shurikens;
 	
-	private double damage;
+	private PowerOption<Double> damage;
+	private PowerOption<Boolean> pArmor, pBlock;
 	@SuppressWarnings("unused")
-	private boolean pArmor, pBlock, pBoth, pEither;
+	private boolean pBoth, pEither;
 	
 	@Override
 	protected void onEnable() {
@@ -45,9 +47,9 @@ public final class Shuriken extends Power {
 		item = option("item", new ItemStack(Material.FLINT), "Item to be thrown as a shuriken.");
 		pArmor = option("penetrate-armor", false, "Whether shurikens should penetrate armor.");
 		pBlock = option("penetrate-blocking", false, "Whether shurikens should penetrate blocking.");
-		pBoth = pArmor && pBlock;
-		pEither = pArmor || pBlock;
-		supplies(new ItemStack(item.getType(), item.getMaxStackSize()));
+		pBoth = getOption(pArmor) && getOption(pBlock);
+		pEither = getOption(pArmor) || getOption(pBlock);
+		supplies(new ItemStack(getRequiredItem().getType(), getRequiredItem().getMaxStackSize()));
 	}
 	
 	private boolean hasArmor(LivingEntity entity) {
@@ -66,15 +68,16 @@ public final class Shuriken extends Power {
 		if (shurikens.containsKey(event.getDamager())
 				&& event.getEntity() instanceof LivingEntity) {
 			Snowball shuriken = (Snowball) event.getDamager();
+			PowerUser user = shurikens.get(shuriken);
 			LivingEntity target = (LivingEntity) event.getEntity();
-			if ((!pArmor && hasArmor(target))
-					|| (!pBlock && target instanceof Player && ((Player) target).isBlocking())) {
+			if ((!user.getOption(pArmor) && hasArmor(target))
+					|| (!user.getOption(pBlock) && target instanceof Player && ((Player) target).isBlocking())) {
 				target.getWorld().playSound(shuriken.getLocation(), Sound.BLOCK_ANVIL_LAND, 1.0F, 1.0F);
-				target.getWorld().dropItemNaturally(shuriken.getLocation(), item);
+				target.getWorld().dropItemNaturally(shuriken.getLocation(), getRequiredItem());
 				event.setCancelled(true);
 			}
 			else {
-				event.setDamage(damage);
+				event.setDamage(user.getOption(damage));
 			}
 			shurikens.remove(shuriken);
 			shuriken.remove();
@@ -91,7 +94,7 @@ public final class Shuriken extends Power {
 				Snowball shuriken = user.getPlayer().launchProjectile(Snowball.class);
 				shuriken.setVelocity(user.getPlayer().getEyeLocation().getDirection().clone().normalize().multiply(3));
 				shurikens.put(shuriken, user);
-				PowerTools.addDisguise(shuriken, item);
+				PowerTools.addDisguise(shuriken, getRequiredItem());
 			}
 		}
 	}
@@ -100,7 +103,7 @@ public final class Shuriken extends Power {
 	private void onHit(ProjectileHitEvent event) {
 		if (shurikens.containsKey(event.getEntity())) {
 			Snowball shuriken = (Snowball) event.getEntity();
-			shuriken.getWorld().dropItemNaturally(shuriken.getLocation(), item);
+			shuriken.getWorld().dropItemNaturally(shuriken.getLocation(), getRequiredItem());
 			shurikens.remove(shuriken);
 			shuriken.remove();
 		}

@@ -16,6 +16,7 @@ import com.google.common.collect.Sets;
 
 import me.sirrus86.s86powers.powers.Power;
 import me.sirrus86.s86powers.powers.PowerManifest;
+import me.sirrus86.s86powers.powers.PowerOption;
 import me.sirrus86.s86powers.powers.PowerType;
 import me.sirrus86.s86powers.tools.PowerTools;
 import me.sirrus86.s86powers.users.PowerUser;
@@ -27,8 +28,8 @@ public final class Lumberjack extends Power {
 
 	private List<Block> blocks;
 	private final Set<Material> plantable = Sets.newHashSet(Material.DIRT, Material.GRASS);
-	private boolean doLeaves, doThreshold, replant, reqAxe;
-	private int threshold;
+	private PowerOption<Boolean> doLeaves, doThreshold, replant, reqAxe;
+	private PowerOption<Integer> threshold;
 	
 	@Override
 	protected void onEnable() {
@@ -78,7 +79,7 @@ public final class Lumberjack extends Power {
 		if (event.getPlayer() != null) {
 			PowerUser user = getUser(event.getPlayer());
 			if (user.allowPower(this)
-					&& (PowerTools.isAxe(user.getPlayer().getInventory().getItemInMainHand()) || !reqAxe)
+					&& (PowerTools.isAxe(user.getPlayer().getInventory().getItemInMainHand()) || !user.getOption(reqAxe))
 					&& event.getBlock().getType().toString().contains("LOG")) {
 				Block block = event.getBlock();
 				blocks.add(block);
@@ -86,19 +87,19 @@ public final class Lumberjack extends Power {
 				while(blocks.size() > 0) {
 					for (int i = 0; i < blocks.size(); i ++) {
 						Block log = blocks.get(i);
-						if ((log.getType().toString().contains("LOG") || (log.getType().toString().contains("LEAVES") && doLeaves))
+						if ((log.getType().toString().contains("LOG") || (log.getType().toString().contains("LEAVES") && user.getOption(doLeaves)))
 								&& getTreeSpecies(log.getType()) == species) {
 							log.breakNaturally();
 							for (BlockFace face : BlockFace.values()) {
 								if (log.getRelative(face).getType().toString().contains("LOG")
-										|| (log.getRelative(face).getType().toString().contains("LEAVES") && doLeaves)) {
-									if (!doThreshold || blocks.size() < threshold) {
+										|| (log.getRelative(face).getType().toString().contains("LEAVES") && user.getOption(doLeaves))) {
+									if (!user.getOption(doThreshold) || blocks.size() < user.getOption(threshold)) {
 										blocks.add(log.getRelative(face));
 									}
 								}
 								else if (face == BlockFace.DOWN
 										&& plantable.contains(log.getRelative(BlockFace.DOWN).getType())
-										&& replant
+										&& user.getOption(replant)
 										&& species != null) {
 									log.setType(getSapling(species));
 								}

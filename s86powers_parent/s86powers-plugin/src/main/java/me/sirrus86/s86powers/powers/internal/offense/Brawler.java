@@ -17,6 +17,7 @@ import org.bukkit.util.Vector;
 
 import me.sirrus86.s86powers.powers.Power;
 import me.sirrus86.s86powers.powers.PowerManifest;
+import me.sirrus86.s86powers.powers.PowerOption;
 import me.sirrus86.s86powers.powers.PowerStat;
 import me.sirrus86.s86powers.powers.PowerType;
 import me.sirrus86.s86powers.users.PowerUser;
@@ -29,9 +30,9 @@ public final class Brawler extends Power {
 
 	private Map<PowerUser, Long> canUppercut;
 	
-	private double dmgIncr, juggleVert, offHandDef, uppercutVert;
-	private int slowAmp;
-	private long slowDur, uppercutBuffer;
+	private PowerOption<Double> dmgIncr, juggleVert, offHandDef, uppercutVert;
+	private PowerOption<Integer> slowAmp;
+	private PowerOption<Long> slowDur, uppercutBuffer;
 	private PowerStat totalDmg;
 	
 	@Override
@@ -57,17 +58,18 @@ public final class Brawler extends Power {
 			PowerUser user = getUser((Player) event.getDamager());
 			if (user.allowPower(this)
 					&& user.getEquipment(EquipmentSlot.HAND).getType() == Material.AIR) {
-				event.setDamage(event.getDamage() * (dmgIncr / 100.0D));
+				event.setDamage(event.getDamage() * (user.getOption(dmgIncr) / 100.0D));
 				if (user.getPlayer().isSneaking()
 						&& event.getEntity() instanceof LivingEntity) {
-					((LivingEntity) event.getEntity()).addPotionEffect(new PotionEffect(PotionEffectType.SLOW, (int) PowerTime.toTicks(slowDur), slowAmp, false, false, false));
+					((LivingEntity) event.getEntity()).addPotionEffect(new PotionEffect(PotionEffectType.SLOW, (int) PowerTime.toTicks(user.getOption(slowDur)),
+							user.getOption(slowAmp), false, false, false));
 				}
 				else if (canUppercut.containsKey(user)
 						&& System.currentTimeMillis() < canUppercut.get(user)) {
 					runTask(new BukkitRunnable() {
 						@Override
 						public void run() {
-							event.getEntity().setVelocity(new Vector(event.getEntity().getVelocity().getX(), uppercutVert, event.getEntity().getVelocity().getZ()));
+							event.getEntity().setVelocity(new Vector(event.getEntity().getVelocity().getX(), user.getOption(uppercutVert), event.getEntity().getVelocity().getZ()));
 						}
 					});
 				}
@@ -76,7 +78,7 @@ public final class Brawler extends Power {
 					runTask(new BukkitRunnable() {
 						@Override
 						public void run() {
-							event.getEntity().setVelocity(new Vector(event.getEntity().getVelocity().getX(), juggleVert, event.getEntity().getVelocity().getZ()));
+							event.getEntity().setVelocity(new Vector(event.getEntity().getVelocity().getX(), user.getOption(juggleVert), event.getEntity().getVelocity().getZ()));
 						}
 					});
 				}
@@ -89,7 +91,7 @@ public final class Brawler extends Power {
 					&& user.getEquipment(EquipmentSlot.OFF_HAND).getType() == Material.AIR
 					&& event.getEntity() instanceof LivingEntity
 					&& user.hasStatMaxed(totalDmg)) {
-				event.setDamage(event.getDamage() * (offHandDef / 100.0D));
+				event.setDamage(event.getDamage() * (user.getOption(offHandDef) / 100.0D));
 			}
 		}
 	}
@@ -99,7 +101,7 @@ public final class Brawler extends Power {
 		PowerUser user = getUser(event.getPlayer());
 		if (user.allowPower(this)
 				&& !event.isSneaking()) {
-			canUppercut.put(user, System.currentTimeMillis() + uppercutBuffer);
+			canUppercut.put(user, System.currentTimeMillis() + user.getOption(uppercutBuffer));
 		}
 	}
 

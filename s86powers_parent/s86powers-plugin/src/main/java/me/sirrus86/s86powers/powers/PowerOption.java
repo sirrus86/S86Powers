@@ -4,15 +4,17 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-public class PowerOption implements Comparable<PowerOption> {
+public class PowerOption<O> implements Comparable<PowerOption<?>> {
 
 	private final String desc, path;
 	private final Object defValue;
+	private final boolean locked;
 	private final Power power;
 	
-	public PowerOption(Power power, String path, Object defValue, String desc) {
+	public PowerOption(Power power, String path, Object defValue, String desc, boolean locked) {
 		this.defValue = defValue;
 		this.desc = desc;
+		this.locked = locked;
 		this.path = path;
 		this.power = power;
 	}
@@ -32,9 +34,13 @@ public class PowerOption implements Comparable<PowerOption> {
 	public final Power getPower() {
 		return power;
 	}
+	
+	public final boolean isLocked() {
+		return locked;
+	}
 
 	@Override
-	public int compareTo(PowerOption o) {
+	public int compareTo(PowerOption<?> o) {
 		String o1Str = getPath(),
 				o2Str = o.getPath();
 		List<String> tmp = Arrays.asList(o1Str, o2Str);

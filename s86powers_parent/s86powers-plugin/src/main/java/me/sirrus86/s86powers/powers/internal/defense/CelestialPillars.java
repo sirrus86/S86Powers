@@ -25,6 +25,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 import me.sirrus86.s86powers.events.PowerUseEvent;
 import me.sirrus86.s86powers.powers.Power;
 import me.sirrus86.s86powers.powers.PowerManifest;
+import me.sirrus86.s86powers.powers.PowerOption;
 import me.sirrus86.s86powers.powers.PowerStat;
 import me.sirrus86.s86powers.powers.PowerType;
 import me.sirrus86.s86powers.tools.PowerTools;
@@ -40,9 +41,9 @@ public final class CelestialPillars extends Power {
 	private Map<FallingBlock, PowerUser> falling;
 	private Set<FallingBlock> superFalling;
 	
-	private boolean consume;
-	private long pDur;
-	private int pHeight, pRange, sPRange;
+	private PowerOption<Boolean> consume;
+	private PowerOption<Long> pDur;
+	private PowerOption<Integer> pHeight, pRange, sPRange;
 	private PowerStat pillarsSummoned;
 	
 	@Override
@@ -73,37 +74,40 @@ public final class CelestialPillars extends Power {
 		pRange = option("pillar-range", 4, "Distance the pillars are in meters away from the origin point.");
 		sPRange = option("superpower.pillar-range", 8, "Distance the extra pillars are in meters away from the origin point.");
 		pillarsSummoned = stat("pillars-summoned", 60, "Number of pillars summoned", "[act:item]ing the top of the same block creates a second circle of pillars farther away.");
-		supplies(new ItemStack(item.getType(), item.getMaxStackSize() / 4));
+		supplies(new ItemStack(getRequiredItem().getType(), getRequiredItem().getMaxStackSize() / 4));
 	}
 	
 	private void doPillars(final PowerUser user, Block block, boolean isSuper) {
+		int usrPHeight = user.getOption(pHeight),
+				usrPRange = user.getOption(pRange),
+				usrSPRange = user.getOption(sPRange);
 		Block[] blocks;
 		if (isSuper) {
-			blocks = new Block[] {block.getRelative(BlockFace.EAST, sPRange).getRelative(BlockFace.UP),
-					block.getRelative(BlockFace.WEST, sPRange).getRelative(BlockFace.UP),
-					block.getRelative(BlockFace.NORTH_EAST, sPRange / 2).getRelative(BlockFace.NORTH, sPRange / 2).getRelative(BlockFace.UP),
-					block.getRelative(BlockFace.NORTH_WEST, sPRange / 2).getRelative(BlockFace.NORTH, sPRange / 2).getRelative(BlockFace.UP),
-					block.getRelative(BlockFace.SOUTH_EAST, sPRange / 2).getRelative(BlockFace.SOUTH, sPRange / 2).getRelative(BlockFace.UP),
-					block.getRelative(BlockFace.SOUTH_WEST, sPRange / 2).getRelative(BlockFace.SOUTH, sPRange / 2).getRelative(BlockFace.UP)};
+			blocks = new Block[] {block.getRelative(BlockFace.EAST, usrSPRange).getRelative(BlockFace.UP),
+					block.getRelative(BlockFace.WEST, usrSPRange).getRelative(BlockFace.UP),
+					block.getRelative(BlockFace.NORTH_EAST, usrSPRange / 2).getRelative(BlockFace.NORTH, usrSPRange / 2).getRelative(BlockFace.UP),
+					block.getRelative(BlockFace.NORTH_WEST, usrSPRange / 2).getRelative(BlockFace.NORTH, usrSPRange / 2).getRelative(BlockFace.UP),
+					block.getRelative(BlockFace.SOUTH_EAST, usrSPRange / 2).getRelative(BlockFace.SOUTH, usrSPRange / 2).getRelative(BlockFace.UP),
+					block.getRelative(BlockFace.SOUTH_WEST, usrSPRange / 2).getRelative(BlockFace.SOUTH, usrSPRange / 2).getRelative(BlockFace.UP)};
 			user.increaseStat(pillarsSummoned, 6);
 		}
 		else {
-			user.setCooldown(this, cooldown);
-			blocks = new Block[] {block.getRelative(BlockFace.NORTH, pRange).getRelative(BlockFace.UP),
-					block.getRelative(BlockFace.SOUTH, pRange).getRelative(BlockFace.UP),
-					block.getRelative(BlockFace.NORTH_EAST, pRange / 2).getRelative(BlockFace.EAST, pRange / 2).getRelative(BlockFace.UP),
-					block.getRelative(BlockFace.NORTH_WEST, pRange / 2).getRelative(BlockFace.WEST, pRange / 2).getRelative(BlockFace.UP),
-					block.getRelative(BlockFace.SOUTH_EAST, pRange / 2).getRelative(BlockFace.EAST, pRange / 2).getRelative(BlockFace.UP),
-					block.getRelative(BlockFace.SOUTH_WEST, pRange / 2).getRelative(BlockFace.WEST, pRange / 2).getRelative(BlockFace.UP)};
+			user.setCooldown(this, user.getOption(cooldown));
+			blocks = new Block[] {block.getRelative(BlockFace.NORTH, usrPRange).getRelative(BlockFace.UP),
+					block.getRelative(BlockFace.SOUTH, usrPRange).getRelative(BlockFace.UP),
+					block.getRelative(BlockFace.NORTH_EAST, usrPRange / 2).getRelative(BlockFace.EAST, usrPRange / 2).getRelative(BlockFace.UP),
+					block.getRelative(BlockFace.NORTH_WEST, usrPRange / 2).getRelative(BlockFace.WEST, usrPRange / 2).getRelative(BlockFace.UP),
+					block.getRelative(BlockFace.SOUTH_EAST, usrPRange / 2).getRelative(BlockFace.EAST, usrPRange / 2).getRelative(BlockFace.UP),
+					block.getRelative(BlockFace.SOUTH_WEST, usrPRange / 2).getRelative(BlockFace.WEST, usrPRange / 2).getRelative(BlockFace.UP)};
 			user.increaseStat(pillarsSummoned, 6);
 		}
 		if (blocks != null) {
 			for (final Block b : blocks) {
-				for (int i = 0; i < pHeight; i ++) {
+				for (int i = 0; i < usrPHeight; i ++) {
 					runTaskLater(new Runnable() {
 						@Override
 						public void run() {
-							Block air = PowerTools.getHighestAirBlock(b.getLocation(), pHeight);
+							Block air = PowerTools.getHighestAirBlock(b.getLocation(), usrPHeight);
 							if (air != null
 									&& !air.getType().isSolid()) {
 								FallingBlock fall = air.getWorld().spawnFallingBlock(air.getLocation(), Material.SEA_LANTERN.createBlockData());
@@ -153,7 +157,7 @@ public final class CelestialPillars extends Power {
 					|| isSuper) {
 				Pillar pillar = new Pillar(user, event.getClickedBlock(), isSuper);
 				doPillars(user, event.getClickedBlock(), isSuper);
-				if (consume) {
+				if (user.getOption(consume)) {
 					event.consumeItem();
 				}
 				if (isSuper) {
@@ -177,7 +181,7 @@ public final class CelestialPillars extends Power {
 		private final List<Block> blocks;
 		private final Block core;
 		private boolean isSuper;
-		private long life = System.currentTimeMillis() + pDur;
+		private long life;
 		private final int task;
 		private final PowerUser user;
 		
@@ -186,6 +190,7 @@ public final class CelestialPillars extends Power {
 			this.blocks = new ArrayList<>();
 			this.core = core;
 			this.isSuper = isSuper;
+			this.life = System.currentTimeMillis() + user.getOption(pDur);
 			inside = new HashMap<>();
 			outside = new HashMap<>();
 			task = runTaskTimer(manage, 0L, 0L).getTaskId();
@@ -234,7 +239,7 @@ public final class CelestialPillars extends Power {
 			@Override
 			public void run() {
 				if (life > System.currentTimeMillis()) {
-					double range = isSuper ? sPRange : pRange;
+					double range = isSuper ? user.getOption(sPRange) : user.getOption(pRange);
 					for (Entity entity : PowerTools.getNearbyEntities(Entity.class, core.getLocation(), range + 2)) {
 						if (entity != user.getPlayer()
 								&& !falling.containsKey(entity)

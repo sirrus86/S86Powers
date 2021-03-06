@@ -25,6 +25,7 @@ import com.google.common.collect.Sets;
 import me.sirrus86.s86powers.events.PowerUseEvent;
 import me.sirrus86.s86powers.powers.Power;
 import me.sirrus86.s86powers.powers.PowerManifest;
+import me.sirrus86.s86powers.powers.PowerOption;
 import me.sirrus86.s86powers.powers.PowerStat;
 import me.sirrus86.s86powers.powers.PowerType;
 import me.sirrus86.s86powers.tools.PowerTools;
@@ -38,10 +39,10 @@ public final class WebWall extends Power {
 	private final EnumSet<BlockFace> directions = EnumSet.of(BlockFace.DOWN, BlockFace.EAST, BlockFace.NORTH, BlockFace.SOUTH, BlockFace.UP, BlockFace.WEST);
 	private Map<PowerUser, List<Wall>> walls;
 	
-	private boolean doConsume;
-	private double maxGrowth;
-	private int maxWalls;
-	private long wallDur;
+	private PowerOption<Boolean> doConsume;
+	private PowerOption<Double> maxGrowth;
+	private PowerOption<Integer> maxWalls;
+	private PowerOption<Long> wallDur;
 	private PowerStat wallsMade;
 	
 	@Override
@@ -67,7 +68,7 @@ public final class WebWall extends Power {
 		maxWalls = option("maximum-walls", 3, "Maximum number of walls user can create after maxing stat.");
 		wallDur = option("wall-duration", PowerTime.toMillis(15, 0), "How long web walls last before disappearing.");
 		wallsMade = stat("walls-created", 30, "Web walls created", "Can now create [maxWalls] web walls at a time.");
-		supplies(new ItemStack(item.getType(), item.getMaxStackSize()));
+		supplies(new ItemStack(getRequiredItem().getType(), getRequiredItem().getMaxStackSize()));
 	}
 	
 	@EventHandler(ignoreCancelled = true)
@@ -81,16 +82,16 @@ public final class WebWall extends Power {
 				walls.put(user, new ArrayList<>());
 			}
 			if (user.getCooldown(this) <= 0L
-					|| (walls.get(user).size() < maxWalls
+					|| (walls.get(user).size() < user.getOption(maxWalls)
 							&& user.hasStatMaxed(wallsMade))) {
 				Wall wall = new Wall(user, event.getClickedBlock().getRelative(event.getBlockFace()), PowerTools.getDirection(user.getPlayer().getEyeLocation(), false));
 				walls.get(user).add(wall);
 				user.increaseStat(wallsMade, 1);
-				if (doConsume) {
+				if (user.getOption(doConsume)) {
 					event.consumeItem();
 				}
 				if (user.getCooldown(this) <= 0L) {
-					user.setCooldown(this, cooldown);
+					user.setCooldown(this, user.getOption(cooldown));
 				}
 			}
 			else {
@@ -123,7 +124,7 @@ public final class WebWall extends Power {
 					terminate();
 				}
 				
-			}, PowerTime.toTicks(wallDur)).getTaskId();
+			}, PowerTime.toTicks(owner.getOption(wallDur))).getTaskId();
 		}
 		
 		private Runnable growth = new BukkitRunnable() {
@@ -137,7 +138,7 @@ public final class WebWall extends Power {
 					Collections.shuffle(faces);
 					BlockFace face = faces.get(0);
 					if (block.getRelative(face).isEmpty()
-							&& core.getLocation().distanceSquared(block.getRelative(face).getLocation()) <= maxGrowth * maxGrowth) {
+							&& core.getLocation().distanceSquared(block.getRelative(face).getLocation()) <= owner.getOption(maxGrowth) * owner.getOption(maxGrowth)) {
 						Block newWeb = block.getRelative(face);
 						newWeb.getWorld().playEffect(newWeb.getLocation(), Effect.STEP_SOUND, Material.COBWEB);
 						newWeb.setType(Material.COBWEB);

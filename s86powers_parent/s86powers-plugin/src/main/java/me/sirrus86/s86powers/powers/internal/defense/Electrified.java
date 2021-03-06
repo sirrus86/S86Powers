@@ -12,16 +12,17 @@ import org.bukkit.inventory.ItemStack;
 
 import me.sirrus86.s86powers.powers.Power;
 import me.sirrus86.s86powers.powers.PowerManifest;
+import me.sirrus86.s86powers.powers.PowerOption;
 import me.sirrus86.s86powers.powers.PowerType;
 import me.sirrus86.s86powers.tools.PowerTools;
 import me.sirrus86.s86powers.users.PowerUser;
 import me.sirrus86.s86powers.utils.PowerTime;
 
-@PowerManifest(name = "Electrified", type = PowerType.DEFENSE, author = "sirrus86", concept = "vashvhexx", icon=Material.GLOWSTONE_DUST,
+@PowerManifest(name = "Electrified", type = PowerType.DEFENSE, author = "sirrus86", concept = "vashvhexx", icon = Material.GLOWSTONE_DUST,
 	description = "Immune to lightning. Enemies who attack you with melee attacks while you are blocking are struck by lightning. [cooldown] cooldown.")
 public final class Electrified extends Power {
 
-	private double lDmg;
+	private PowerOption<Double> lDmg;
 	
 	@Override
 	protected void config() {
@@ -40,8 +41,8 @@ public final class Electrified extends Power {
 					if (user.getCooldown(this) <= 0) {
 						Entity target = PowerTools.getEntitySource(((EntityDamageByEntityEvent) event).getDamager());
 						target.getWorld().strikeLightningEffect(target.getLocation());
-						user.causeDamage(this, (target instanceof Damageable ? (Damageable) target : null), DamageCause.LIGHTNING, lDmg);
-						user.setCooldown(this, cooldown);
+						user.causeDamage(this, (target instanceof Damageable ? (Damageable) target : null), DamageCause.LIGHTNING, user.getOption(lDmg));
+						user.setCooldown(this, user.getOption(cooldown));
 					}
 				}
 				if (event.getCause() == DamageCause.LIGHTNING) {

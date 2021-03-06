@@ -19,6 +19,7 @@ import org.bukkit.potion.PotionEffectType;
 
 import me.sirrus86.s86powers.powers.Power;
 import me.sirrus86.s86powers.powers.PowerManifest;
+import me.sirrus86.s86powers.powers.PowerOption;
 import me.sirrus86.s86powers.powers.PowerType;
 import me.sirrus86.s86powers.tools.PowerTools;
 import me.sirrus86.s86powers.users.PowerUser;
@@ -32,7 +33,7 @@ public final class Aquaphile extends Power {
 	
 	private Set<PowerUser> isDolphin, nvList;
 	
-	private boolean canDolphin, heal, nv;
+	private PowerOption<Boolean> canDolphin, heal, nv;
 	private String dolphinOnLand, turnToDolphin, turnToHuman;
 	
 	@Override
@@ -47,12 +48,8 @@ public final class Aquaphile extends Power {
 			setDolphin(user, false);
 		}
 		if (nvList.contains(user)) {
-			if (nv) {
-				user.removePotionEffect(PotionEffectType.NIGHT_VISION);
-			}
-			if (heal) {
-				user.removePotionEffect(PotionEffectType.REGENERATION);
-			}
+			user.removePotionEffect(PotionEffectType.NIGHT_VISION);
+			user.removePotionEffect(PotionEffectType.REGENERATION);
 			user.removePotionEffect(PotionEffectType.DOLPHINS_GRACE);
 			user.removePotionEffect(PotionEffectType.WATER_BREATHING);
 			nvList.remove(user);
@@ -67,7 +64,7 @@ public final class Aquaphile extends Power {
 		dolphinOnLand = locale("message.dolphin-on-land", ChatColor.RED + "You can't become a dolphin on land.");
 		turnToDolphin = locale("message.turn-to-dolphin", ChatColor.GREEN + "You transform into a dolphin.");
 		turnToHuman = locale("message.turn-to-human", ChatColor.YELLOW + "You return to human form.");
-		supplies(item);
+		supplies(getRequiredItem());
 	}
 	
 	private boolean isWater(Block block) {
@@ -105,10 +102,10 @@ public final class Aquaphile extends Power {
 			Block block = user.getPlayer().getEyeLocation().getBlock();
 			if (isWater(block)) {
 				if (!nvList.contains(user)) {
-					if (nv) {
+					if (user.getOption(nv)) {
 						user.addPotionEffect(new PotionEffect(PotionEffectType.NIGHT_VISION, Integer.MAX_VALUE, 0));
 					}
-					if (heal) {
+					if (user.getOption(heal)) {
 						user.addPotionEffect(new PotionEffect(PotionEffectType.REGENERATION, Integer.MAX_VALUE, 0));
 					}
 					user.addPotionEffect(new PotionEffect(PotionEffectType.DOLPHINS_GRACE, Integer.MAX_VALUE, 0));
@@ -121,10 +118,10 @@ public final class Aquaphile extends Power {
 					setDolphin(user, false);
 				}
 				if (nvList.contains(user)) {
-					if (nv) {
+					if (user.getOption(nv)) {
 						user.removePotionEffect(PotionEffectType.NIGHT_VISION);
 					}
-					if (heal) {
+					if (user.getOption(heal)) {
 						user.removePotionEffect(PotionEffectType.REGENERATION);
 					}
 					user.removePotionEffect(PotionEffectType.DOLPHINS_GRACE);
@@ -137,10 +134,10 @@ public final class Aquaphile extends Power {
 	
 	@EventHandler(ignoreCancelled = true)
 	private void onSwim(EntityToggleSwimEvent event) {
-		if (event.getEntity() instanceof Player
-				&& canDolphin) {
+		if (event.getEntity() instanceof Player) {
 			PowerUser user = getUser((Player) event.getEntity());
-			if (user.allowPower(this)) {
+			if (user.allowPower(this)
+					&& user.getOption(canDolphin)) {
 				setDolphin(user, event.isSwimming());
 			}
 		}

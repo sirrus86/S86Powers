@@ -18,6 +18,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 
 import me.sirrus86.s86powers.powers.Power;
 import me.sirrus86.s86powers.powers.PowerManifest;
+import me.sirrus86.s86powers.powers.PowerOption;
 import me.sirrus86.s86powers.powers.PowerType;
 import me.sirrus86.s86powers.tools.PowerTools;
 import me.sirrus86.s86powers.users.PowerUser;
@@ -31,9 +32,10 @@ public final class DarkRegen extends Power {
 	private Set<PowerUser> hasNV;
 	private Map<PowerUser, Integer> regenTask;
 	
+	private PowerOption<Boolean> doNV, noRegen, regenFood, regenHP;
+	private PowerOption<Integer> darkLvl;
 	@SuppressWarnings("unused")
-	private boolean cloak, doNV, noRegen, regenAny, regenBoth, regenFood, regenHP;
-	private int darkLvl;
+	private boolean regenAny, regenBoth;
 	
 	@Override
 	protected void onEnable() {
@@ -54,15 +56,14 @@ public final class DarkRegen extends Power {
 
 	@Override
 	protected void config() {
-		cloak = option("superpower.enable-shadow-cloak", true, "Whether user should be immune to shadow affinity damage while in shadows.");
 		cooldown = option("minimum-cooldown", PowerTime.toMillis(200), "Minimum amount of time before user can regenerate in darkness.");
 		darkLvl = option("maximum-light-level", 8, "Maximum light level (from 0-15, darkest to brightest) in which the power will work.");
 		doNV = option("night-vision", false, "Whether night vision should be granted in dark areas.");
 		noRegen = option("prevent-regen-in-light", true, "Whether to prevent users from regenerating health in higher light levels.");
 		regenFood = option("regenerate-hunger", true, "Whether user will regenerate hunger in dark areas.");
 		regenHP = option("regenerate-health", true, "Whether user will regenerate health in dark areas.");
-		regenAny = regenFood || regenHP;
-		regenBoth = regenFood && regenHP;
+		regenAny = getOption(regenFood) || getOption(regenHP);
+		regenBoth = getOption(regenFood) && getOption(regenHP);
 	}
 	
 	private Runnable doRegen(PowerUser user) {
@@ -71,23 +72,23 @@ public final class DarkRegen extends Power {
 			@Override
 			public void run() {
 				if (user.allowPower(getInstance())
-						&& user.getPlayer().getEyeLocation().getBlock().getLightLevel() <= darkLvl) {
-					if ((user.getPlayer().getHealth() < user.getPlayer().getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue() && regenHP)
-							|| (user.getPlayer().getFoodLevel() < 20 && regenFood)) {
-						if (regenHP) {
+						&& user.getPlayer().getEyeLocation().getBlock().getLightLevel() <= user.getOption(darkLvl)) {
+					if ((user.getPlayer().getHealth() < user.getPlayer().getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue() && user.getOption(regenHP))
+							|| (user.getPlayer().getFoodLevel() < 20 && user.getOption(regenFood))) {
+						if (user.getOption(regenHP)) {
 							user.heal(1.0D);
 						}
-						if (regenFood) {
+						if (user.getOption(regenFood)) {
 							user.regenHunger(1);
 						}
 						PowerTools.playParticleEffect(user.getPlayer().getEyeLocation(), Particle.PORTAL, 10);
 					}
-					if (doNV
+					if (user.getOption(doNV)
 							&& !hasNV.contains(user)) {
 						user.addPotionEffect(new PotionEffect(PotionEffectType.NIGHT_VISION, Integer.MAX_VALUE, 0));
 						hasNV.add(user);
 					}
-					regenTask.put(user, getInstance().runTaskLater(doRegen(user), PowerTime.toTicks(cooldown)).getTaskId());
+					regenTask.put(user, getInstance().runTaskLater(doRegen(user), PowerTime.toTicks(user.getOption(cooldown))).getTaskId());
 				}
 				else if (hasNV.contains(user)) {
 					user.removePotionEffect(PotionEffectType.NIGHT_VISION);
@@ -102,7 +103,7 @@ public final class DarkRegen extends Power {
 	private void onMove(PlayerMoveEvent event) {
 		PowerUser user = getUser(event.getPlayer());
 		if (user.allowPower(this)
-				&& user.getPlayer().getEyeLocation().getBlock().getLightLevel() <= darkLvl
+				&& user.getPlayer().getEyeLocation().getBlock().getLightLevel() <= user.getOption(darkLvl)
 				&& (!regenTask.containsKey(user) || !isTaskLive(regenTask.get(user)))) {
 			regenTask.put(user, runTask(doRegen(user)).getTaskId());
 		}
@@ -110,11 +111,11 @@ public final class DarkRegen extends Power {
 	
 	@EventHandler(ignoreCancelled = true)
 	private void onRegen(EntityRegainHealthEvent event) {
-		if (event.getEntity() instanceof Player
-				&& noRegen) {
+		if (event.getEntity() instanceof Player) {
 			PowerUser user = getUser((Player) event.getEntity());
 			if (user.allowPower(this)
-					&& user.getPlayer().getEyeLocation().getBlock().getLightLevel() > darkLvl) {
+					&& user.getOption(noRegen)
+					&& user.getPlayer().getEyeLocation().getBlock().getLightLevel() > user.getOption(darkLvl)) {
 				event.setCancelled(true);
 			}
 		}

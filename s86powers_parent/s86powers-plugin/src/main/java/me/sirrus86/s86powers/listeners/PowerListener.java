@@ -10,6 +10,7 @@ import me.sirrus86.s86powers.localization.LocaleString;
 import me.sirrus86.s86powers.events.PowerUseEvent;
 import me.sirrus86.s86powers.events.PowerUseOnEntityEvent;
 import me.sirrus86.s86powers.powers.Power;
+import me.sirrus86.s86powers.powers.PowerOption;
 import me.sirrus86.s86powers.tools.PowerTools;
 import me.sirrus86.s86powers.users.PowerUser;
 
@@ -35,17 +36,26 @@ public final class PowerListener implements Listener {
 		plugin.getServer().getPluginManager().registerEvents(this, plugin);
 	}
 	
-	private boolean hasCorrectItem(Power power, ItemStack item) {
-		if (power.canUseSpecificItem()
+	@SuppressWarnings("unchecked")
+	private boolean hasCorrectItem(PowerUser user, Power power, ItemStack item) {
+		PowerOption<Boolean> wAxe = (PowerOption<Boolean>) power.getOptionByField("wAxe"),
+				wItem = (PowerOption<Boolean>) power.getOptionByField("wItem"),
+				wSword = (PowerOption<Boolean>) power.getOptionByField("wSword");
+		PowerOption<ItemStack> itemOpt = (PowerOption<ItemStack>) power.getOptionByField("item");
+		if ((wItem == null || user.getOption(wItem))
 				&& item != null
-				&& item.getType() == power.getRequiredItem().getType()) {
+				&& itemOpt != null
+				&& user.getOption(itemOpt) != null
+				&& item.getType() == user.getOption(itemOpt).getType()) {
 			return true;
 		}
-		else if (power.canUseAnyAxe()
+		else if (wAxe != null
+				&& user.getOption(wAxe)
 				&& PowerTools.isAxe(item)) {
 			return true;
 		}
-		else if (power.canUseAnySword()
+		else if (wSword != null
+				&& user.getOption(wSword)
 				&& PowerTools.isSword(item)) {
 			return true;
 		}
@@ -75,7 +85,7 @@ public final class PowerListener implements Listener {
 		for (Power power : user.getPowers(true)) {
 			if (user.allowPower(power)
 					&& power.getRequiredItem() != null
-					&& hasCorrectItem(power, event.getItem())
+					&& hasCorrectItem(user, power, event.getItem())
 					&& !(event.getAction() == Action.RIGHT_CLICK_BLOCK && event.getItem().getType().isBlock())) {
 				Bukkit.getServer().getPluginManager().callEvent(new PowerUseEvent(user, power, event.getItem(), event.getHand(), event.getClickedBlock(), event.getBlockFace()));
 			}
@@ -92,7 +102,7 @@ public final class PowerListener implements Listener {
 			for (Power power : user.getPowers(true)) {
 				if (user.allowPower(power)
 						&& power.getRequiredItem() != null
-						&& hasCorrectItem(power, event.getHand() == EquipmentSlot.HAND ? event.getPlayer().getInventory().getItemInMainHand() : event.getPlayer().getInventory().getItemInOffHand())) {
+						&& hasCorrectItem(user, power, event.getHand() == EquipmentSlot.HAND ? event.getPlayer().getInventory().getItemInMainHand() : event.getPlayer().getInventory().getItemInOffHand())) {
 					Bukkit.getServer().getPluginManager().callEvent(new PowerUseOnEntityEvent(user, power, event.getRightClicked()));
 				}
 			}

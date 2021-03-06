@@ -44,14 +44,14 @@ import com.google.common.collect.Sets;
  */
 public abstract class Power implements Comparable<Power>, Listener {
 	
-	private Map<PowerOption, Object> options = new HashMap<>();
+	private Map<PowerOption<?>, Object> options = new HashMap<>();
 	private List<ItemStack> supplies = new ArrayList<>();
 	private Map<PowerStat, Integer> stats = new HashMap<>();
 	private Set<Integer> tasks = new HashSet<>();
 	private Set<PowerUser> users = new HashSet<>();
 	
-	File cFile, defLocFile, locFile;
-	YamlConfiguration config, defLocConfig, locConfig;
+	private File cFile, defLocFile, locFile;
+	private YamlConfiguration config, defLocConfig, locConfig;
 	private boolean enabled = true,
 			locked = false;
 	private final Permission aPerm, perm;
@@ -59,42 +59,16 @@ public abstract class Power implements Comparable<Power>, Listener {
 	protected boolean incomplete = false;
 	private final PowerManifest manifest = getClass().getAnnotation(PowerManifest.class);
 	private final S86Powers plugin;
-	private String tag = getClass().getSimpleName();
+	private String description, name, tag = getClass().getSimpleName();
 	
 	/**
 	 * Dedicated instance of {@link java.util.Random} used to create random values where needed.
 	 */
 	protected static final Random random = new Random();
-	
-	/**
-	 * Dedicated field to represent the cooldown of a power.
-	 */
-	protected long cooldown;
-	
-	/**
-	 * Dedicated field to represent the consumable item of a power, if it is different from the use item.
-	 */
-	protected ItemStack consumable;
-	
-	/**
-	 * Dedicated field to represent the use item of a power.
-	 */
-	protected ItemStack item;
-	
-	/**
-	 * {@link boolean} value representing whether any {@link ItemStack} which is an axe can be used to activate this power.
-	 */
-	protected boolean wAxe = false;
-	
-	/**
-	 * {@link boolean} value representing whether the specified {@link ItemStack} (set my using the field {@code item}) can be used to activate this power.
-	 */
-	protected boolean wItem = true;
-	
-	/**
-	 * {@link boolean} value representing whether any {@link ItemStack} which is a sword can be used to activate this power.
-	 */
-	protected boolean wSword = false;
+		
+	protected PowerOption<Long> cooldown;
+	protected PowerOption<ItemStack> consumable, item;
+	protected PowerOption<Boolean> wAxe, wItem, wSword;
 	
 	/**
 	 * Events which should occur when the power becomes enabled or reloaded.
@@ -200,7 +174,7 @@ public abstract class Power implements Comparable<Power>, Listener {
 	 * @return {@link boolean} value of the field {@code wAxe}
 	 */
 	public boolean canUseAnyAxe() {
-		return wAxe;
+		return hasOption(wAxe) ? getOption(wAxe) : false;
 	}
 	
 	/**
@@ -208,7 +182,7 @@ public abstract class Power implements Comparable<Power>, Listener {
 	 * @return {@link boolean} value of the field {@code wItem}
 	 */
 	public boolean canUseSpecificItem() {
-		return wItem;
+		return hasOption(wItem) ? getOption(wItem) : true;
 	}
 	
 	/**
@@ -216,7 +190,7 @@ public abstract class Power implements Comparable<Power>, Listener {
 	 * @return {@link boolean} value of the field {@code wSword}
 	 */
 	public boolean canUseAnySword() {
-		return wSword;
+		return hasOption(wSword) ? getOption(wSword) : false;
 	}
 	
 	@Override
@@ -287,12 +261,12 @@ public abstract class Power implements Comparable<Power>, Listener {
 		return manifest.concept();
 	}
 	
-	ItemStack getConsumable() {
-		return consumable;
+	protected ItemStack getConsumable() {
+		return hasOption(consumable) ? getOption(consumable) : null;
 	}
 	
-	long getCooldown() {
-		return cooldown;
+	protected long getCooldown() {
+		return hasOption(cooldown) ? getOption(cooldown) : 0L;
 	}
 
 	/**
@@ -304,8 +278,11 @@ public abstract class Power implements Comparable<Power>, Listener {
 		return config;
 	}
 	
-	public String getDescription() {
-		return locale("manifest.description", manifest.description());
+	public final String getDescription() {
+		if (description == null) {
+			description = locale("manifest.description", manifest.description());
+		}
+		return description;
 	}
 	
 	public Object getFieldValue(String option) {
@@ -349,11 +326,19 @@ public abstract class Power implements Comparable<Power>, Listener {
 	 * @return This power's name
 	 */
 	public final String getName() {
-		return locale("manifest.name", manifest.name());
+		if (name == null) {
+			name = locale("manifest.name", manifest.name());
+		}
+		return name;
 	}
 	
-	public PowerOption getOption(String path) {
-		for (PowerOption option : options.keySet()) {
+	@SuppressWarnings("unchecked")
+	public <O> O getOption(PowerOption<O> option) {
+		return (O) options.get(option);
+	}
+	
+	public PowerOption<?> getOptionByName(String path) {
+		for (PowerOption<?> option : options.keySet()) {
 			if (option.getPath().equalsIgnoreCase(path)) {
 				return option;
 			}
@@ -361,16 +346,16 @@ public abstract class Power implements Comparable<Power>, Listener {
 		return null;
 	}
 	
-	public Map<PowerOption, Object> getOptions() {
+	public PowerOption<?> getOptionByField(String field) {
+		return (PowerOption<?>) getFieldValue(field);
+	}
+	
+	public Map<PowerOption<?>, Object> getOptions() {
 		return options;
 	}
 	
-	public Object getOptionValue(PowerOption option) {
-		return options.containsKey(option) ? options.get(option) : null;
-	}
-	
 	public ItemStack getRequiredItem() {
-		return item;
+		return hasOption(item) ? getOption(item) : null;
 	}
 	
 	public PowerStat getStat(String name) {
@@ -394,8 +379,11 @@ public abstract class Power implements Comparable<Power>, Listener {
 		return supplies;
 	}
 	
-	public String getTag() {
-		return locale("manifest.tag", getClass().getSimpleName());
+	public final String getTag() {
+		if (tag == null) {
+			tag = locale("manifest.tag", getClass().getSimpleName());
+		}
+		return tag;
 	}
 
 	public final PowerType getType() {
@@ -442,6 +430,10 @@ public abstract class Power implements Comparable<Power>, Listener {
 	public Set<PowerUser> getUsers() {
 		updateUsers();
 		return users;
+	}
+	
+	private boolean hasOption(PowerOption<?> option) {
+		return options.containsKey(option);
 	}
 	
 	boolean hasSupply(final int index) {
@@ -494,6 +486,7 @@ public abstract class Power implements Comparable<Power>, Listener {
 	 * <p>
 	 * Fields can be directly assigned a value of this method, as it should always return
 	 * a value that is an instance of the default value.
+	 * @param <O>
 	 * @param <O> - The class of the default value
 	 * @param path - The path used to reference this option in this power class' config file
 	 * @param defValue - The default value of this option
@@ -501,20 +494,25 @@ public abstract class Power implements Comparable<Power>, Listener {
 	 * configure this power
 	 * @return The configured value of this option
 	 */
+	protected <O> PowerOption<O> option(final String path, final O defValue, final String desc) {
+		return option(path, defValue, desc, false);
+	}
+	
 	@SuppressWarnings("unchecked")
-	protected <O> O option(final String path, final O defValue, final String desc) {
-		PowerOption option = getOption(path);
+	protected <O> PowerOption<O> option(final String path, final O defValue, final String desc, final boolean locked) {
+		PowerOption<O> option = (PowerOption<O>) getOptionByName(path);
 		if (option == null) {
-			option = new PowerOption(this, path, defValue, locale("options." + path + ".description", desc));
+			option = new PowerOption<O>(this, path, defValue, locale("options." + path + ".description", desc), locked);
 		}
-		if (!options.containsKey(option)) {
+		if (!options.containsKey(option)
+				&& !locked) {
 			if (!config.contains("options." + option.getPath())) {
 				config.set("options." + option.getPath(), defValue);
 				saveConfig();
 			}
 			options.put(option, defValue instanceof Long ? config.getLong("options." + option.getPath(), (Long) defValue) : config.get("options." + option.getPath(), defValue));
 		}
-		return (O) options.get(option);
+		return option;
 	}
 	
 	public void refreshOptions() {
@@ -587,7 +585,7 @@ public abstract class Power implements Comparable<Power>, Listener {
 	}
 
 	public void saveConfig() {
-		for (PowerOption option : options.keySet()) {
+		for (PowerOption<?> option : options.keySet()) {
 			config.createSection("options." + option.getPath());
 			config.set("options." + option.getPath(), options.get(option));
 		}
@@ -631,7 +629,7 @@ public abstract class Power implements Comparable<Power>, Listener {
 		locked = lock;
 	}
 	
-	public void setOption(PowerOption option, Object value) {
+	public void setOption(PowerOption<?> option, Object value) {
 		options.put(option, value);
 		if (ConfigOption.Plugin.AUTO_SAVE) {
 			saveConfig();
