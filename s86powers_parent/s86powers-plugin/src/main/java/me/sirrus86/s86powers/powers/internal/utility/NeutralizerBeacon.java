@@ -43,6 +43,8 @@ public class NeutralizerBeacon extends Power {
 	
 	private Map<Block, Beacon> beacons;
 	
+	private PowerOption<Long> auraBlinkFrq;
+	private PowerOption<Integer> auraFreq;
 	private PowerOption<Boolean> canExclude, showAura;
 	private PowerOption<Double> radius;
 	
@@ -63,6 +65,8 @@ public class NeutralizerBeacon extends Power {
 	
 	@Override
 	protected void config() {
+		auraBlinkFrq = option("aura-blink-frequency", 2L, "How often aura particles are refreshed.");
+		auraFreq = option("aura-particle-density", 2, "Density of how many particles are shown. Higher numbers create less density.");
 		canExclude = option("can-exclude", true, "Allows player names on adjacent signs to be excluded from beacon effects.");
 		radius = option("radius", 50.0D, "Maximum radius of the neutralizing field from the beacon.");
 		showAura = option("show-aura", false, "Whether to show the aura of an active beacon.");
@@ -181,7 +185,7 @@ public class NeutralizerBeacon extends Power {
 	public class Beacon implements Listener {
 		
 		private Set<Vector> auraCoords;
-		private int auraTask = -1;
+		private int auraTask = -1, auraBlink = 0;
 		private List<String> excluded = new ArrayList<>();
 		private final Block lapis;
 		private double range;
@@ -197,9 +201,13 @@ public class NeutralizerBeacon extends Power {
 			public void run() {
 				Location loc = lapis.getLocation().clone().add(0.5D, 0.5D, 0.5D);
 				for (Vector vec : auraCoords) {
-					loc.add(vec);
-					loc.getWorld().spawnParticle(Particle.REDSTONE, loc, 1, new Particle.DustOptions(Color.BLUE, 0.75F));
-					loc.subtract(vec);
+					auraBlink ++;
+					if (auraBlink > getOption(auraFreq)) {
+						loc.add(vec);
+						loc.getWorld().spawnParticle(Particle.REDSTONE, loc, 1, new Particle.DustOptions(Color.BLUE, 0.75F));
+						loc.subtract(vec);
+						auraBlink = 0;
+					}
 				}
 			}
 			
@@ -262,7 +270,7 @@ public class NeutralizerBeacon extends Power {
 					auraTask = -1;
 				}
 				if (auraTask <= -1) {
-					auraTask = runTaskTimer(aura, 0L, 10L).getTaskId();
+					auraTask = runTaskTimer(aura, 0L, getInstance().getOption(auraBlinkFrq)).getTaskId();
 				}
 			}
 			else if (auraTask > -1) {
