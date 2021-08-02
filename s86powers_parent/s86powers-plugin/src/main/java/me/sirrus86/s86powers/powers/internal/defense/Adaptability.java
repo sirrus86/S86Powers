@@ -22,7 +22,7 @@ import me.sirrus86.s86powers.utils.PowerTime;
 @PowerManifest(name = "Adaptability", type = PowerType.DEFENSE, author = "sirrus86", concept = "diamondmario", icon = Material.LEATHER_CHESTPLATE,
 	description = "When damaged, develop resistance to that damage type, reducing all following damage of the same type starting at [initial-adapt]%,"
 			+ " increasing up to [maximum-adapt]%. While resistant to one type, damage from all other types increased to [damage-increase]%."
-			+ " [cooldown] cooldown.[prevent-armor] Power prevents you from wearing armor.[/prevent-armor]")
+			+ " [adapt-cooldown] cooldown.[prevent-armor] Power prevents you from wearing armor.[/prevent-armor]")
 public final class Adaptability extends Power {
 
 	private Map<PowerUser, AdaptUser> aUsers;

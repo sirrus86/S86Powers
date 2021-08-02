@@ -22,8 +22,8 @@ import me.sirrus86.s86powers.users.PowerUser;
 import me.sirrus86.s86powers.utils.PowerTime;
 
 @PowerManifest(name = "Neutralizer Grenade", type = PowerType.UTILITY, author = "sirrus86", concept = "sirrus86", icon = Material.LAPIS_LAZULI, usesPackets = true,
-	description = "[act:item]ing while holding [item] turns it into a neutralizer grenade and arms it for [cooldown]."
-			+ " While armed, throwing the grenade creates a neutral field, disabling the powers of players within [neutralize-range] meters of the impact for [neutralize-duration].")
+	description = "[act:item]ing while holding [item] throws a Neutralizer Grenade which creates a neutral field, "
+			+ "disabling the powers of players within [neutralize-range] meters of the impact for [neutralize-duration].")
 public final class NeutralizerGrenade extends Power {
 	
 	private Map<Snowball, Integer> gList;
