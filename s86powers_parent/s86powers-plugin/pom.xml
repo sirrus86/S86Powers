@@ -16,7 +16,7 @@
 		<dependency>
 			<groupId>com.comphenix.protocol</groupId>
 			<artifactId>ProtocolLib</artifactId>
-			<version>4.6.0</version>
+			<version>4.7.0-SNAPSHOT</version>
 			<type>jar</type>
 			<scope>provided</scope>
 		</dependency>
@@ -77,8 +77,15 @@
 		</dependency>
 		<dependency>
 			<groupId>me.sirrus86</groupId>
-			<artifactId>s86powers-v1_17_R1</artifactId>
-			<version>v1_17_R1</version>
+			<artifactId>s86powers-v1_17</artifactId>
+			<version>v1_17</version>
+			<scope>compile</scope>
+			<optional>true</optional>
+		</dependency>
+		<dependency>
+			<groupId>me.sirrus86</groupId>
+			<artifactId>s86powers-v1_17_1</artifactId>
+			<version>v1_17_1</version>
 			<scope>compile</scope>
 			<optional>true</optional>
 		</dependency>

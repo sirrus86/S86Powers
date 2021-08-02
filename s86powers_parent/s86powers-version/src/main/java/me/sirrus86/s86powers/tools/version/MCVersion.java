@@ -87,7 +87,12 @@ public enum MCVersion {
 	/**
 	 * Represents server version 1.17.
 	 */
-	v1_17("v1_17_R1", 4.7D),
+	v1_17("v1_17", 4.7D),
+	
+	/**
+	 * Represents server version 1.17.1.
+	 */
+	v1_17_1("v1_17_1", 4.7D),
 	
 	/**
 	 * Represents an unsupported server version.
