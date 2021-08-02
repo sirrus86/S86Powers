@@ -1,4 +1,4 @@
-package me.sirrus86.s86powers.tools;
+package me.sirrus86.s86powers.tools.packets;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
@@ -32,7 +32,6 @@ import org.bukkit.entity.Painting;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.util.Vector;
@@ -40,9 +39,11 @@ import org.bukkit.util.Vector;
 import com.comphenix.protocol.PacketType;
 import com.comphenix.protocol.ProtocolLibrary;
 import com.comphenix.protocol.ProtocolManager;
+import com.comphenix.protocol.events.InternalStructure;
 import com.comphenix.protocol.events.PacketAdapter;
 import com.comphenix.protocol.events.PacketContainer;
 import com.comphenix.protocol.events.PacketEvent;
+import com.comphenix.protocol.utility.MinecraftReflection;
 import com.comphenix.protocol.wrappers.BlockPosition;
 import com.comphenix.protocol.wrappers.ChunkCoordIntPair;
 import com.comphenix.protocol.wrappers.MultiBlockChangeInfo;
@@ -57,29 +58,22 @@ import com.comphenix.protocol.wrappers.WrappedDataWatcher.Registry;
 
 import com.google.common.collect.Lists;
 
-import me.sirrus86.s86powers.S86Powers;
 import me.sirrus86.s86powers.config.ConfigOption;
-import me.sirrus86.s86powers.tools.nms.NMSLibrary;
+import me.sirrus86.s86powers.tools.PowerTools;
+import me.sirrus86.s86powers.tools.version.MCMetadata;
 import me.sirrus86.s86powers.tools.version.MCVersion;
 import me.sirrus86.s86powers.utils.PowerTime;
 
-public final class PacketManager {
+public final class PacketManagerPLib extends PacketManager {
 
 	private Map<BlockPosition, PacketContainer> blocks = new HashMap<>();
-	private Map<UUID, LivingEntity> control = new HashMap<>();
 	private Map<UUID, PacketContainer> disguises = new HashMap<>(),
 			metadata = new HashMap<>();
 	private Map<UUID, Set<PacketContainer>> equipment = new HashMap<>();
-	private Map<UUID, Map<Block, Integer>> spectralBlocks = new HashMap<>();
-	private Set<UUID> ghosts = new HashSet<>(),
-			hidden = new HashSet<>();
 	
-	private final NMSLibrary nms;
-	protected final S86Powers plugin = JavaPlugin.getPlugin(S86Powers.class);
 	private final ProtocolManager pm;
 	
-	public PacketManager() {
-		nms = PowerTools.getNMSLibrary();
+	public PacketManagerPLib() {
 		pm = ProtocolLibrary.getProtocolManager();
 		pm.addPacketListener(new PacketAdapter(plugin, PacketType.Play.Server.ENTITY_METADATA, PacketType.Play.Server.SPAWN_ENTITY,
 				PacketType.Play.Server.SPAWN_ENTITY_LIVING, PacketType.Play.Server.NAMED_ENTITY_SPAWN,
@@ -157,8 +151,8 @@ public final class PacketManager {
 								}
 								PacketContainer packet = pm.createPacket(PacketType.Play.Server.ENTITY_METADATA, true);
 								WrappedDataWatcher watcher = WrappedDataWatcher.getEntityWatcher(entity);
-								watcher.setObject(2, Registry.getChatComponentSerializer(true), Optional.of(WrappedChatComponent.fromText(health).getHandle()));
-								watcher.setObject(3, Registry.get(Boolean.class), (Object) true);
+								watcher.setObject(MCMetadata.EntityMeta.ENTITY_CUSTOM_NAME.getIndex(), Registry.getChatComponentSerializer(true), Optional.of(WrappedChatComponent.fromText(health).getHandle()));
+								watcher.setObject(MCMetadata.EntityMeta.ENTITY_IS_CUSTOM_NAME_VISIBLE.getIndex(), Registry.get(Boolean.class), (Object) true);
 								packet.getIntegers().write(0, entity.getEntityId());
 								packet.getWatchableCollectionModifier().write(0, watcher.getWatchableObjects());
 								event.setPacket(packet);
@@ -222,19 +216,22 @@ public final class PacketManager {
 		});
 	}
 	
-	protected void addDisguise(Entity entity, EntityType type) {
+	@Override
+	public void addDisguise(Entity entity, EntityType type) {
 		createEntityPacket(entity, type, (WrappedDataWatcher) null, null);
 	}
-	
-	protected void addDisguise(Entity entity, EntityType type, Map<Integer, Object> meta) {
+
+	@Override
+	public void addDisguise(Entity entity, EntityType type, Map<Integer, Object> meta) {
 		createEntityPacket(entity, type, meta != null ? createWrappedDataWatcher(null, meta) : null, null);
 	}
-	
-	protected void addDisguise(Entity entity, EntityType type, Map<Integer, Object> meta, Object data) {
+
+	@Override
+	public void addDisguise(Entity entity, EntityType type, Map<Integer, Object> meta, Object data) {
 		createEntityPacket(entity.getEntityId(), entity.getUniqueId(), entity.getLocation(), entity.getVelocity(), type,
 				meta != null ? createWrappedDataWatcher(null, meta) : null, data, null);
 	}
-	
+
 	private void createEntityPacket(Entity entity, EntityType type, WrappedDataWatcher watcher, Object data) {
 		createEntityPacket(entity.getEntityId(), entity.getUniqueId(), entity.getLocation(), entity.getVelocity(), type, watcher, data, null);
 	}
@@ -253,9 +250,6 @@ public final class PacketManager {
 					entityPacket.getDoubles().write(2, loc.getZ());
 					entityPacket.getBytes().write(0, (byte) (loc.getYaw() * 256.0F / 360.0F));
 					entityPacket.getBytes().write(1, (byte) (loc.getPitch() * 256.0F / 360.0F));
-//					if (watcher != null) {
-//						entityPacket.getDataWatcherModifier().write(0, watcher);
-//					}
 				}
 				else {
 					throw new IllegalArgumentException("UUID is required!");
@@ -275,9 +269,6 @@ public final class PacketManager {
 				entityPacket.getBytes().write(0, (byte) (loc.getYaw() * 256.0F / 360.0F));
 				entityPacket.getBytes().write(1, (byte) (loc.getPitch() * 256.0F / 360.0F));
 				entityPacket.getBytes().write(2, (byte) (loc.getYaw() * 256.0F / 360.0F));
-//				if (watcher != null) {
-//					entityPacket.getDataWatcherModifier().write(0, watcher);
-//				}
 			}
 		}
 		else {
@@ -356,8 +347,9 @@ public final class PacketManager {
 			metadata.put(uuid, metaPacket);
 		}
 	}
-	
-	protected void addDisguise(Entity entity, ItemStack item) {
+
+	@Override
+	public void addDisguise(Entity entity, ItemStack item) {
 		WrappedDataWatcher watcher = new WrappedDataWatcher();
 		if (MCVersion.isLessThan(MCVersion.v1_14)) {
 			watcher.setObject(6, Registry.getItemStackSerializer(false), item, true);
@@ -367,8 +359,9 @@ public final class PacketManager {
 		}
 		createEntityPacket(entity, EntityType.SNOWBALL, watcher, (int) 1);
 	}
-	
-	protected void addDisguise(Entity entity, Entity target) {
+
+	@Override
+	public void addDisguise(Entity entity, Entity target) {
 		Object data = null;
 		switch (target.getType()) {
 			case PAINTING: {
@@ -388,8 +381,9 @@ public final class PacketManager {
 			addEquipmentDisguise(entity, (LivingEntity) target);
 		}
 	}
-	
-	protected void addEquipmentDisguise(Entity entity, LivingEntity target) {
+
+	@Override
+	public void addEquipmentDisguise(Entity entity, LivingEntity target) {
 		if (equipment != null) {
 			Set<PacketContainer> eqPackets = createEquipmentPackets(entity.getEntityId(), (LivingEntity) target);
 			for (PacketContainer eqPacket : eqPackets) {
@@ -398,8 +392,9 @@ public final class PacketManager {
 			equipment.put(entity.getUniqueId(), eqPackets);
 		}
 	}
-	
-	protected void addGhost(Player player) {
+
+	@Override
+	public void addGhost(Player player) {
 		if (ghosts.add(player.getUniqueId())) {
 			showAsGhost(player, player);
 			for (Player viewer : pm.getEntityTrackers(player)) {
@@ -409,7 +404,9 @@ public final class PacketManager {
 		}
 	}
 	
-	protected void addSpectralBlock(Player viewer, Block block, ChatColor color) {
+	// TODO
+	@Override
+	public void addSpectralBlock(Player viewer, Block block, ChatColor color) {
 		if (!spectralBlocks.containsKey(viewer.getUniqueId())) {
 			spectralBlocks.put(viewer.getUniqueId(), new HashMap<>());
 		}
@@ -420,38 +417,64 @@ public final class PacketManager {
 		UUID uuid = UUID.randomUUID();
 		Location loc = block.getLocation().clone().add(0.5D, 0.0D, 0.5D);
 		WrappedDataWatcher watcher = new WrappedDataWatcher();
-		watcher.setObject(0, Registry.get(Byte.class), (byte) 0x60);
-		watcher.setObject(4, Registry.get(Boolean.class), (Object) true);
-		watcher.setObject(5, Registry.get(Boolean.class), (Object) true);
-		watcher.setObject(11, Registry.get(Byte.class), (byte) 0x01);
+		watcher.setObject(MCMetadata.EntityMeta.ENTITY_STATE.getIndex(), Registry.get(Byte.class), (byte) 0x60);
+		watcher.setObject(MCMetadata.EntityMeta.ENTITY_IS_SILENT.getIndex(), Registry.get(Boolean.class), (Object) true);
+		watcher.setObject(MCMetadata.EntityMeta.ENTITY_NO_GRAVITY.getIndex(), Registry.get(Boolean.class), (Object) true);
+		watcher.setObject(MCMetadata.EntityMeta.MOB_STATE.getIndex(), Registry.get(Byte.class), (byte) 0x01);
 		createEntityPacket(id, uuid, loc, new Vector(), EntityType.SHULKER, watcher, null, viewer);
 		PacketContainer teamPacket = pm.createPacket(PacketType.Play.Server.SCOREBOARD_TEAM, true);
 		teamPacket.getStrings().write(0, viewer.getEntityId() + "." + id);
 		teamPacket.getIntegers().write(0, 0);
-		teamPacket.getIntegers().write(1, 2);
-		teamPacket.getEnumModifier(ChatColor.class, 6).write(0, color);
-		teamPacket.getModifier().write(7, Lists.newArrayList(viewer.getName(), uuid.toString()));
+		if (MCVersion.isLessThan(MCVersion.v1_17)) {
+			teamPacket.getIntegers().write(1, 2);
+			teamPacket.getEnumModifier(ChatColor.class, MinecraftReflection.getMinecraftClass("EnumChatFormat")).write(0, color);
+			teamPacket.getModifier().write(7, Lists.newArrayList(viewer.getName(), uuid.toString()));
+		}
+		else {
+			teamPacket.getModifier().write(2, Lists.newArrayList(viewer.getName(), uuid.toString()));
+			Optional<InternalStructure> optStruct = teamPacket.getOptionalStructures().read(0);
+			if (optStruct.isPresent()) {
+				InternalStructure struct = optStruct.get();
+				struct.getIntegers().write(0, 2);
+				struct.getEnumModifier(ChatColor.class, MinecraftReflection.getMinecraftClass("EnumChatFormat")).write(0, color);
+				teamPacket.getOptionalStructures().write(0, Optional.of(struct));
+			}
+		}
 		sendServerPacket(viewer, teamPacket);
 		spectralBlocks.get(viewer.getUniqueId()).put(block, id);
 	}
-	
-	protected void addSpectralEntity(Player viewer, Entity entity, ChatColor color) {
+
+	@Override
+	public void addSpectralEntity(Player viewer, Entity entity, ChatColor color) {
 		PacketContainer packet = pm.createPacket(PacketType.Play.Server.ENTITY_METADATA, true);
 		WrappedDataWatcher watcher = WrappedDataWatcher.getEntityWatcher(entity).deepClone();
-		watcher.setObject(0, Registry.get(Byte.class), (byte) (watcher.getByte(0) + 0x40));
+		watcher.setObject(MCMetadata.EntityMeta.ENTITY_STATE.getIndex(), Registry.get(Byte.class), (byte) (watcher.getByte(0) + 0x40));
 		packet.getIntegers().write(0, entity.getEntityId());
 		packet.getWatchableCollectionModifier().write(0, watcher.getWatchableObjects());
 		sendServerPacket(viewer, packet);
 		PacketContainer teamPacket = pm.createPacket(PacketType.Play.Server.SCOREBOARD_TEAM, true);
 		teamPacket.getStrings().write(0, viewer.getEntityId() + "." + entity.getEntityId());
 		teamPacket.getIntegers().write(0, 0);
-		teamPacket.getIntegers().write(1, 2);
-		teamPacket.getEnumModifier(ChatColor.class, 6).write(0, color);
-		teamPacket.getModifier().write(7, Lists.newArrayList(viewer.getName(), entity.getUniqueId().toString()));
+		if (MCVersion.isLessThan(MCVersion.v1_17)) {
+			teamPacket.getIntegers().write(1, 2);
+			teamPacket.getEnumModifier(ChatColor.class, MinecraftReflection.getMinecraftClass("EnumChatFormat")).write(0, color);
+			teamPacket.getModifier().write(7, Lists.newArrayList(viewer.getName(), entity.getUniqueId().toString()));
+		}
+		else {
+			Optional<InternalStructure> optStruct = teamPacket.getOptionalStructures().read(0);
+			if (optStruct != null) {
+				InternalStructure struct = optStruct.get();
+				struct.getIntegers().write(0, 2);
+				struct.getModifier().write(5, nms.convertColor(color));
+				teamPacket.getOptionalStructures().write(0, optStruct);
+			}
+			teamPacket.getModifier().write(2, Lists.newArrayList(viewer.getName(), entity.getUniqueId().toString()));
+		}
 		sendServerPacket(viewer, teamPacket);
 	}
-	
-	protected void blockDisguise(Block block, Material material) {
+
+	@Override
+	public void blockDisguise(Block block, Material material) {
 		BlockPosition bPos = new BlockPosition(block.getX(), block.getY(), block.getZ());
 		PacketContainer packet = pm.createPacket(PacketType.Play.Server.BLOCK_CHANGE, true);
 		packet.getBlockPositionModifier().write(0, bPos);
@@ -459,26 +482,69 @@ public final class PacketManager {
 		pm.broadcastServerPacket(packet);
 		blocks.put(bPos, packet);
 	}
-	
-	protected void blockDisguise(Collection<Block> blocks, Material material, BlockData data) {
-		Map<Chunk, List<Block>> chunks = new HashMap<Chunk, List<Block>>();
-		for (Block block : blocks) {
-			blockTemporary(block, material);
-			if (!chunks.containsKey(block.getChunk())) {
-				chunks.put(block.getChunk(), new ArrayList<Block>());
+
+	@Override
+	public void blockDisguise(Collection<Block> blocks, Material material, BlockData data) {
+		if (MCVersion.isLessThan(MCVersion.v1_16_2)) {
+			Map<Chunk, List<Block>> chunks = new HashMap<>();
+			for (Block block : blocks) {
+				blockTemporary(block, material);
+				if (!chunks.containsKey(block.getChunk())) {
+					chunks.put(block.getChunk(), new ArrayList<Block>());
+				}
+				chunks.get(block.getChunk()).add(block);
 			}
-			chunks.get(block.getChunk()).add(block);
+			for (Chunk chunk : chunks.keySet()) {
+				PacketContainer packet = pm.createPacket(PacketType.Play.Server.MULTI_BLOCK_CHANGE, true);
+				Block[] cBlocks = chunks.get(chunk).toArray(new Block[chunks.get(chunk).size()]);
+				packet.getChunkCoordIntPairs().write(0, new ChunkCoordIntPair(chunk.getX(), chunk.getZ()));
+				MultiBlockChangeInfo[] changes = new MultiBlockChangeInfo[cBlocks.length];
+				for (int i = 0; i < cBlocks.length; i ++) {
+					changes[i] = new MultiBlockChangeInfo(cBlocks[i].getLocation(), WrappedBlockData.createData(data));
+				}
+				packet.getMultiBlockChangeInfoArrays().write(0, changes);
+				pm.broadcastServerPacket(packet);
+			}
 		}
-		for (Chunk chunk : chunks.keySet()) {
-			Block[] cBlocks = chunks.get(chunk).toArray(new Block[chunks.get(chunk).size()]);
-			PacketContainer packet = pm.createPacket(PacketType.Play.Server.MULTI_BLOCK_CHANGE, true);
-			packet.getChunkCoordIntPairs().write(0, new ChunkCoordIntPair(chunk.getX(), chunk.getZ()));
-			MultiBlockChangeInfo[] changes = new MultiBlockChangeInfo[cBlocks.length];
-			for (int i = 0; i < cBlocks.length; i ++) {
-				changes[i] = new MultiBlockChangeInfo(cBlocks[i].getLocation(), WrappedBlockData.createData(data));
+		else {
+			Map<BlockPosition, List<Block>> bPosMap = new HashMap<>();
+			for (Block block : blocks) {
+				blockTemporary(block, material);
+				int x = block.getX() >> 4,
+						y = block.getY() >> 4,
+						z = block.getZ() >> 4;
+				BlockPosition bPos = null;
+				for (BlockPosition bPosEntry : bPosMap.keySet()) {
+					if (bPosEntry.getX() == x
+							&& bPosEntry.getY() == y
+							&& bPosEntry.getZ() == z) {
+						bPos = bPosEntry;
+					}
+				}
+				if (bPos == null) {
+					bPos = new BlockPosition(x, y, z);
+					bPosMap.put(bPos, new ArrayList<>());
+				}
+				List<Block> bList = bPosMap.get(bPos);
+				bList.add(block);
 			}
-			packet.getMultiBlockChangeInfoArrays().write(0, changes);
-			pm.broadcastServerPacket(packet);
+			for (BlockPosition bPos : bPosMap.keySet()) {
+				PacketContainer packet = pm.createPacket(PacketType.Play.Server.MULTI_BLOCK_CHANGE, true);
+				packet.getSectionPositions().write(0, bPos);
+				Block[] cBlocks = bPosMap.get(bPos).toArray(new Block[bPosMap.get(bPos).size()]);
+				short[] locs = new short[cBlocks.length];
+				WrappedBlockData[] bDatas = new WrappedBlockData[cBlocks.length];
+				for (int i = 0; i < cBlocks.length; i ++) {
+					int x = cBlocks[i].getX() & 0xF,
+							y = cBlocks[i].getY() & 0xF,
+							z = cBlocks[i].getZ() & 0xF;
+					locs[i] = (short) (x << 8 | z << 4 | y << 0);
+					bDatas[i] = WrappedBlockData.createData(material);
+				}
+				packet.getShortArrays().write(0, locs);
+				packet.getBlockDataArrays().write(0, bDatas);
+				pm.broadcastServerPacket(packet);
+			}
 		}
 	}
 	
@@ -489,8 +555,9 @@ public final class PacketManager {
 		packet.getBlockData().write(0, WrappedBlockData.createData(material));
 		blocks.put(bPos, packet);
 	}
-	
-	protected void blockUpdate(Block block) {
+
+	@Override
+	public void blockUpdate(Block block) {
 		BlockPosition bPos = new BlockPosition(block.getX(), block.getY(), block.getZ());
 		PacketContainer packet = pm.createPacket(PacketType.Play.Server.BLOCK_CHANGE, true);
 		packet.getBlockPositionModifier().write(0, bPos);
@@ -498,25 +565,89 @@ public final class PacketManager {
 		pm.broadcastServerPacket(packet);
 		blocks.remove(bPos);
 	}
+
+//	@Override
+//	public void blockUpdate(Collection<Block> blocks) {
+//		Map<Chunk, List<Block>> chunks = new HashMap<Chunk, List<Block>>();
+//		for (Block block : blocks) {
+//			if (!chunks.containsKey(block.getChunk())) {
+//				chunks.put(block.getChunk(), new ArrayList<Block>());
+//			}
+//			chunks.get(block.getChunk()).add(block);
+//		}
+//		for (Chunk chunk : chunks.keySet()) {
+//			Block[] cBlocks = chunks.get(chunk).toArray(new Block[chunks.get(chunk).size()]);
+//			PacketContainer packet = pm.createPacket(PacketType.Play.Server.MULTI_BLOCK_CHANGE, true);
+//			packet.getChunkCoordIntPairs().write(0, new ChunkCoordIntPair(chunk.getX(), chunk.getZ()));
+//			MultiBlockChangeInfo[] changes = new MultiBlockChangeInfo[cBlocks.length];
+//			for (int i = 0; i < cBlocks.length; i ++) {
+//				changes[i] = new MultiBlockChangeInfo(cBlocks[i].getLocation(), WrappedBlockData.createData(cBlocks[i].getType()));
+//			}
+//			packet.getMultiBlockChangeInfoArrays().write(0, changes);
+//			pm.broadcastServerPacket(packet);
+//		}
+//	}
 	
-	protected void blockUpdate(Collection<Block> blocks) {
-		Map<Chunk, List<Block>> chunks = new HashMap<Chunk, List<Block>>();
-		for (Block block : blocks) {
-			if (!chunks.containsKey(block.getChunk())) {
-				chunks.put(block.getChunk(), new ArrayList<Block>());
+	@Override
+	public void blockUpdate(Collection<Block> blocks) {
+		if (MCVersion.isLessThan(MCVersion.v1_16_2)) {
+			Map<Chunk, List<Block>> chunks = new HashMap<Chunk, List<Block>>();
+			for (Block block : blocks) {
+				if (!chunks.containsKey(block.getChunk())) {
+					chunks.put(block.getChunk(), new ArrayList<Block>());
+				}
+				chunks.get(block.getChunk()).add(block);
 			}
-			chunks.get(block.getChunk()).add(block);
+			for (Chunk chunk : chunks.keySet()) {
+				Block[] cBlocks = chunks.get(chunk).toArray(new Block[chunks.get(chunk).size()]);
+				PacketContainer packet = pm.createPacket(PacketType.Play.Server.MULTI_BLOCK_CHANGE, true);
+				packet.getChunkCoordIntPairs().write(0, new ChunkCoordIntPair(chunk.getX(), chunk.getZ()));
+				MultiBlockChangeInfo[] changes = new MultiBlockChangeInfo[cBlocks.length];
+				for (int i = 0; i < cBlocks.length; i ++) {
+					changes[i] = new MultiBlockChangeInfo(cBlocks[i].getLocation(), WrappedBlockData.createData(cBlocks[i].getType()));
+				}
+				packet.getMultiBlockChangeInfoArrays().write(0, changes);
+				pm.broadcastServerPacket(packet);
+			}
 		}
-		for (Chunk chunk : chunks.keySet()) {
-			Block[] cBlocks = chunks.get(chunk).toArray(new Block[chunks.get(chunk).size()]);
-			PacketContainer packet = pm.createPacket(PacketType.Play.Server.MULTI_BLOCK_CHANGE, true);
-			packet.getChunkCoordIntPairs().write(0, new ChunkCoordIntPair(chunk.getX(), chunk.getZ()));
-			MultiBlockChangeInfo[] changes = new MultiBlockChangeInfo[cBlocks.length];
-			for (int i = 0; i < cBlocks.length; i ++) {
-				changes[i] = new MultiBlockChangeInfo(cBlocks[i].getLocation(), WrappedBlockData.createData(cBlocks[i].getType()));
+		else {
+			Map<BlockPosition, List<Block>> bPosMap = new HashMap<>();
+			for (Block block : blocks) {
+				int x = block.getX() >> 4,
+						y = block.getY() >> 4,
+						z = block.getZ() >> 4;
+				BlockPosition bPos = null;
+				for (BlockPosition bPosEntry : bPosMap.keySet()) {
+					if (bPosEntry.getX() == x
+							&& bPosEntry.getY() == y
+							&& bPosEntry.getZ() == z) {
+						bPos = bPosEntry;
+					}
+				}
+				if (bPos == null) {
+					bPos = new BlockPosition(x, y, z);
+					bPosMap.put(bPos, new ArrayList<>());
+				}
+				List<Block> bList = bPosMap.get(bPos);
+				bList.add(block);
 			}
-			packet.getMultiBlockChangeInfoArrays().write(0, changes);
-			pm.broadcastServerPacket(packet);
+			for (BlockPosition bPos : bPosMap.keySet()) {
+				PacketContainer packet = pm.createPacket(PacketType.Play.Server.MULTI_BLOCK_CHANGE, true);
+				packet.getSectionPositions().write(0, bPos);
+				Block[] cBlocks = bPosMap.get(bPos).toArray(new Block[bPosMap.get(bPos).size()]);
+				short[] locs = new short[cBlocks.length];
+				WrappedBlockData[] bDatas = new WrappedBlockData[cBlocks.length];
+				for (int i = 0; i < cBlocks.length; i ++) {
+					int x = cBlocks[i].getX() & 0xF,
+							y = cBlocks[i].getY() & 0xF,
+							z = cBlocks[i].getZ() & 0xF;
+					locs[i] = (short) (x << 8 | z << 4 | y << 0);
+					bDatas[i] = WrappedBlockData.createData(cBlocks[i].getType());
+				}
+				packet.getShortArrays().write(0, locs);
+				packet.getBlockDataArrays().write(0, bDatas);
+				pm.broadcastServerPacket(packet);
+			}
 		}
 	}
 	
@@ -545,16 +676,18 @@ public final class PacketManager {
 		}
 		return watcher;
 	}
-	
-	protected void fakeCollect(Entity entity, Item item) {
+
+	@Override
+	public void fakeCollect(Entity entity, Item item) {
 		PacketContainer packet = pm.createPacket(PacketType.Play.Server.COLLECT);
 		packet.getIntegers().write(0, item.getEntityId());
 		packet.getIntegers().write(1, entity.getEntityId());
 		packet.getIntegers().write(2, item.getItemStack().getAmount());
 		pm.broadcastServerPacket(packet, entity, true);
 	}
-	
-	protected void fakeExplosion(Location loc, float radius) {
+
+	@Override
+	public void fakeExplosion(Location loc, float radius) {
 		loc.getWorld().playSound(loc, Sound.ENTITY_GENERIC_EXPLODE, 1.0F, 1.0F);
 		PacketContainer packet = pm.createPacket(PacketType.Play.Server.EXPLOSION);
 		packet.getDoubles().write(0, loc.getX());
@@ -575,30 +708,38 @@ public final class PacketManager {
 			default: return ItemSlot.valueOf(slot.name());
 		}
 	}
-	
-	protected boolean hasDisguise(Block block) {
+
+	@Override
+	public boolean hasDisguise(Block block) {
 		BlockPosition bPos = new BlockPosition(block.getX(), block.getY(), block.getZ());
 		return blocks.containsKey(bPos);
 	}
-	
-	protected boolean hasDisguise(Entity entity) {
+
+	@Override
+	public boolean hasDisguise(Entity entity) {
 		return disguises.containsKey(entity.getUniqueId());
 	}
-	
-	protected void hide(Entity entity) {
+
+	@Override
+	public void hide(Entity entity) {
 		PacketContainer packet = pm.createPacket(PacketType.Play.Server.ENTITY_DESTROY, true);
-		packet.getIntegerArrays().write(0, new int[] {entity.getEntityId()});
+		if (MCVersion.isLessThan(MCVersion.v1_17)) {
+			packet.getIntegerArrays().write(0, new int[] {entity.getEntityId()});
+		}
+		else if (MCVersion.isLessThan(MCVersion.v1_17_1)) {
+			packet.getIntegers().write(0, entity.getEntityId());
+		}
+		else {
+			packet.getIntLists().write(0, Lists.newArrayList(entity.getEntityId()));
+		}
 		for (Player player : pm.getEntityTrackers(entity)) {
 			sendServerPacket(player, packet);
 		}
 		hidden.add(entity.getUniqueId());
 	}
-	
-	protected boolean isGhost(Player player) {
-		return ghosts.contains(player.getUniqueId());
-	}
-	
-	protected void removeDisguise(Entity entity) {
+
+	@Override
+	public void removeDisguise(Entity entity) {
 		if (disguises.containsKey(entity.getUniqueId())
 				|| metadata.containsKey(entity.getUniqueId())
 				|| equipment.containsKey(entity.getUniqueId())) {
@@ -608,8 +749,9 @@ public final class PacketManager {
 			updateEntity(entity);
 		}
 	}
-	
-	protected void removeGhost(Player player) {
+
+	@Override
+	public void removeGhost(Player player) {
 		if (ghosts.remove(player.getUniqueId())) {
 			player.removePotionEffect(PotionEffectType.INVISIBILITY);
 			for (Player players : pm.getEntityTrackers(player)) {
@@ -621,21 +763,31 @@ public final class PacketManager {
 			ghosts.remove(player.getUniqueId());
 		}
 	}
-	
-	protected void removeSpectralBlock(Player viewer, Block block) {
+
+	@Override
+	public void removeSpectralBlock(Player viewer, Block block) {
 		if (spectralBlocks.containsKey(viewer.getUniqueId())) {
 			Map<Block, Integer> map = spectralBlocks.get(viewer.getUniqueId());
 			if (map.containsKey(block)) {
 				int id = map.get(block);
 				PacketContainer packet = pm.createPacket(PacketType.Play.Server.ENTITY_DESTROY, true);
-				packet.getIntegerArrays().write(0, new int[] {id});
+				if (MCVersion.isLessThan(MCVersion.v1_17)) {
+					packet.getIntegerArrays().write(0, new int[] {id});
+				}
+				else if (MCVersion.isLessThan(MCVersion.v1_17_1)) {
+					packet.getIntegers().write(0, id);
+				}
+				else {
+					packet.getIntLists().write(0, Lists.newArrayList(id));
+				}
 				sendServerPacket(viewer, packet);
 				map.remove(block);
 			}
 		}
 	}
-	
-	protected void removeSpectralEntity(Player viewer, Entity entity) {
+
+	@Override
+	public void removeSpectralEntity(Player viewer, Entity entity) {
 		PacketContainer packet = pm.createPacket(PacketType.Play.Server.ENTITY_METADATA);
 		packet.getIntegers().write(0, entity.getEntityId());
 		packet.getWatchableCollectionModifier().write(0, WrappedDataWatcher.getEntityWatcher(entity).getWatchableObjects());
@@ -657,18 +809,16 @@ public final class PacketManager {
 			}
 		}
 	}
-	
-	protected void setCamera(Player player, Entity entity) {
+
+	@Override
+	public void setCamera(Player player, Entity entity) {
 		PacketContainer packet = pm.createPacket(PacketType.Play.Server.CAMERA);
 		packet.getIntegers().write(0, entity.getEntityId());
 		sendServerPacket(player, packet);
 	}
-	
-	protected void setControlling(Player player, LivingEntity entity) {
-		control.put(player.getUniqueId(), entity);
-	}
-	
-	protected void setLook(Player player, Location loc) {
+
+	@Override
+	public void setLook(Player player, Location loc) {
 		PacketContainer packet = pm.createPacket(PacketType.Play.Server.LOOK_AT);
 		packet.getEnumModifier(Anchor.class, 4).write(0, Anchor.EYES);
 		packet.getDoubles().write(0, loc.getX());
@@ -676,14 +826,15 @@ public final class PacketManager {
 		packet.getDoubles().write(2, loc.getZ());
 		sendServerPacket(player, packet);
 	}
-	
-	protected void showActionBarMessage(Player player, String message) {
+
+	@Override
+	public void showActionBarMessage(Player player, String message) {
 		PacketContainer packet = pm.createPacket(PacketType.Play.Server.CHAT);
 		packet.getChatComponents().write(0, WrappedChatComponent.fromText(message));
 		packet.getChatTypes().write(0, ChatType.GAME_INFO);
 		sendServerPacket(player, packet);
 	}
-	
+
 	private void showAsGhost(Player viewer, Player player) {
 		PacketContainer packet = pm.createPacket(PacketType.Play.Server.SCOREBOARD_TEAM, true);
 		packet.getStrings().write(0, viewer.getEntityId() + "." + player.getEntityId());
@@ -693,8 +844,9 @@ public final class PacketManager {
 		packet.getModifier().write(7, Lists.newArrayList(viewer.getName(), player.getName()));
 		sendServerPacket(viewer, packet);
 	}
-	
-	protected void showHearts(LivingEntity entity, Player player) {
+
+	@Override
+	public void showHearts(LivingEntity entity, Player player) {
 		PacketContainer packet = pm.createPacket(PacketType.Play.Server.ENTITY_METADATA, true);
 		WrappedDataWatcher watcher = WrappedDataWatcher.getEntityWatcher(entity);
 		double i = ((LivingEntity) entity).getHealth() / 2,
@@ -709,14 +861,15 @@ public final class PacketManager {
 				health = health + ChatColor.GRAY + "\u2665";
 			}
 		}
-		watcher.setObject(2, Registry.getChatComponentSerializer(true), Optional.of(WrappedChatComponent.fromText(health).getHandle()));
-		watcher.setObject(3, Registry.get(Boolean.class), (Object) true);
+		watcher.setObject(MCMetadata.EntityMeta.ENTITY_CUSTOM_NAME.getIndex(), Registry.getChatComponentSerializer(true), Optional.of(WrappedChatComponent.fromText(health).getHandle()));
+		watcher.setObject(MCMetadata.EntityMeta.ENTITY_IS_CUSTOM_NAME_VISIBLE.getIndex(), Registry.get(Boolean.class), (Object) true);
 		packet.getIntegers().write(0, entity.getEntityId());
 		packet.getWatchableCollectionModifier().write(0, watcher.getWatchableObjects());
 		sendServerPacket(player, packet);
 	}
-	
-	protected void showItemCooldown(Player player, ItemStack item, long cooldown) {
+
+	@Override
+	public void showItemCooldown(Player player, ItemStack item, long cooldown) {
 		PacketContainer packet = pm.createPacket(PacketType.Play.Server.SET_COOLDOWN);
 		packet.getModifier().write(0, nms.getNMSItem(item));
 		packet.getIntegers().write(0, (int) PowerTime.toTicks(cooldown));

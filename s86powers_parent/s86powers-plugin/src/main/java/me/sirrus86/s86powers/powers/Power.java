@@ -297,13 +297,11 @@ public abstract class Power implements Comparable<Power>, Listener {
 				field = getClass().getSuperclass().getDeclaredField(option);
 				field.setAccessible(true);
 				object = field.get(this);
-			} catch (NoSuchFieldException e1) { 
+			} catch (Exception e1) { 
 				return null;
-			} catch(IllegalArgumentException | IllegalAccessException e1) {
-				e1.printStackTrace();
 			}
-		} catch (IllegalAccessException | IllegalArgumentException e) {
-			e.printStackTrace();
+		} catch (Exception e) {
+			return null;
 		}
 		return object;
 	}
@@ -460,11 +458,11 @@ public abstract class Power implements Comparable<Power>, Listener {
 			try {
 				defLocConfig.save(defLocFile);
 				if (ConfigOption.Plugin.SHOW_CONFIG_STATUS) {
-					plugin.log(Level.INFO, LocaleString.SAVE_SUCCESS.build(defLocFile));
+					S86Powers.log(Level.INFO, LocaleString.SAVE_SUCCESS.build(defLocFile));
 				}
 			} catch (IOException e) {
 				if (ConfigOption.Plugin.SHOW_CONFIG_STATUS) {
-					plugin.log(Level.SEVERE, LocaleString.SAVE_FAIL.build(defLocFile));
+					S86Powers.log(Level.SEVERE, LocaleString.SAVE_FAIL.build(defLocFile));
 				}
 				e.printStackTrace();
 			}
@@ -663,7 +661,7 @@ public abstract class Power implements Comparable<Power>, Listener {
 	 * @deprecated Solely for visibility within an IDE
 	 */
 	protected void showDebug(String message) {
-		plugin.showDebug(tag + " > " + message);
+		S86Powers.showDebug(tag + " > " + message);
 	}
 	
 	/**

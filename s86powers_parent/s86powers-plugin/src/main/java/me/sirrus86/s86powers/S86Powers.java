@@ -20,6 +20,7 @@ import me.sirrus86.s86powers.localization.LocaleString;
 import me.sirrus86.s86powers.permissions.PermissionHandler;
 import me.sirrus86.s86powers.powers.Power;
 import me.sirrus86.s86powers.powers.PowerType;
+import me.sirrus86.s86powers.tools.version.MCVersion;
 import me.sirrus86.s86powers.utils.Metrics;
 import me.sirrus86.s86powers.utils.PowerExporter;
 import me.sirrus86.s86powers.utils.PowerLoader;
@@ -33,7 +34,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 /**
  * 
  * @author sirrus86
- * @version 5.1.9
+ * @version 5.2.1
  */
 public final class S86Powers extends JavaPlugin {
 	
@@ -43,6 +44,7 @@ public final class S86Powers extends JavaPlugin {
 	private static File groupDir, powerDir, userDir;
 	private static PowerTabCompleter pTC;
 	private static final Plugin protocolLib = Bukkit.getServer().getPluginManager().getPlugin("ProtocolLib");
+	private static double pLibVer = -1.0D;
 	
 	@Override
 	public void onEnable() {
@@ -58,9 +60,16 @@ public final class S86Powers extends JavaPlugin {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+		if (protocolLib == null) {
+			log(Level.WARNING, ChatColor.YELLOW + LocaleString.PROTOCOLLIB_NOT_DETECTED.toString());
+		}
+		else if (MCVersion.CURRENT_VERSION.getRequiredProtocolLib() > getProtocolLibVersion()) {
+			log(Level.WARNING, ChatColor.YELLOW + LocaleString.BAD_PROTOCOLLIB_VERSION.build(MCVersion.CURRENT_VERSION.getRequiredProtocolLib(),
+					protocolLib != null ? protocolLib.getDescription().getVersion() : "N/A"));
+		}
 		new PermissionHandler(this);
 		new PowerExporter(this, getFile());
-		new PowerLoader(this, getPowerDirectory());
+		new PowerLoader(getPowerDirectory());
 		log(Level.INFO, LocaleString.POWERS_LOAD_SUCCESS.build(configManager.getPowers().size()));
 		// TODO Load custom powers
 		configManager.loadUsers();
@@ -132,6 +141,19 @@ public final class S86Powers extends JavaPlugin {
 		return groupDir;
 	}
 	
+	private final static double getProtocolLibVersion() {
+		if (pLibVer < 0.0D) {
+			try {
+				if (protocolLib != null) {
+					pLibVer = Double.parseDouble(protocolLib.getDescription().getVersion().substring(0, 3));
+				}
+			} catch (Exception e) {
+				pLibVer = 0.0D;
+			}
+		}
+		return pLibVer;
+	}
+	
 	/**
 	 * Gets the directory where power classes and configs are stored, specifically {@code plugins\S86_Powers\Powers\}.
 	 * <p>
@@ -176,17 +198,17 @@ public final class S86Powers extends JavaPlugin {
 		cmd.setExecutor(comExec);
 	}
 	
-	public final void log(Level level, String string) {
+	public final static void log(Level level, String string) {
 		if (ConfigOption.Plugin.SHOW_COLORS_IN_CONSOLE) {
-			getServer().getConsoleSender().sendMessage("[S86Powers] " + string);
+			Bukkit.getServer().getConsoleSender().sendMessage("[S86Powers] " + string);
 		}
 		else {
-			getLogger().log(level, ChatColor.stripColor(string));
+			Bukkit.getLogger().log(level, ChatColor.stripColor(string));
 		}
 	}
 	
 	@Deprecated
-	public final void showDebug(String message) {
+	public final static void showDebug(String message) {
 		if (ConfigOption.Plugin.SHOW_DEBUG_MESSAGES) {
 			log(Level.WARNING, message);
 		}

@@ -2,6 +2,7 @@ package me.sirrus86.s86powers.utils;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Enumeration;
@@ -19,12 +20,10 @@ import me.sirrus86.s86powers.tools.version.MCVersion;
 
 public class PowerLoader {
 
-	private final S86Powers plugin;
 	private static final String POWER_PREFIX = "me.sirrus86.s86powers.powers.internal.";
 	private static final String[] TYPE_PREFIX = new String[] { "defense.", "offense.", "passive.", "utility.", "" };
 	
-	public PowerLoader(final S86Powers plugin, File file) {
-		this.plugin = plugin;
+	public PowerLoader(File file) {
 		load(file);
 	}
 	
@@ -128,34 +127,35 @@ public class PowerLoader {
     				final PowerManifest manifest = clazz.getAnnotation(PowerManifest.class);
     				if (manifest.type() == null) {
     					if (ConfigOption.Plugin.SHOW_CONFIG_STATUS) {
-    						plugin.log(Level.WARNING, LocaleString.INVALID_POWER_TYPE.build(name));
+    						S86Powers.log(Level.WARNING, LocaleString.INVALID_POWER_TYPE.build(name));
     					}
     				}
     				else if (manifest.name() == "") {
     					if (ConfigOption.Plugin.SHOW_CONFIG_STATUS) {
-    						plugin.log(Level.WARNING, LocaleString.INVALID_POWER_NAME.build(name));
+    						S86Powers.log(Level.WARNING, LocaleString.INVALID_POWER_NAME.build(name));
     					}
     				}
     				else if (manifest.version().ordinal() > MCVersion.CURRENT_VERSION.ordinal()) {
     					if (ConfigOption.Plugin.SHOW_CONFIG_STATUS) {
-    						plugin.log(Level.WARNING, LocaleString.INVALID_SERVER_VERSION.build(name, manifest.version()));
+    						S86Powers.log(Level.WARNING, LocaleString.INVALID_SERVER_VERSION.build(name, manifest.version()));
     					}
     				}
     				else if (manifest.server().ordinal() > MCServer.CURRENT_SERVER.ordinal()) {
     					if (ConfigOption.Plugin.SHOW_CONFIG_STATUS) {
-    						plugin.log(Level.WARNING, LocaleString.INVALID_SERVER_SOFTWARE.build(name, manifest.server()));
+    						S86Powers.log(Level.WARNING, LocaleString.INVALID_SERVER_SOFTWARE.build(name, manifest.server()));
     					}
     				}
     				else if (manifest.incomplete()
     						&& !ConfigOption.Powers.LOAD_INCOMPLETE_POWERS) {
     					if (ConfigOption.Plugin.SHOW_CONFIG_STATUS) {
-    						plugin.log(Level.WARNING, LocaleString.INCOMPLETE_POWER.build(name));
+    						S86Powers.log(Level.WARNING, LocaleString.INCOMPLETE_POWER.build(name));
     					}
     				}
     				else if (manifest.usesPackets()
-    						&& S86Powers.getProtocolLib() == null) {
+    						&& S86Powers.getProtocolLib() == null
+    						&& !ConfigOption.Powers.BYPASS_PROTOCOLLIB_REQUIREMENT) {
     					if (ConfigOption.Plugin.SHOW_CONFIG_STATUS) {
-    						plugin.log(Level.WARNING, LocaleString.POWER_REQUIRES_PROTOCOLLIB.build(name));
+    						S86Powers.log(Level.WARNING, LocaleString.POWER_REQUIRES_PROTOCOLLIB.build(name));
     					}
     				}
     				else {
@@ -163,7 +163,7 @@ public class PowerLoader {
     				}
     			}
     			else if (ConfigOption.Plugin.SHOW_CONFIG_STATUS) {
-    				plugin.log(Level.WARNING, LocaleString.INVALID_POWER_MANIFEST.build(name));
+    				S86Powers.log(Level.WARNING, LocaleString.INVALID_POWER_MANIFEST.build(name));
     			}
     		}
         } catch (Throwable e) {
@@ -172,18 +172,18 @@ public class PowerLoader {
         }
 	}
 	
-	private void load(Class<?> clazz) throws InstantiationException, IllegalAccessException {
+	private void load(Class<?> clazz) throws InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException, NoSuchMethodException, SecurityException {
 		if (clazz.getSuperclass().equals(Power.class)) {
 			if (!S86Powers.getConfigManager().isBlocked(clazz.getSimpleName())) {
-				Power power = clazz.asSubclass(Power.class).newInstance();
+				Power power = clazz.asSubclass(Power.class).getDeclaredConstructor().newInstance();
 				if (ConfigOption.Plugin.SHOW_CONFIG_STATUS) {
-					plugin.log(Level.INFO, LocaleString.POWER_LOAD_SUCCESS.build(power));
+					S86Powers.log(Level.INFO, LocaleString.POWER_LOAD_SUCCESS.build(power));
 				}
 				power.setEnabled(true);
 				S86Powers.getConfigManager().addPower(power);
 			}
 			else {
-				plugin.log(Level.WARNING, LocaleString.POWER_LOAD_BLOCKED.build(clazz));
+				S86Powers.log(Level.WARNING, LocaleString.POWER_LOAD_BLOCKED.build(clazz));
 			}
 		}
 	}
