@@ -6,6 +6,7 @@ import java.util.EnumMap;
 import java.util.LinkedHashSet;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.craftbukkit.v1_16_R3.CraftWorld;
 import org.bukkit.craftbukkit.v1_16_R3.entity.CraftCreature;
@@ -34,6 +35,7 @@ import net.minecraft.server.v1_16_R3.IRegistry;
 import net.minecraft.server.v1_16_R3.ItemStack;
 import net.minecraft.server.v1_16_R3.NBTTagCompound;
 import net.minecraft.server.v1_16_R3.NBTTagList;
+import net.minecraft.server.v1_16_R3.EnumChatFormat;
 import net.minecraft.server.v1_16_R3.DataWatcher;
 import net.minecraft.server.v1_16_R3.Entity;
 import net.minecraft.server.v1_16_R3.EntityCreature;
@@ -58,6 +60,11 @@ public class NMSLibrary extends me.sirrus86.s86powers.tools.nms.NMSLibrary {
 		nmsEntity.lastYaw = nmsEntity.yaw;
 		nmsEntity.yaw = rider.getEyeLocation().getYaw();
 		nmsEntity.setHeadRotation(rider.getEyeLocation().getYaw());
+	}
+	
+	@Override
+	public EnumChatFormat convertColor(ChatColor color) {
+		return color != ChatColor.MAGIC ? EnumChatFormat.b(color.name()) : EnumChatFormat.OBFUSCATED;
 	}
 	
 	@Override

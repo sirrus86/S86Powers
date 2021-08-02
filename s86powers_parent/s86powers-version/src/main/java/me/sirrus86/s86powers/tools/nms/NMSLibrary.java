@@ -1,5 +1,6 @@
 package me.sirrus86.s86powers.tools.nms;
 
+import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.entity.Creature;
 import org.bukkit.entity.Entity;
@@ -13,9 +14,11 @@ import org.bukkit.util.Vector;
 public abstract class NMSLibrary {
 	
 	public abstract void controlWASD(Player rider, LivingEntity entity, float forward, float strafe, boolean jump);
-
-	public abstract Object createItem(Location loc, ItemStack item);
 	
+	public abstract Enum<?> convertColor(ChatColor color);
+	
+	public abstract Object createItem(Location loc, ItemStack item);
+		
 	public abstract int generateEntityID();
 
 	public abstract <O> O getCustomObject(Class<O> clazz, Class<?>[] constructs, Object[] values);
@@ -23,8 +26,6 @@ public abstract class NMSLibrary {
 	public abstract Object getDataWatcher(Object instance);
 	
 	public abstract int getEntityTypeID(EntityType type);
-
-//	public abstract String getItemName(ItemStack item);
 	
 	public abstract Object getNMSEntityType(EntityType type);
 	
