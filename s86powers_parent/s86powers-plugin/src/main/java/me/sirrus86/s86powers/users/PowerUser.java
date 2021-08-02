@@ -51,6 +51,8 @@ import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.Vector;
 
+import com.google.common.collect.Sets;
+
 /**
  * Class for any potential user of any power.
  * <p>
@@ -61,7 +63,7 @@ public final class PowerUser implements Comparable<PowerUser> {
 	private Set<Beacon> beacons = new HashSet<>();
 	private Map<Power, Long> cooldowns = new HashMap<>();
 	private Set<PowerGroup> groups = new HashSet<>();
-	private Map<PowerOption<?>, Object> options = new HashMap<>(); //TODO Custom player options
+	private Map<PowerOption<?>, Object> options = new HashMap<>();
 	private Map<Power, Boolean> powers = new HashMap<>();
 	private Set<NeutralRegion> regions = new HashSet<>();
 	private Map<PowerStat, Integer> stats = new HashMap<>();
@@ -72,8 +74,8 @@ public final class PowerUser implements Comparable<PowerUser> {
 	private String name;
 	private int nTask = -1;
 	private long nTimer = 0L;
-	private long saveTimer = 0L;
 	private OfflinePlayer oPlayer;
+	private long saveTimer = 0L;
 	private final UUID uuid;
 	private static final S86Powers plugin = JavaPlugin.getPlugin(S86Powers.class);
 	
@@ -182,11 +184,19 @@ public final class PowerUser implements Comparable<PowerUser> {
 	 * @return <b>true</b> if player is online, power is assigned, power is enabled, and user is not neutralized
 	 */
 	public boolean allowPower(Power power) {
-		return power.getType() == PowerType.UTILITY ? true :
-			this.hasPower(power)
-					&& this.hasPowerEnabled(power)
-					&& this.hasPowersEnabled()
-					&& !this.isNeutralized();
+		if (power.getType() == PowerType.UTILITY) {
+			return true;
+		}
+		else if (this.getPlayer() != null
+				&& this.getPlayer().isOnline()
+				&& this.hasPowersEnabled()
+				&& !this.isNeutralized()) {
+			return (this.hasPower(power) && this.hasPowerEnabled(power))
+					|| this.getPlayer().hasPermission(power.getUsePermission());
+		}
+		else {
+			return false;
+		}
 	}
 	
 	private void autosave() {
@@ -318,6 +328,10 @@ public final class PowerUser implements Comparable<PowerUser> {
 				PowerTools.removeGhost(getPlayer());
 			}
 		}
+	}
+	
+	public Set<Power> getAllUsablePowers() {
+		return Sets.union(getPowers(true), getPermissiblePowers());
 	}
 	
 	public Set<PowerGroup> getAssignedGroups() {
@@ -612,7 +626,6 @@ public final class PowerUser implements Comparable<PowerUser> {
 						if (config.contains("powers." + pwr + ".active", false)) {
 							addPowerWithoutSaving(power, config.getBoolean("powers." + pwr + ".active", false));
 						}
-						// TODO Load custom options
 						if (config.contains("powers." + pwr + ".options")) {
 							for (String optName : config.getConfigurationSection("powers." + pwr + ".options").getKeys(false)) {
 								PowerOption<?> option = power.getOptionByName(optName);
@@ -740,7 +753,6 @@ public final class PowerUser implements Comparable<PowerUser> {
 					config.set("powers." + power.getClass().getSimpleName() + ".active", hasPowerEnabled(power));
 				}
 			}
-			// TODO Save custom options
 			if (!options.isEmpty()) {
 				for (PowerOption<?> option : options.keySet()) {
 					config.set("powers." + option.getPower().getClass().getSimpleName() + ".options." + option.getPath(), options.get(option));
@@ -820,7 +832,6 @@ public final class PowerUser implements Comparable<PowerUser> {
 		}
 	}
 	
-	// TODO Set option value
 	public void setOption(PowerOption<?> option, Object value) {
 		options.put(option, value);
 	}

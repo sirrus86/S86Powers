@@ -76,6 +76,9 @@ public class ComSelf extends ComAbstract {
 				else if (power.getType() == PowerType.UTILITY) {
 					sender.sendMessage(ERROR + LocaleString.SELF_ASSIGN_UTILITY);
 				}
+				else if (!sender.hasPermission(power.getAssignPermission())) {
+					sender.sendMessage(ERROR + LocaleString.POWER_ASSIGN_NO_PERMISSION.build(power));
+				}
 				else if (!sUser.isAdmin()
 						&& ConfigOption.Users.ENFORCE_POWER_CAP
 						&& (sUser.getAssignedPowersByType(power.getType()).size() >= ConfigOption.Users.POWER_CAP_PER_TYPE

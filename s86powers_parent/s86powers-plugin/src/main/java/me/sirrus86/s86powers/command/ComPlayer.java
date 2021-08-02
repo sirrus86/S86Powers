@@ -91,6 +91,9 @@ public class ComPlayer extends ComAbstract {
 				else if (power.getType() == PowerType.UTILITY) {
 					sender.sendMessage(ERROR + LocaleString.PLAYER_ASSIGN_UTILITY);
 				}
+				else if (!sender.hasPermission(power.getAssignPermission())) {
+					sender.sendMessage(ERROR + LocaleString.POWER_ASSIGN_NO_PERMISSION.build(power));
+				}
 				else if (!sender.hasPermission("s86powers.admin")
 						&& ConfigOption.Users.ENFORCE_POWER_CAP
 						&& (user.getAssignedPowersByType(power.getType()).size() >= ConfigOption.Users.POWER_CAP_PER_TYPE

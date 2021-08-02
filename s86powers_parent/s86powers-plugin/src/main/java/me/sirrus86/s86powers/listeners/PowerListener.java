@@ -82,8 +82,9 @@ public final class PowerListener implements Listener {
 	@EventHandler
 	private void onInteract(PlayerInteractEvent event) {
 		PowerUser user = S86Powers.getConfigManager().getUser(event.getPlayer().getUniqueId());
-		for (Power power : user.getPowers(true)) {
+		for (Power power : user.getAllUsablePowers()) {
 			if (user.allowPower(power)
+					&& power.isEnabled()
 					&& power.getRequiredItem() != null
 					&& hasCorrectItem(user, power, event.getItem())
 					&& !(event.getAction() == Action.RIGHT_CLICK_BLOCK && event.getItem().getType().isBlock())) {
@@ -99,8 +100,9 @@ public final class PowerListener implements Listener {
 		}
 		else {
 			PowerUser user = S86Powers.getConfigManager().getUser(event.getPlayer().getUniqueId());
-			for (Power power : user.getPowers(true)) {
+			for (Power power : user.getAllUsablePowers()) {
 				if (user.allowPower(power)
+						&& power.isEnabled()
 						&& power.getRequiredItem() != null
 						&& hasCorrectItem(user, power, event.getHand() == EquipmentSlot.HAND ? event.getPlayer().getInventory().getItemInMainHand() : event.getPlayer().getInventory().getItemInOffHand())) {
 					Bukkit.getServer().getPluginManager().callEvent(new PowerUseOnEntityEvent(user, power, event.getRightClicked()));
