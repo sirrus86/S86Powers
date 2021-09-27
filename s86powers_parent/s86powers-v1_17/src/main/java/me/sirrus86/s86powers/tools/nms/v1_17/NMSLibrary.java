@@ -8,6 +8,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
+import org.bukkit.craftbukkit.v1_17_R1.block.CraftBlock;
 import org.bukkit.craftbukkit.v1_17_R1.CraftWorld;
 import org.bukkit.craftbukkit.v1_17_R1.entity.CraftCreature;
 import org.bukkit.craftbukkit.v1_17_R1.entity.CraftEntity;
@@ -29,6 +30,7 @@ import net.minecraft.core.IRegistry;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.network.syncher.DataWatcher;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityCreature;
@@ -89,6 +91,11 @@ public class NMSLibrary extends me.sirrus86.s86powers.tools.nms.NMSLibrary {
 	@Override
 	public int getEntityTypeID(org.bukkit.entity.EntityType type) {
 		return IRegistry.Y.getId(getNMSEntityType(type));
+	}
+	
+	@Override
+	public int getFallingBlockData(org.bukkit.block.Block block) {
+		return Block.getCombinedId(((CraftBlock)block).getNMS());
 	}
 	
 	@Override

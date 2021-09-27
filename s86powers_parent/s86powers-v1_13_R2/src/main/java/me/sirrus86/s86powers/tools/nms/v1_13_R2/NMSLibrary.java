@@ -5,6 +5,7 @@ import java.lang.reflect.Method;
 
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
+import org.bukkit.craftbukkit.v1_13_R2.block.CraftBlock;
 import org.bukkit.craftbukkit.v1_13_R2.CraftWorld;
 import org.bukkit.craftbukkit.v1_13_R2.entity.CraftCreature;
 import org.bukkit.craftbukkit.v1_13_R2.entity.CraftEntity;
@@ -33,6 +34,7 @@ import net.minecraft.server.v1_13_R2.EnumMoveType;
 import net.minecraft.server.v1_13_R2.ItemStack;
 import net.minecraft.server.v1_13_R2.NBTTagCompound;
 import net.minecraft.server.v1_13_R2.NBTTagList;
+import net.minecraft.server.v1_13_R2.Block;
 import net.minecraft.server.v1_13_R2.DataWatcher;
 import net.minecraft.server.v1_13_R2.Entity;
 import net.minecraft.server.v1_13_R2.EntityCreature;
@@ -95,10 +97,10 @@ public class NMSLibrary extends me.sirrus86.s86powers.tools.nms.NMSLibrary {
 		return IRegistry.ENTITY_TYPE.a(getNMSEntityType(type));
 	}
 
-//	@Override
-//	public String getItemName(org.bukkit.inventory.ItemStack item) {
-//		return CraftItemStack.asNMSCopy(item).getName().getText();
-//	}
+	@Override
+	public int getFallingBlockData(org.bukkit.block.Block block) {
+		return Block.getCombinedId(((CraftBlock)block).getNMS());
+	}
 	
 	@Override
 	public EntityTypes<?> getNMSEntityType(EntityType type) {

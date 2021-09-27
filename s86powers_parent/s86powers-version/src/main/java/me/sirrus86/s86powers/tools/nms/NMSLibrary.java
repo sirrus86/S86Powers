@@ -2,6 +2,7 @@ package me.sirrus86.s86powers.tools.nms;
 
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
+import org.bukkit.block.Block;
 import org.bukkit.entity.Creature;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
@@ -26,6 +27,8 @@ public abstract class NMSLibrary {
 	public abstract Object getDataWatcher(Object instance);
 	
 	public abstract int getEntityTypeID(EntityType type);
+	
+	public abstract int getFallingBlockData(Block block);
 	
 	public abstract Object getNMSEntityType(EntityType type);
 	
