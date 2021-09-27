@@ -1,6 +1,7 @@
 package me.sirrus86.s86powers.powers.internal.passive;
 
 import java.util.Collections;
+import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -28,7 +29,6 @@ import me.sirrus86.s86powers.powers.PowerOption;
 import me.sirrus86.s86powers.powers.PowerStat;
 import me.sirrus86.s86powers.powers.PowerType;
 import me.sirrus86.s86powers.tools.PowerTools;
-import me.sirrus86.s86powers.tools.version.MCVersion;
 import me.sirrus86.s86powers.users.PowerUser;
 import me.sirrus86.s86powers.utils.PowerTime;
 
@@ -37,8 +37,7 @@ import me.sirrus86.s86powers.utils.PowerTime;
 			+ "[use-progression] Mining detected blocks will eventually allow you to detect more rare veins.[/use-progression]")
 public final class OreDetector extends Power {
 
-	private Set<Material> detectable = EnumSet.of(Material.COAL_ORE, Material.DIAMOND_ORE, Material.EMERALD_ORE, Material.GOLD_ORE,
-			Material.IRON_ORE, Material.LAPIS_ORE, Material.NETHER_QUARTZ_ORE, Material.REDSTONE_ORE);
+	private Set<Material> detectable = EnumSet.noneOf(Material.class);
 	private Map<PowerUser, Set<Block>> detectBlocks;
 	
 	private PowerStat copperMined, goldMined, ironMined, lapisMined, quartzMined;
@@ -47,9 +46,12 @@ public final class OreDetector extends Power {
 	
 	@Override
 	protected void onEnable() {
-		if (!MCVersion.isLessThan(MCVersion.v1_16_1)) {
-			detectable.add(Material.getMaterial("ANCIENT_DEBRIS"));
-			detectable.add(Material.getMaterial("NETHER_GOLD_ORE"));
+		detectable.clear();
+		for (Material material : Material.values()) {
+			if (material.name().contains("_ORE")
+					|| material.name().contains("ANCIENT_DEBRIS")) {
+				detectable.add(material);
+			}
 		}
 		detectBlocks = new HashMap<>();
 	}
@@ -105,39 +107,41 @@ public final class OreDetector extends Power {
 			for (Block block : blockCheck) {
 				if (!blockMap.contains(block)) {
 					ChatColor color = ChatColor.BLACK;
-					if (block.getType() == Material.getMaterial("ANCIENT_DEBRIS")) {
+					if (block.getType().name().contains("ANCIENT_DEBRIS")) {
 						showBlock = !user.getOption(useProgression) || user.hasStatMaxed(quartzMined);
 						color = ChatColor.GOLD;
 					}
-					else if (block.getType() == Material.COAL_ORE) {
+					else if (block.getType().name().contains("COAL_ORE")) {
 						color = ChatColor.DARK_GRAY;
 					}
-					else if (block.getType() == Material.DIAMOND_ORE) {
+					else if (block.getType().name().contains("COPPER_ORE")) {
+						color = ChatColor.DARK_AQUA;
+					}
+					else if (block.getType().name().contains("DIAMOND_ORE")) {
 						showBlock = !user.getOption(useProgression) || user.hasStatMaxed(ironMined);
 						color = ChatColor.AQUA;
 					}
-					else if (block.getType() == Material.EMERALD_ORE) {
+					else if (block.getType().name().contains("EMERALD_ORE")) {
 						showBlock = !user.getOption(useProgression) || user.hasStatMaxed(lapisMined);
 						color = ChatColor.GREEN;
 					}
-					else if (block.getType() == Material.GOLD_ORE
-							|| block.getType() == Material.getMaterial("NETHER_GOLD_ORE")) {
+					else if (block.getType().name().contains("GOLD_ORE")) {
 						showBlock = !user.getOption(useProgression) || user.hasStatMaxed(copperMined);
 						color = ChatColor.YELLOW;
 					}
-					else if (block.getType() == Material.IRON_ORE) {
+					else if (block.getType().name().contains("IRON_ORE")) {
 						showBlock = !user.getOption(useProgression) || user.hasStatMaxed(copperMined);
 						color = ChatColor.GOLD;
 					}
-					else if (block.getType() == Material.LAPIS_ORE) {
+					else if (block.getType().name().contains("LAPIS_ORE")) {
 						showBlock = !user.getOption(useProgression) || user.hasStatMaxed(goldMined);
 						color = ChatColor.BLUE;
 					}
-					else if (block.getType() == Material.NETHER_QUARTZ_ORE) {
+					else if (block.getType().name().contains("QUARTZ_ORE")) {
 						showBlock = !user.getOption(useProgression) || user.hasStatMaxed(goldMined);
 						color = ChatColor.WHITE;
 					}
-					else if (block.getType() == Material.REDSTONE_ORE) {
+					else if (block.getType().name().contains("REDSTONE_ORE")) {
 						showBlock = !user.getOption(useProgression) || user.hasStatMaxed(goldMined);
 						color = ChatColor.RED;
 					}
@@ -148,7 +152,7 @@ public final class OreDetector extends Power {
 				}
 			}
 		}
-		else if (blockMap != null){
+		else if (blockMap != null) {
 			for (Block block : blockMap) {
 				PowerTools.removeSpectralBlock(user.getPlayer(), block);
 			}
@@ -166,23 +170,22 @@ public final class OreDetector extends Power {
 						&& event.getPlayer() == user.getPlayer()
 						&& detectable.contains(event.getBlock().getType())
 						&& user.getOption(useProgression)) {
-					if (event.getBlock().getType() == Material.COAL_ORE) {
+					if (event.getBlock().getType().name().contains("COPPER_ORE")) {
 						user.increaseStat(copperMined, 1);
 					}
 					else if (user.hasStatMaxed(copperMined)) {
-						if (event.getBlock().getType() == Material.GOLD_ORE
-								|| event.getBlock().getType() == Material.getMaterial("NETHER_GOLD_ORE")) {
+						if (event.getBlock().getType().name().contains("GOLD_ORE")) {
 							user.increaseStat(goldMined, 1);
 						}
-						else if (event.getBlock().getType() == Material.IRON_ORE) {
+						else if (event.getBlock().getType().name().contains("IRON_ORE")) {
 							user.increaseStat(ironMined, 1);
 						}
 					}
 					else if (user.hasStatMaxed(goldMined)) {
-						if (event.getBlock().getType() == Material.LAPIS_ORE) {
+						if (event.getBlock().getType().name().contains("LAPIS_ORE")) {
 							user.increaseStat(lapisMined, 1);
 						}
-						else if (event.getBlock().getType() == Material.NETHER_QUARTZ_ORE) {
+						else if (event.getBlock().getType().name().contains("QUARTZ_ORE")) {
 							user.increaseStat(quartzMined, 1);
 						}
 					}
