@@ -329,7 +329,7 @@ public final class PacketManagerPLib extends PacketManager {
 			if (viewer != null) {
 				sendServerPacket(viewer, entityPacket);
 			}
-			else {
+			else if (entity != null) {
 				pm.broadcastServerPacket(entityPacket, entity, false);
 			}
 			disguises.put(uuid, entityPacket);
@@ -341,7 +341,7 @@ public final class PacketManagerPLib extends PacketManager {
 			if (viewer != null) {
 				sendServerPacket(viewer, metaPacket);
 			}
-			else {
+			else if (entity != null) {
 				pm.broadcastServerPacket(metaPacket, entity, false);
 			}
 			metadata.put(uuid, metaPacket);
@@ -404,7 +404,6 @@ public final class PacketManagerPLib extends PacketManager {
 		}
 	}
 	
-	// TODO
 	@Override
 	public void addSpectralBlock(Player viewer, Block block, ChatColor color) {
 		if (!spectralBlocks.containsKey(viewer.getUniqueId())) {
@@ -431,14 +430,14 @@ public final class PacketManagerPLib extends PacketManager {
 			teamPacket.getModifier().write(7, Lists.newArrayList(viewer.getName(), uuid.toString()));
 		}
 		else {
-			teamPacket.getModifier().write(2, Lists.newArrayList(viewer.getName(), uuid.toString()));
 			Optional<InternalStructure> optStruct = teamPacket.getOptionalStructures().read(0);
 			if (optStruct.isPresent()) {
 				InternalStructure struct = optStruct.get();
-				struct.getIntegers().write(0, 2);
+				struct.getChatComponents().write(0, WrappedChatComponent.fromText(""));
 				struct.getEnumModifier(ChatColor.class, MinecraftReflection.getMinecraftClass("EnumChatFormat")).write(0, color);
 				teamPacket.getOptionalStructures().write(0, Optional.of(struct));
 			}
+			teamPacket.getModifier().write(2, Lists.newArrayList(viewer.getName(), uuid.toString()));
 		}
 		sendServerPacket(viewer, teamPacket);
 		spectralBlocks.get(viewer.getUniqueId()).put(block, id);
@@ -464,9 +463,9 @@ public final class PacketManagerPLib extends PacketManager {
 			Optional<InternalStructure> optStruct = teamPacket.getOptionalStructures().read(0);
 			if (optStruct != null) {
 				InternalStructure struct = optStruct.get();
-				struct.getIntegers().write(0, 2);
-				struct.getModifier().write(5, nms.convertColor(color));
-				teamPacket.getOptionalStructures().write(0, optStruct);
+				struct.getChatComponents().write(0, WrappedChatComponent.fromText(""));
+				struct.getEnumModifier(ChatColor.class, MinecraftReflection.getMinecraftClass("EnumChatFormat")).write(0, color);
+				teamPacket.getOptionalStructures().write(0, Optional.of(struct));
 			}
 			teamPacket.getModifier().write(2, Lists.newArrayList(viewer.getName(), entity.getUniqueId().toString()));
 		}
@@ -565,28 +564,6 @@ public final class PacketManagerPLib extends PacketManager {
 		pm.broadcastServerPacket(packet);
 		blocks.remove(bPos);
 	}
-
-//	@Override
-//	public void blockUpdate(Collection<Block> blocks) {
-//		Map<Chunk, List<Block>> chunks = new HashMap<Chunk, List<Block>>();
-//		for (Block block : blocks) {
-//			if (!chunks.containsKey(block.getChunk())) {
-//				chunks.put(block.getChunk(), new ArrayList<Block>());
-//			}
-//			chunks.get(block.getChunk()).add(block);
-//		}
-//		for (Chunk chunk : chunks.keySet()) {
-//			Block[] cBlocks = chunks.get(chunk).toArray(new Block[chunks.get(chunk).size()]);
-//			PacketContainer packet = pm.createPacket(PacketType.Play.Server.MULTI_BLOCK_CHANGE, true);
-//			packet.getChunkCoordIntPairs().write(0, new ChunkCoordIntPair(chunk.getX(), chunk.getZ()));
-//			MultiBlockChangeInfo[] changes = new MultiBlockChangeInfo[cBlocks.length];
-//			for (int i = 0; i < cBlocks.length; i ++) {
-//				changes[i] = new MultiBlockChangeInfo(cBlocks[i].getLocation(), WrappedBlockData.createData(cBlocks[i].getType()));
-//			}
-//			packet.getMultiBlockChangeInfoArrays().write(0, changes);
-//			pm.broadcastServerPacket(packet);
-//		}
-//	}
 	
 	@Override
 	public void blockUpdate(Collection<Block> blocks) {
@@ -838,10 +815,24 @@ public final class PacketManagerPLib extends PacketManager {
 	private void showAsGhost(Player viewer, Player player) {
 		PacketContainer packet = pm.createPacket(PacketType.Play.Server.SCOREBOARD_TEAM, true);
 		packet.getStrings().write(0, viewer.getEntityId() + "." + player.getEntityId());
-		packet.getStrings().write(1, "hideForOwnTeam");
 		packet.getIntegers().write(0, 0);
-		packet.getIntegers().write(1, 2);
-		packet.getModifier().write(7, Lists.newArrayList(viewer.getName(), player.getName()));
+		if (MCVersion.isLessThan(MCVersion.v1_17)) {
+			packet.getStrings().write(1, "hideForOwnTeam");
+			packet.getIntegers().write(1, 2);
+			packet.getModifier().write(7, Lists.newArrayList(viewer.getName(), player.getName()));
+		}
+		else {
+			packet.getModifier().write(2, Lists.newArrayList(viewer.getName(), player.getName()));
+			Optional<InternalStructure> optStruct = packet.getOptionalStructures().read(0);
+			if (optStruct.isPresent()) {
+				InternalStructure struct = optStruct.get();
+				struct.getChatComponents().write(0, WrappedChatComponent.fromText(""));
+				struct.getStrings().write(0, "hideForOwnTeam");
+				struct.getStrings().write(1, "always");
+				struct.getEnumModifier(ChatColor.class, MinecraftReflection.getMinecraftClass("EnumChatFormat")).write(0, ChatColor.RESET);
+				packet.getOptionalStructures().write(0, Optional.of(struct));
+			}
+		}
 		sendServerPacket(viewer, packet);
 	}
 
