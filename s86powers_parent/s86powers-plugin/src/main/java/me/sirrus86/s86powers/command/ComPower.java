@@ -1,5 +1,7 @@
 package me.sirrus86.s86powers.command;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 import me.sirrus86.s86powers.localization.LocaleString;
@@ -260,11 +262,31 @@ public final class ComPower extends ComAbstract {
 					Object value = validate(option, valueStr);
 					if (!option.isLocked()) {
 						if (value != null) {
-							power.setOption(option, option.getDefaultValue() instanceof Long ? (Long) value : value);
-							sender.sendMessage(SUCCESS + LocaleString.SET_OPTION_SUCCESS.build(option.getPath(), value));
+							if (option.getDefaultValue() instanceof List<?>) {
+								List<Object> optList = new ArrayList<>((List<?>) power.getOption(option));
+								if (optList.contains(value)) {
+									optList.remove(value);
+									power.setOption(option, optList);
+									sender.sendMessage(SUCCESS + LocaleString.SET_OPTION_REMOVE_SUCCESS.build(option.getPath(), value));
+								}
+								else {
+									optList.add(value);
+									power.setOption(option, optList);
+									sender.sendMessage(SUCCESS + LocaleString.SET_OPTION_ADD_SUCCESS.build(option.getPath(), value));
+								}
+							}
+							else {
+								power.setOption(option, option.getDefaultValue() instanceof Long ? (Long) value : option.getDefaultValue() instanceof Float ? (Float) value : value);
+								sender.sendMessage(SUCCESS + LocaleString.SET_OPTION_SUCCESS.build(option.getPath(), value));
+							}
 						}
 						else {
-							sender.sendMessage(ERROR + LocaleString.SET_OPTION_FAIL.build(option.getPath(), option.getDefaultValue().getClass(), valueStr));
+							if (option.getDefaultValue() instanceof List<?>) {
+								sender.sendMessage(ERROR + LocaleString.SET_OPTION_FAIL.build(option.getPath(), ((List<?>)option.getDefaultValue()).get(0).getClass(), valueStr));
+							}
+							else {
+								sender.sendMessage(ERROR + LocaleString.SET_OPTION_FAIL.build(option.getPath(), option.getDefaultValue().getClass(), valueStr));
+							}
 						}
 					}
 					else {

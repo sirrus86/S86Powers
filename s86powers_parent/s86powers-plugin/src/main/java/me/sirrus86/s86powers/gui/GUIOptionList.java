@@ -34,7 +34,7 @@ public class GUIOptionList extends GUIAbstractList<PowerOption<?>> {
 					String optionDesc = option.getDescription();
 					String optionValue = ChatColor.RESET + LocaleString.VALUE.toString() + ": " + ChatColor.GRAY + power.getOption(option).toString();
 					List<String> lore = PowerTools.wordSplit(ChatColor.RESET.toString() + ChatColor.GRAY.toString(), optionDesc, 30);
-					lore.add(optionValue);
+					lore.addAll(PowerTools.wordSplit(optionValue, 30));
 					optionItems.put(option, createItem(Material.PAPER, ChatColor.RESET + optionName, lore));
 				}
 				setItem(i - index, optionItems.get(option), null);

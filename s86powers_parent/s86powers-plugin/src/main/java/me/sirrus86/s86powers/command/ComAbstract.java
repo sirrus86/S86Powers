@@ -24,6 +24,8 @@ import org.bukkit.Material;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
@@ -69,6 +71,36 @@ public abstract class ComAbstract {
 		}
 		return null;
 	}
+	
+	private final PotionEffect createPotionEffect(String value) {
+		PotionEffect effect = null;
+		if (value != null) {
+			String[] values = value.split(",");
+			if (values.length > 2) {
+				PotionEffectType eType = PotionEffectType.getByName(values[0]);
+				int eDur = Integer.parseInt(values[1]);
+				int eAmp = Integer.parseInt(values[2]);
+				boolean eAmbient = true,
+						eParticles = true,
+						eIcon = true;
+				if (values.length > 3) {
+					eAmbient = Boolean.parseBoolean(values[3]);
+					if (values.length > 4) {
+						eParticles = Boolean.parseBoolean(values[4]);
+						if (values.length > 5) {
+							eIcon = Boolean.parseBoolean(values[5]);
+						}
+					}
+				}
+				try {
+					effect = new PotionEffect(eType, eDur, eAmp, eAmbient, eParticles, eIcon);
+				} catch (Exception e) {
+					effect = null;
+				}
+			}
+		}
+		return effect;
+	}
 
 	protected final String getGroups() {
 		List<PowerGroup> groups = Lists.newArrayList(S86Powers.getConfigManager().getGroups());
@@ -107,8 +139,20 @@ public abstract class ComAbstract {
 		String tmp = "";
 		for (int i = 0; i < options.size(); i ++) {
 			PowerOption<?> option = options.get(i);
-			tmp = tmp + ChatColor.GREEN + option.getPath() + ChatColor.GRAY + ": " + ChatColor.WHITE
-					+ (power.getOption(option) instanceof ItemStack ? PowerTools.getItemName((ItemStack) power.getOption(option)) : power.getOption(option).toString()) + "\n";
+			
+			String valueStr = power.getOption(option).toString();
+			if (power.getOption(option) instanceof ItemStack) {
+				valueStr = PowerTools.getItemName((ItemStack) power.getOption(option));
+			}
+			else if (power.getOption(option) instanceof List<?>) {
+				valueStr = LocaleString.LIST.toString() + " {";
+				List<?> optList = (List<?>) power.getOption(option);
+				for (int j = 0; j < optList.size(); j ++) {
+					valueStr += optList.get(j).toString() + (j < optList.size() ? ", " : "");
+				}
+				valueStr += "}";
+			}
+			tmp = tmp + ChatColor.GREEN + option.getPath() + ChatColor.GRAY + ": " + ChatColor.WHITE + valueStr + "\n";
 		}
 		if (tmp.endsWith("\n")) {
 			tmp = tmp.substring(0, tmp.lastIndexOf("\n"));
@@ -128,8 +172,19 @@ public abstract class ComAbstract {
 		String tmp = "";
 		for (int i = 0; i < options.size(); i ++) {
 			PowerOption<?> option = options.get(i);
-			tmp = tmp + ChatColor.GREEN + option.getPath() + ChatColor.GRAY + ": " + ChatColor.WHITE
-					+ (user.getOption(option) instanceof ItemStack ? PowerTools.getItemName((ItemStack) user.getOption(option)) : user.getOption(option).toString()) + "\n";
+			String valueStr = user.getOption(option).toString();
+			if (user.getOption(option) instanceof ItemStack) {
+				valueStr = PowerTools.getItemName((ItemStack) user.getOption(option));
+			}
+			else if (user.getOption(option) instanceof List<?>) {
+				valueStr = LocaleString.LIST.toString() + " {";
+				List<?> optList = (List<?>) user.getOption(option);
+				for (int j = 0; j < optList.size(); j ++) {
+					valueStr += optList.get(j).toString() + (j < optList.size() ? ", " : "");
+				}
+				valueStr += "}";
+			}
+			tmp = tmp + ChatColor.GREEN + option.getPath() + ChatColor.GRAY + ": " + ChatColor.WHITE + valueStr + "\n";
 		}
 		if (tmp.endsWith("\n")) {
 			tmp = tmp.substring(0, tmp.lastIndexOf("\n"));
@@ -336,35 +391,46 @@ public abstract class ComAbstract {
 	}
 
 	protected final Object validate(PowerOption<?> option, String value) {
-		if (option.getDefaultValue() instanceof Boolean
+		Object defValue = option.getDefaultValue() instanceof List<?> ? ((List<?>)option.getDefaultValue()).get(0) : option.getDefaultValue();
+		if (defValue instanceof Boolean
 				&& (value.equalsIgnoreCase("false") || value.equalsIgnoreCase("true"))) {
 			return Boolean.parseBoolean(value);
 		}
-		else if (option.getDefaultValue() instanceof Double) {
+		else if (defValue instanceof Double) {
 			try {
 				return Double.parseDouble(value);
 			} catch (NumberFormatException e) {
 				return null;
 			}
 		}
-		else if (option.getDefaultValue() instanceof Long) {
+		else if (defValue instanceof Float) {
+			try {
+				return Float.parseFloat(value);
+			} catch (NumberFormatException e) {
+				return null;
+			}
+		}
+		else if (defValue instanceof Long) {
 			try {
 				return PowerTime.toMillis(value);
 			} catch (Exception e) {
 				return null;
 			}
 		}
-		else if (option.getDefaultValue() instanceof Integer) {
+		else if (defValue instanceof Integer) {
 			try {
 				return Integer.parseInt(value);
 			} catch (NumberFormatException e) {
 				return null;
 			}
 		}
-		else if (option.getDefaultValue() instanceof ItemStack) {
+		else if (defValue instanceof ItemStack) {
 			return createItemStack(value);
 		}
-		else if (option.getDefaultValue() instanceof String) {
+		else if (defValue instanceof PotionEffect) {
+			return createPotionEffect(value);
+		}
+		else if (defValue instanceof String) {
 			return value;
 		}
 		return null;
