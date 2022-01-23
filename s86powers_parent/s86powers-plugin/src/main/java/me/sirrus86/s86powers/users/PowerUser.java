@@ -89,7 +89,12 @@ public final class PowerUser implements Comparable<PowerUser> {
 	public PowerUser(UUID uuid) {
 		this.uuid = uuid;
 		this.name = getOfflinePlayer().getName();
-		this.cFile = new File(plugin.getUserDirectory(), uuid.toString() + ".yml");
+		String filename = this.uuid.toString();
+		if (!plugin.getServer().getOnlineMode()
+				|| ConfigOption.Users.SAVE_FILES_BY_NAME) {
+			filename = this.name;
+		}
+		this.cFile = new File(plugin.getUserDirectory(), filename + ".yml");
 		if (!cFile.exists()) {
 			try {
 				cFile.createNewFile();

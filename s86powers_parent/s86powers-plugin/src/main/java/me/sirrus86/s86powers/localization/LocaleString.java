@@ -135,6 +135,7 @@ public enum LocaleString {
 	PREVENT_GRIEFING_CONFIG("config", "Whether fires, explosions, etc. from powers should cause no structural damage."),
 	REMOVE_POWERS_ON_DEATH_CONFIG("config", "Whether powers should be removed from players when they die."),
 	REPLACE_POWERS_OF_SAME_TYPE_CONFIG("config", "Whether newly assigned powers should automatically replace a random existing power of the same type when the cap has been reached."),
+	SAVE_FILES_BY_NAME_CONFIG("config", "Whether to user files by their name. If set to false it will save by their UUID instead."),
 	SAVE_ON_DISABLE_CONFIG("config", "Whether to automatically save all configs when the plugin is disabled."),
 	SHOW_COLORS_IN_CONSOLE_CONFIG("config", "Whether to show colors in the console. Note: Commands will show colors regardless."),
 	SHOW_COMMAND_HEADER_CONFIG("config", "Whether to show the plugin header when commands are executed. If false, a line is shown."),

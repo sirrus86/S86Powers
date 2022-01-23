@@ -1,5 +1,7 @@
 package me.sirrus86.s86powers.config;
 
+import org.bukkit.ChatColor;
+
 import me.sirrus86.s86powers.S86Powers;
 import me.sirrus86.s86powers.utils.PowerTime;
 
@@ -22,6 +24,10 @@ public final class ConfigOption {
 		public static boolean AUTO_SAVE = S86Powers.getConfigManager().getConfig().getBoolean(PARENT + "auto-save", true);
 
 		public static long AUTO_SAVE_COOLDOWN = S86Powers.getConfigManager().getConfig().getLong(PARENT + "auto-save-cooldown", PowerTime.toMillis(5, 0));
+		
+		public static String COMMAND_DEFAULT_COLOR = S86Powers.getConfigManager().getConfig().getString(PARENT + "command-default-color", ChatColor.WHITE.toString());
+
+		public static String COMMAND_PREFIX_ERROR = S86Powers.getConfigManager().getConfig().getString(PARENT + "command-prefix-error", ChatColor.WHITE + "[" + ChatColor.RED + "ERROR" + ChatColor.WHITE + "] " + ChatColor.RESET);
 
 		public static boolean ENABLE_PERMISSION_ASSIGNMENTS = S86Powers.getConfigManager().getConfig().getBoolean(PARENT + "enable-permission-assignments", false);
 		
@@ -32,6 +38,8 @@ public final class ConfigOption {
 		public static boolean SHOW_COLORS_IN_CONSOLE = S86Powers.getConfigManager().getConfig().getBoolean(PARENT + "show-color-in-console", true);
 		
 		public static boolean SHOW_COMMAND_HEADER = S86Powers.getConfigManager().getConfig().getBoolean(PARENT + "show-command-header", true);
+		
+		public static boolean SHOW_COMMAND_LINES = S86Powers.getConfigManager().getConfig().getBoolean(PARENT + "show-command-lines", true);
 		
 		public static boolean SHOW_CONFIG_STATUS = S86Powers.getConfigManager().getConfig().getBoolean(PARENT + "show-config-status", false);
 		
@@ -53,6 +61,8 @@ public final class ConfigOption {
 		
 		private final static String PARENT = "powers.";
 
+		public static boolean BYPASS_PROTOCOLLIB_REQUIREMENT = S86Powers.getConfigManager().getConfig().getBoolean(PARENT + "bypass-protocollib-requirement", false);
+
 		public static boolean DAMAGE_PLAYERS = S86Powers.getConfigManager().getConfig().getBoolean(PARENT + "damage-players", true);
 
 		public static boolean LOAD_INCOMPLETE_POWERS = S86Powers.getConfigManager().getConfig().getBoolean(PARENT + "load-incomplete-powers", false);
@@ -62,6 +72,8 @@ public final class ConfigOption {
 		public static boolean SHOW_COOLDOWN_ON_ITEM = S86Powers.getConfigManager().getConfig().getBoolean(PARENT + "show-cooldown-on-item", true);
 
 		public static boolean SHOW_HEARTS_ON_TAMED = S86Powers.getConfigManager().getConfig().getBoolean(PARENT + "show-hearts-on-tamed", true);
+
+		public static boolean SHOW_NEUTRALIZING_BEACON = S86Powers.getConfigManager().getConfig().getBoolean(PARENT + "show-neutralizing-beacon", true);
 	}
 	
 	public static final class Users {
@@ -78,7 +90,9 @@ public final class ConfigOption {
 
 		public static boolean REMOVE_POWERS_ON_DEATH = S86Powers.getConfigManager().getConfig().getBoolean(PARENT + "remove-powers-on-death", false);
 
-		public static boolean REPLACE_POWERS_OF_SAME_TYPE = S86Powers.getConfigManager().getConfig().getBoolean(PARENT + "replace-powers-of-same-type", true);
+		public static boolean REPLACE_POWERS_OF_SAME_TYPE = S86Powers.getConfigManager().getConfig().getBoolean(PARENT + "replace-powers-of-same-type", false);
+		
+		public static boolean SAVE_FILES_BY_NAME = S86Powers.getConfigManager().getConfig().getBoolean(PARENT + "save-files-by-name", false);
 		
 		public static boolean SHOW_MESSAGES_IN_ACTION_BAR = S86Powers.getConfigManager().getConfig().getBoolean(PARENT + "show-messages-in-action-bar", true);
 		
