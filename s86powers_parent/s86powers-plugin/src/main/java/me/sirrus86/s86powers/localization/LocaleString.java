@@ -103,6 +103,8 @@ public enum LocaleString {
 	SELF_TOO_MANY_POWERS_TYPE("command", "You have too many powers of type &type assigned."),
 	SET_OPTION_FAIL("command", "Attempt to set option &string to &value failed. Expected type: &class."),
 	SET_OPTION_LOCKED("command", "Attempt to set option &string to &value failed. Option is locked."),
+	SET_OPTION_ADD_SUCCESS("command", "Added &value to option &string successfully."),
+	SET_OPTION_REMOVE_SUCCESS("command", "Removed &value from option &string successfully."),
 	SET_OPTION_SUCCESS("command", "Option &string was set to &value successfully."),
 	SET_STAT_SUCCESS("command", "Stat &string was set to &int successfully."),
 	SELF_SUPPLY_SUCCESS("command", "Supplied yourself successfully."),
@@ -328,6 +330,11 @@ public enum LocaleString {
 				Power power = (Power) objects[i];
 				text = text.replaceAll("&power", power.getType().getColor() + power.getName() + ChatColor.RESET);
 			}
+//			else if (objects[i] instanceof PotionEffect
+//					&& text.contains("&effect")) {
+//				PotionEffect effect = (PotionEffect) objects[i];
+//				text = text.replaceAll("&effect", text); // TODO
+//			}
 			else if (objects[i] instanceof String
 					&& text.contains("&string")) {
 				String string = (String) objects[i];
