@@ -65,7 +65,7 @@ public abstract class Power implements Comparable<Power>, Listener {
 	 * Dedicated instance of {@link java.util.Random} used to create random values where needed.
 	 */
 	protected static final Random random = new Random();
-		
+
 	protected PowerOption<Long> cooldown;
 	protected PowerOption<ItemStack> consumable, item;
 	protected PowerOption<Boolean> wAxe, wItem, wSword;
@@ -508,7 +508,9 @@ public abstract class Power implements Comparable<Power>, Listener {
 				config.set("options." + option.getPath(), defValue);
 				saveConfig();
 			}
-			options.put(option, defValue instanceof Long ? config.getLong("options." + option.getPath(), (Long) defValue) : config.get("options." + option.getPath(), defValue));
+			options.put(option, defValue instanceof Long ? config.getLong("options." + option.getPath(), (Long) defValue) :
+					defValue instanceof Float ? (float) config.getDouble("options." + option.getPath(), (Float) defValue) :
+					config.get("options." + option.getPath(), defValue));
 		}
 		return option;
 	}
@@ -660,7 +662,7 @@ public abstract class Power implements Comparable<Power>, Listener {
 	 * @param message - Message to be displayed
 	 * @deprecated Solely for visibility within an IDE
 	 */
-	protected void showDebug(String message) {
+	public void showDebug(String message) {
 		S86Powers.showDebug(tag + " > " + message);
 	}
 	
@@ -692,6 +694,7 @@ public abstract class Power implements Comparable<Power>, Listener {
 	 * when using a supply command.
 	 * @param stacks - Items to set as supplies
 	 */
+	// TODO Pull from user's options
 	protected void supplies(ItemStack... stacks) {
 		if (supplies.isEmpty()) {
 			supplies.addAll(Lists.newArrayList(stacks));

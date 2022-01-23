@@ -1,5 +1,6 @@
 package me.sirrus86.s86powers.tools;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -16,9 +17,11 @@ import java.util.function.Predicate;
 import me.sirrus86.s86powers.S86Powers;
 import me.sirrus86.s86powers.config.ConfigOption;
 import me.sirrus86.s86powers.powers.Power;
-import me.sirrus86.s86powers.powers.PowerAdapter;
 import me.sirrus86.s86powers.powers.PowerOption;
 import me.sirrus86.s86powers.tools.nms.NMSLibrary;
+import me.sirrus86.s86powers.tools.packets.PacketManager;
+import me.sirrus86.s86powers.tools.packets.PacketManagerNull;
+import me.sirrus86.s86powers.tools.packets.PacketManagerPLib;
 import me.sirrus86.s86powers.tools.version.MCMetadata;
 import me.sirrus86.s86powers.tools.version.MCVersion;
 import me.sirrus86.s86powers.tools.version.VersionTools;
@@ -33,6 +36,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.Particle;
 import org.bukkit.Particle.DustOptions;
 import org.bukkit.block.Block;
@@ -53,6 +57,9 @@ import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.PotionMeta;
+import org.bukkit.persistence.PersistentDataContainer;
+import org.bukkit.persistence.PersistentDataHolder;
+import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.potion.PotionData;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
@@ -67,17 +74,22 @@ import com.google.common.collect.Sets;
  */
 public final class PowerTools {
 	
-	private static final Map<UUID, UUID> tamed = new HashMap<>();
-	private static final Map<Double, Set<Vector>> auraCoords = new HashMap<>();
-	private static final TreeMap<Integer, String> romanNums = new TreeMap<>();
+	private final static Map<UUID, UUID> tamed = new HashMap<>();
+	private final static List<NamespacedKey> nKeys = new ArrayList<>();
 	
-	private static final BlockFace[] axis = { BlockFace.NORTH, BlockFace.EAST, BlockFace.SOUTH, BlockFace.WEST };
-	private static final BlockFace[] radial = { BlockFace.NORTH, BlockFace.NORTH_EAST, BlockFace.EAST, BlockFace.SOUTH_EAST, BlockFace.SOUTH, BlockFace.SOUTH_WEST, BlockFace.WEST, BlockFace.NORTH_WEST };
+	private final static Map<Double, Set<Vector>> auraCoords = new HashMap<>();
+	private final static Map<Integer, Set<Vector>> fibCoords = new HashMap<>();
+	private final static TreeMap<Integer, String> romanNums = new TreeMap<>();
+	
+	private final static BlockFace[] axis = { BlockFace.NORTH, BlockFace.EAST, BlockFace.SOUTH, BlockFace.WEST };
+	private final static BlockFace[] radial = { BlockFace.NORTH, BlockFace.NORTH_EAST, BlockFace.EAST, BlockFace.SOUTH_EAST, BlockFace.SOUTH, BlockFace.SOUTH_WEST, BlockFace.WEST, BlockFace.NORTH_WEST };
 
-	private static final NMSLibrary nms = resolveNMS();
-	private static final PacketManager pm = S86Powers.getProtocolLib() != null ? new PacketManager() : null;
-	private static final Random random = new Random();
-	private static final VersionTools vTools = resolveVTools();
+	private final static NMSLibrary nms = resolveNMS();
+	private final static PacketManager pm = S86Powers.getProtocolLib() != null ? new PacketManagerPLib() : new PacketManagerNull();
+	private final static Random random = new Random();
+	private final static VersionTools vTools = resolveVTools();
+	
+	private final static double phi = Math.PI * (3 - Math.sqrt(5));
 	
 	/**
 	 * Adds a disguise to an entity, making it look like a different kind of entity.
@@ -191,13 +203,15 @@ public final class PowerTools {
 	 * then places it on a team inhabited only by it and the viewer with the specified team color.
 	 * The team is created via packets only and shouldn't disrupt existing teams.
 	 * @param viewer - The player viewing the block
-	 * @param block - The block to apply the effect to
 	 * @param color - The color to apply to the block
+	 * @param blocks - The blocks to apply the effect to
 	 * @return An instance of the resulting Shulker.
 	 */
 	@PacketManaged
 	public static void addSpectralBlock(Player viewer, Block block, ChatColor color) {
-		pm.addSpectralBlock(viewer, block, color);
+		if (pm != null) {
+			pm.addSpectralBlock(viewer, block, color);
+		}
 	}
 	
 	/**
@@ -266,7 +280,8 @@ public final class PowerTools {
 		to.getEquipment().setItemInMainHand(from.getEquipment().getItemInMainHand());
 		to.getEquipment().setItemInOffHand(from.getEquipment().getItemInOffHand());
 	}
-	
+
+	@PacketManaged
 	@Deprecated
 	public static void createBeam(Location from, Location to) {
 		if (from.getWorld() == to.getWorld()) {
@@ -399,22 +414,21 @@ public final class PowerTools {
 	}
 	
 	public static String getFilteredText(Power power, String text) {
-		PowerAdapter adapter = PowerAdapter.getAdapter(power);
 		String tmp = text;
 		while(tmp.indexOf("[") != -1 && tmp.indexOf("]") != -1) {
 			int i = tmp.indexOf("["),
 					j = tmp.indexOf("]");
 			String tag = tmp.substring(i, j + 1),
 					field = tmp.substring(i + 1, j);
-			PowerOption option = adapter.getOption(field); // ADDED
+			PowerOption<?> option = power.getOptionByName(field); // ADDED
 			if (field.startsWith("act:")) {
-				option = adapter.getOption(field.substring(4)); // ADDED
+				option = power.getOptionByName(field.substring(4)); // ADDED
 				Object object = null;
 				if (option != null) {
-					object = adapter.getOptionValue(option);
+					object = power.getOption(option);
 				}
 				else {
-					object = adapter.getFieldValue(field.substring(4));
+					object = power.getFieldValue(field.substring(4));
 				}
 				ItemStack item = (ItemStack) object;
 				if (item != null) {
@@ -424,10 +438,10 @@ public final class PowerTools {
 			else {
 				Object object = null;
 				if (option != null) {
-					object = adapter.getOptionValue(option);
+					object = power.getOption(option);
 				}
 				else {
-					object = adapter.getFieldValue(field);
+					object = power.getFieldValue(field);
 				}
 				if (object != null) {
 					if (object instanceof Boolean) {
@@ -448,6 +462,9 @@ public final class PowerTools {
 					else {
 						tmp = tmp.replace(tag, object.toString());
 					}
+				}
+				else {
+					tmp = tmp.replace(tag, "NULL");
 				}
 			}
 		}
@@ -484,10 +501,20 @@ public final class PowerTools {
 		return newLoc.getBlock();
 	}
 
-	// TODO Not working?
 	public static String getItemName(ItemStack item) {
 		ItemMeta meta = item.hasItemMeta() ? item.getItemMeta() : Bukkit.getServer().getItemFactory().getItemMeta(item.getType());
 		return WordUtils.capitalize(meta.hasLocalizedName() ? meta.getLocalizedName() : item.getType().toString().replace('_', ' ').toLowerCase());
+	}
+	
+	private static NamespacedKey getNamespacedKey(String key) {
+		for (NamespacedKey nKey : nKeys) {
+			if (nKey.getKey().equalsIgnoreCase(key)) {
+				return nKey;
+			}
+		}
+		NamespacedKey newKey = new NamespacedKey(JavaPlugin.getPlugin(S86Powers.class), key);
+		nKeys.add(newKey);
+		return newKey;
 	}
 
 	public static Set<Block> getNearbyBlocks(Block block, BlockFace... faces) {
@@ -550,7 +577,7 @@ public final class PowerTools {
 		return mats;
 	}
 	
-	protected static final NMSLibrary getNMSLibrary() {
+	public static final NMSLibrary getNMSLibrary() {
 		return nms != null ? nms : resolveNMS();
 	}
 	
@@ -588,6 +615,28 @@ public final class PowerTools {
 //			case REGEN: return "Regeneration";
 //			default: return WordUtils.capitalizeFully(type.name().replace("_", " "));
 //		}
+	}
+	
+	/**
+	 * Gets a potion effect type from string text.
+	 * <p>
+	 * Will convert MC-friendly names to Bukkit potion types
+	 * @param type
+	 * @return
+	 */
+	public static final PotionEffectType getPotionEffectType(String type) {
+		switch(type) {
+			case "slowness": return PotionEffectType.SLOW;
+			case "haste": return PotionEffectType.FAST_DIGGING;
+			case "mining_fatigue": return PotionEffectType.SLOW_DIGGING;
+			case "strength": return PotionEffectType.INCREASE_DAMAGE;
+			case "instant_health": return PotionEffectType.HEAL;
+			case "instant_damage": return PotionEffectType.HARM;
+			case "jump_boost": return PotionEffectType.JUMP;
+			case "nausea": return PotionEffectType.CONFUSION;
+			case "resistance": return PotionEffectType.DAMAGE_RESISTANCE;
+			default: return PotionEffectType.getByName(type.toUpperCase());
+		}
 	}
 	
 	public static LivingEntity getRandomEntity(Entity entity, double radius, LivingEntity... ignore) {
@@ -637,23 +686,52 @@ public final class PowerTools {
 		return Material.getMaterial(type.toString() + "_SPAWN_EGG");
 	}
 	
+	private static Set<Vector> getFibCoords(int samples) {
+		if (!fibCoords.containsKey(samples)
+				|| fibCoords.get(samples) == null
+				|| fibCoords.get(samples).isEmpty()) {
+			Set<Vector> coords = new HashSet<>();
+			for (int i = 1; i < samples; i ++) {
+				float y = 1 - (i / (samples - 1)) * 2;
+				double rad = Math.sqrt(1 - y * y);
+				
+				double theta = phi * i;
+				double x = Math.cos(theta) * rad;
+				double z = Math.sin(theta) * rad;
+				coords.add(new Vector(x, y, z));
+			}
+			
+			fibCoords.put(samples, coords);
+		}
+		return fibCoords.get(samples);
+	}
+	
 	public static Set<Vector> getSphereCoords(double radius) {
 		if (!auraCoords.containsKey(radius)
 				|| auraCoords.get(radius) == null
 				|| auraCoords.get(radius).isEmpty()) {
 			Set<Vector> coords = new HashSet<>();
-			for (double i = 0; i <= Math.PI; i += Math.PI / (radius * 2.0D)) {
-				double rad = Math.sin(i) * radius;
-				double y = Math.cos(i) * radius;
-				for (double j = 0; j < Math.PI * 2; j += Math.PI / Math.abs(rad)) {
-					double x = Math.cos(j) * rad;
-					double z = Math.sin(j) * rad;
+			for (double phi = 0; phi <= Math.PI; phi += Math.PI / (radius * 2.0D)) {
+				double rad = Math.sin(phi) * radius;
+				double y = Math.cos(phi) * radius;
+				for (double theta = 0; theta < Math.PI * 2; theta += Math.PI / Math.abs(rad)) {
+					double x = Math.cos(theta) * rad;
+					double z = Math.sin(theta) * rad;
 					coords.add(new Vector(x, y, z));
 				}
 			}
 			auraCoords.put(radius, coords);
 		}
 		return auraCoords.get(radius);
+	}
+	
+	public static Set<Vector> getSphereCoords(int samples, double radius) {
+		Set<Vector> coords = getFibCoords(samples);
+		Set<Vector> newCoords = new HashSet<>();
+		for (Vector coord : coords) {
+			newCoords.add(new Vector(coord.getX() * radius, coord.getY() * radius, coord.getZ() * radius));
+		}
+		return newCoords;
 	}
 	
 	public static PowerUser getTamedOwner(Entity entity) {
@@ -679,6 +757,7 @@ public final class PowerTools {
 				|| isTool(item);
 	}
 
+	@PacketManaged
 	public static void hide(Entity entity) {
 		pm.hide(entity);
 	}
@@ -778,6 +857,11 @@ public final class PowerTools {
 						|| isShovel(item));
 	}
 	
+	public static void modifyEntity(PersistentDataHolder holder, Entity entity) {
+		PersistentDataContainer container = holder.getPersistentDataContainer();
+		// TODO
+	}
+	
 	public static void playParticleEffect(Location loc, Particle particle) {
 		playParticleEffect(loc, particle, random.nextInt(6));
 	}
@@ -812,7 +896,9 @@ public final class PowerTools {
 
 	@PacketManaged
 	public static void removeSpectralBlock(Player player, Block block) {
-		pm.removeSpectralBlock(player, block);
+		if (pm != null) {
+			pm.removeSpectralBlock(player, block);
+		}
 	}
 	
 	public static EntityType resolveEntityType(String name) {
@@ -831,7 +917,7 @@ public final class PowerTools {
 	
 	private static NMSLibrary resolveNMS() {
 		try {
-			return nms != null ? nms : (NMSLibrary) Class.forName("me.sirrus86.s86powers.tools.nms." + MCVersion.CURRENT_VERSION.getPath() + ".NMSLibrary").newInstance();
+			return nms != null ? nms : (NMSLibrary) Class.forName("me.sirrus86.s86powers.tools.nms." + MCVersion.CURRENT_VERSION.getPath() + ".NMSLibrary").getDeclaredConstructor().newInstance();
 		} catch (Exception e) {
 			e.printStackTrace();
 			return null;
@@ -843,14 +929,14 @@ public final class PowerTools {
 			try {
 				switch(MCVersion.CURRENT_VERSION) {
 					case v1_13: case v1_13_1: case v1_13_2: {
-						return (VersionTools) Class.forName("me.sirrus86.s86powers.tools.version.v1_13.VersionTools").newInstance();
+						return (VersionTools) Class.forName("me.sirrus86.s86powers.tools.version.v1_13.VersionTools").getDeclaredConstructor().newInstance();
 					}
 					case v1_14: case v1_14_1: case v1_14_2: case v1_14_3: case v1_14_4:
 					case v1_15: case v1_15_1: case v1_15_2: {
-						return (VersionTools) Class.forName("me.sirrus86.s86powers.tools.version.v1_14.VersionTools").newInstance();
+						return (VersionTools) Class.forName("me.sirrus86.s86powers.tools.version.v1_14.VersionTools").getDeclaredConstructor().newInstance();
 					}
 					default: {
-						return (VersionTools) Class.forName("me.sirrus86.s86powers.tools.version.v1_16.VersionTools").newInstance();
+						return (VersionTools) Class.forName("me.sirrus86.s86powers.tools.version.v1_16.VersionTools").getDeclaredConstructor().newInstance();
 					}
 				}
 			} catch (Exception e) {
@@ -929,6 +1015,16 @@ public final class PowerTools {
 	
 	public static void spawnEntity(Entity entity, Location loc) {
 		nms.spawnEntity(entity, loc);
+	}
+	
+	/**
+	 * Stores NBT data
+	 * @param holder
+	 * @param entity
+	 */
+	public static void storeEntity(PersistentDataHolder holder, Entity entity) {
+		PersistentDataContainer container = holder.getPersistentDataContainer();
+		// TODO
 	}
 	
 	public static void takeControl(Player player, Creature creature) {

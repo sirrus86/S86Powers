@@ -827,9 +827,9 @@ public final class PacketManagerPLib extends PacketManager {
 			if (optStruct.isPresent()) {
 				InternalStructure struct = optStruct.get();
 				struct.getChatComponents().write(0, WrappedChatComponent.fromText(""));
+				struct.getIntegers().write(0, 2);
 				struct.getStrings().write(0, "hideForOwnTeam");
-				struct.getStrings().write(1, "always");
-				struct.getEnumModifier(ChatColor.class, MinecraftReflection.getMinecraftClass("EnumChatFormat")).write(0, ChatColor.RESET);
+//				struct.getStrings().write(1, "always");
 				packet.getOptionalStructures().write(0, Optional.of(struct));
 			}
 		}

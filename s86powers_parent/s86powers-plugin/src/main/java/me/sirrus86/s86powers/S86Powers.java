@@ -34,7 +34,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 /**
  * 
  * @author sirrus86
- * @version 5.2.1
+ * @version 5.2.2
  */
 public final class S86Powers extends JavaPlugin {
 	

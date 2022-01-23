@@ -4,7 +4,6 @@ import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.event.Cancellable;
 import org.bukkit.inventory.EquipmentSlot;
-//import org.bukkit.event.block.Action;
 import org.bukkit.inventory.ItemStack;
 
 import me.sirrus86.s86powers.powers.Power;

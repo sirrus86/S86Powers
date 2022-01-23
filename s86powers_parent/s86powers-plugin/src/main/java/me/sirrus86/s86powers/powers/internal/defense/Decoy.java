@@ -59,7 +59,7 @@ public final class Decoy extends Power {
 			LivingEntity target = user.getTargetEntity(LivingEntity.class, user.getOption(range));
 			if (target != null
 					&& !(target instanceof Player)) {
-				if (user.getCooldown(this) <= 0) {
+				if (user.getCooldown(this) <= 0L) {
 					user.getPlayer().playEffect(EntityEffect.ENTITY_POOF);
 					PowerTools.addDisguise(target, user.getPlayer());
 					if (user.getOption(consume)) {
