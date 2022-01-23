@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -146,6 +147,20 @@ public final class PowerUser implements Comparable<PowerUser> {
 			return getPlayer().addPotionEffect(new PotionEffect(effect.getType(), effect.getDuration(), effect.getAmplifier(), false, false, false));
 		}
 		return false;
+	}
+	
+	/**
+	 * Adds several potion effects to the user.
+	 * <p>
+	 * Note: If the player is offline this will silently fail.
+	 * @param effects - {@link PotionEffect}s to apply to this user
+	 */
+	public void addPotionEffects(Collection<PotionEffect> effects) {
+		if (isOnline()
+				&& effects != null
+				&& !effects.isEmpty()) {
+			getPlayer().addPotionEffects(effects);
+		}
 	}
 	
 	public void addPower(Power power) {
@@ -712,6 +727,22 @@ public final class PowerUser implements Comparable<PowerUser> {
 	public void removePotionEffect(PotionEffectType effect) {
 		if (isOnline()) {
 			getPlayer().removePotionEffect(effect);
+		}
+	}
+	
+	/**
+	 * Shortcut method to remove several potion effects from the user.
+	 * <p>
+	 * Note: If the player is offline this will silently fail.
+	 * @param effects - {@link PotionEffect}s to remove from this user
+	 */
+	public void removePotionEffects(Collection<PotionEffect> effects) {
+		if (isOnline()
+				&& effects != null
+				&& !effects.isEmpty()) {
+			for (PotionEffect effect : effects) {
+				getPlayer().removePotionEffect(effect.getType());
+			}
 		}
 	}
 	
