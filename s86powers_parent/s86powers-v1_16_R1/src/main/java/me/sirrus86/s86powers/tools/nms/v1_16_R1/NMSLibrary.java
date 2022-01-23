@@ -6,7 +6,6 @@ import java.util.EnumMap;
 import java.util.LinkedHashSet;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.craftbukkit.v1_16_R1.block.CraftBlock;
 import org.bukkit.craftbukkit.v1_16_R1.CraftWorld;
@@ -31,7 +30,6 @@ import org.bukkit.util.Vector;
 import net.minecraft.server.v1_16_R1.Item;
 import net.minecraft.server.v1_16_R1.EntityLiving;
 import net.minecraft.server.v1_16_R1.EntityTypes;
-import net.minecraft.server.v1_16_R1.EnumChatFormat;
 import net.minecraft.server.v1_16_R1.EnumMoveType;
 import net.minecraft.server.v1_16_R1.IRegistry;
 import net.minecraft.server.v1_16_R1.ItemStack;
@@ -67,11 +65,6 @@ public class NMSLibrary extends me.sirrus86.s86powers.tools.nms.NMSLibrary {
 	@Override
 	public EntityItem createItem(Location loc, org.bukkit.inventory.ItemStack item) {
 		return new EntityItem(((CraftWorld)loc.getWorld()).getHandle(), loc.getX(), loc.getY(), loc.getZ(), CraftItemStack.asNMSCopy(item));
-	}
-	
-	@Override
-	public EnumChatFormat convertColor(ChatColor color) {
-		return color != ChatColor.MAGIC ? EnumChatFormat.b(color.name()) : EnumChatFormat.OBFUSCATED;
 	}
 	
 	@Override

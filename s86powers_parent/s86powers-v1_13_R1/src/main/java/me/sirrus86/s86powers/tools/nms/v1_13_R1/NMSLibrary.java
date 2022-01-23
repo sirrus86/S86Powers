@@ -3,7 +3,6 @@ package me.sirrus86.s86powers.tools.nms.v1_13_R1;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 
-import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.craftbukkit.v1_13_R1.CraftWorld;
 import org.bukkit.craftbukkit.v1_13_R1.block.CraftBlock;
@@ -41,7 +40,6 @@ import net.minecraft.server.v1_13_R1.NBTTagList;
 import net.minecraft.server.v1_13_R1.PathfinderGoalHurtByTarget;
 import net.minecraft.server.v1_13_R1.PathfinderGoalMeleeAttack;
 import net.minecraft.server.v1_13_R1.PathfinderGoalSelector;
-import net.minecraft.server.v1_13_R1.EnumChatFormat;
 import net.minecraft.server.v1_13_R1.EnumMoveType;
 import net.minecraft.server.v1_13_R1.EntityTypes;
 
@@ -57,11 +55,6 @@ public class NMSLibrary extends me.sirrus86.s86powers.tools.nms.NMSLibrary {
 		nmsEntity.lastYaw = nmsEntity.yaw;
 		nmsEntity.yaw = rider.getEyeLocation().getYaw();
 		nmsEntity.setHeadRotation(rider.getEyeLocation().getYaw());
-	}
-	
-	@Override
-	public EnumChatFormat convertColor(ChatColor color) {
-		return color != ChatColor.MAGIC ? EnumChatFormat.c(color.name()) : EnumChatFormat.OBFUSCATED;
 	}
 	
 	@Override

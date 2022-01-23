@@ -1,4 +1,4 @@
-package me.sirrus86.s86powers.tools.nms.v1_17_1;
+package me.sirrus86.s86powers.tools.nms.v1_18_1;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -7,13 +7,13 @@ import java.util.LinkedHashSet;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.bukkit.Location;
-import org.bukkit.craftbukkit.v1_17_R1.block.CraftBlock;
-import org.bukkit.craftbukkit.v1_17_R1.CraftWorld;
-import org.bukkit.craftbukkit.v1_17_R1.entity.CraftCreature;
-import org.bukkit.craftbukkit.v1_17_R1.entity.CraftEntity;
-import org.bukkit.craftbukkit.v1_17_R1.entity.CraftFireball;
-import org.bukkit.craftbukkit.v1_17_R1.entity.CraftPlayer;
-import org.bukkit.craftbukkit.v1_17_R1.inventory.CraftItemStack;
+import org.bukkit.craftbukkit.v1_18_R1.block.CraftBlock;
+import org.bukkit.craftbukkit.v1_18_R1.CraftWorld;
+import org.bukkit.craftbukkit.v1_18_R1.entity.CraftCreature;
+import org.bukkit.craftbukkit.v1_18_R1.entity.CraftEntity;
+import org.bukkit.craftbukkit.v1_18_R1.entity.CraftFireball;
+import org.bukkit.craftbukkit.v1_18_R1.entity.CraftPlayer;
+import org.bukkit.craftbukkit.v1_18_R1.inventory.CraftItemStack;
 import org.bukkit.entity.Creature;
 import org.bukkit.entity.Endermite;
 import org.bukkit.entity.Player;
@@ -76,19 +76,19 @@ public class NMSLibrary extends me.sirrus86.s86powers.tools.nms.NMSLibrary {
 	@Override
 	public DataWatcher getDataWatcher(Object instance) {
 		if (instance instanceof Entity) {
-			return ((Entity) instance).getDataWatcher();
+			return ((Entity) instance).ai();
 		}
 		return null;
 	}
 	
 	@Override
 	public int getEntityTypeID(org.bukkit.entity.EntityType type) {
-		return IRegistry.Y.getId(getNMSEntityType(type));
+		return IRegistry.Z.a(getNMSEntityType(type));
 	}
 	
 	@Override
 	public int getFallingBlockData(org.bukkit.block.Block block) {
-		return Block.getCombinedId(((CraftBlock)block).getNMS());
+		return Block.i(((CraftBlock)block).getNMS());
 	}
 	
 	@Override
@@ -109,7 +109,7 @@ public class NMSLibrary extends me.sirrus86.s86powers.tools.nms.NMSLibrary {
 	
 	@Override
 	public Item getNMSItem(org.bukkit.inventory.ItemStack item) {
-		return getNMSItemStack(item).getItem();
+		return getNMSItemStack(item).c();
 	}
 	
 	@Override
@@ -122,8 +122,8 @@ public class NMSLibrary extends me.sirrus86.s86powers.tools.nms.NMSLibrary {
 		try {
 			entity.setTarget(null);
 			EntityCreature handle = ((CraftCreature)entity).getHandle();
-			handle.bP = new PathfinderGoalSelector(handle.t.getMethodProfilerSupplier());
-			handle.bQ = new PathfinderGoalSelector(handle.t.getMethodProfilerSupplier()); // TODO: Make separate for 1.17.1
+			handle.bR = new PathfinderGoalSelector(handle.t.ac());
+			handle.bS = new PathfinderGoalSelector(handle.t.ac()); // TODO: Make separate for 1.17.1
 //			PathfinderGoalSelector[] goalSelectors = new PathfinderGoalSelector[] { handle.goalSelector, handle.targetSelector };
 //			for (int i = 0; i < goalSelectors.length; i ++) {
 //				Field c = goalSelectors[i].getClass().getDeclaredField("c"),
@@ -148,18 +148,18 @@ public class NMSLibrary extends me.sirrus86.s86powers.tools.nms.NMSLibrary {
 	@Override
 	public org.bukkit.inventory.ItemStack setItemGlow(org.bukkit.inventory.ItemStack item) {
 		ItemStack nmsItem = CraftItemStack.asNMSCopy(item);
-		NBTTagCompound tag = nmsItem.hasTag() ? nmsItem.getTag() : new NBTTagCompound();
+		NBTTagCompound tag = nmsItem.r() ? nmsItem.s() : new NBTTagCompound();
 		NBTTagList ench = new NBTTagList();
-		tag.set("ench", ench);
-		nmsItem.setTag(tag);
+		tag.a("ench", ench);
+		nmsItem.c(tag);
 		return CraftItemStack.asCraftMirror(nmsItem);
 	}
 	
 	@Override
 	public void setRotation(org.bukkit.entity.Entity entity, float yaw, float pitch) {
 		Entity nmsEntity = ((CraftEntity)entity).getHandle();
-		nmsEntity.setXRot(yaw);
-		nmsEntity.setYRot(pitch);
+		nmsEntity.p(yaw);
+		nmsEntity.o(pitch);
 	}
 
 	@Override
@@ -167,8 +167,8 @@ public class NMSLibrary extends me.sirrus86.s86powers.tools.nms.NMSLibrary {
 		try {
 			entity.setTarget(null);
 			EntityCreature handle = ((CraftCreature)entity).getHandle();
-			PathfinderGoalSelector goalSelector = handle.bP,
-					targetSelector = handle.bQ;
+			PathfinderGoalSelector goalSelector = handle.bR,
+					targetSelector = handle.bS;
 			Field c = targetSelector.getClass().getDeclaredField("c"),
 					d = targetSelector.getClass().getDeclaredField("d");
 			c.setAccessible(true);
@@ -207,7 +207,7 @@ public class NMSLibrary extends me.sirrus86.s86powers.tools.nms.NMSLibrary {
 	public void unTame(Creature entity) {
 		try {
 			EntityCreature handle = ((CraftCreature)entity).getHandle();
-			PathfinderGoalSelector[] goalSelectors = { handle.bP, handle.bQ };
+			PathfinderGoalSelector[] goalSelectors = { handle.bR, handle.bS };
 			for (PathfinderGoalSelector goalSelector : goalSelectors) {
 				Field c = goalSelector.getClass().getDeclaredField("c"),
 						d = goalSelector.getClass().getDeclaredField("d");

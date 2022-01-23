@@ -1,4 +1,4 @@
-package me.sirrus86.s86powers.tools.nms.v1_17_1;
+package me.sirrus86.s86powers.tools.nms.v1_18;
 
 import java.util.EnumSet;
 
@@ -28,16 +28,16 @@ public class PathfinderGoalTamerHurtTarget extends PathfinderGoalTarget {
 		if (entityliving == null) {
 			return false;
 		}
-		this.b = entityliving.dI();
-		int i = entityliving.dJ();
+		this.b = entityliving.dN();
+		int i = entityliving.dO();
 		return (i != this.c && a(this.b, PathfinderTargetCondition.a));
 	}
 
 	public void c() {
-		this.e.setGoalTarget(this.b, EntityTargetEvent.TargetReason.OWNER_ATTACKED_TARGET, true);
+		this.e.setTarget(this.b, EntityTargetEvent.TargetReason.OWNER_ATTACKED_TARGET, true);
 		EntityLiving entityliving = this.owner;
 		if (entityliving != null) {
-			this.c = entityliving.dJ();
+			this.c = entityliving.dO();
 		}
 		super.c();
 	}

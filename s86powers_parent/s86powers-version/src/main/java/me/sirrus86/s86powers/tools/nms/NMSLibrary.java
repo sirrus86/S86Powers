@@ -1,6 +1,5 @@
 package me.sirrus86.s86powers.tools.nms;
 
-import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Creature;
@@ -15,8 +14,6 @@ import org.bukkit.util.Vector;
 public abstract class NMSLibrary {
 	
 	public abstract void controlWASD(Player rider, LivingEntity entity, float forward, float strafe, boolean jump);
-	
-	public abstract Enum<?> convertColor(ChatColor color);
 	
 	public abstract Object createItem(Location loc, ItemStack item);
 		

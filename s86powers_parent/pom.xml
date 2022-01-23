@@ -15,6 +15,7 @@
 
 	<modules>
 		<module>s86powers-plugin</module>
+		<module>s86powers-reflect</module>
 		<module>s86powers-v1_13_R1</module>
 		<module>s86powers-v1_13_R2</module>
 		<module>s86powers-v1_14_R1</module>
@@ -24,6 +25,8 @@
 		<module>s86powers-v1_16_R3</module>
 		<module>s86powers-v1_17</module>
 		<module>s86powers-v1_17_1</module>
+		<module>s86powers-v1_18</module>
+		<module>s86powers-v1_18_1</module>
 		<module>s86powers-version</module>
 	</modules>
 

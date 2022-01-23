@@ -139,6 +139,10 @@ public class MCMetadata {
 		LLAMA_STRENGTH(16,18,19,19,20,Integer.class),
 		LLAMA_CARPET_COLOR(17,19,20,20,21,Integer.class),
 		LLAMA_VARIANT(18,20,21,21,22,Integer.class),
+		
+		AXOLOTL_VARIANT(-1,-1,-1,-1,17,Integer.class),
+		AXOLOTL_PLAYING_DEAD(-1,-1,-1,-1,18,Boolean.class),
+		AXOLOTL_SPAWNED_FROM_BUCKET(-1,-1,-1,-1,19,Boolean.class),
 
 		BEE_STATE(-1,-1,16,16,17,Byte.class),
 		BEE_ANGER_TIME(-1,-1,17,17,18,Integer.class),
@@ -147,8 +151,6 @@ public class MCMetadata {
 		FOX_STATE(-1,16,17,17,18,Byte.class),
 		FOX_FIRST_UUID(-1,17,18,18,19,UUID.class), //TODO: OptUUID
 		FOX_SECOND_UUID(-1,18,19,19,20,UUID.class), //TODO: OptUUID
-		
-		HOGLIN_IMMUNE_TO_ZOMBIFICATION(-1,-1,-1,16,17,Boolean.class),
 		
 		OCELOT_IS_TRUSTING(-1,15,16,16,17,Boolean.class),
 
@@ -163,10 +165,6 @@ public class MCMetadata {
 		PIG_CARROT_BOOST_TIME(14,16,17,17,18,Integer.class),
 		
 		RABBIT_TYPE(13,15,16,16,17,Integer.class),
-
-		STRIDER_BOOST_TIME(-1,-1,-1,16,17,Integer.class),
-		STRIDER_IS_SHAKING(-1,-1,-1,17,18,Boolean.class),
-		STRIDER_HAS_SADDLE(-1,-1,-1,18,19,Boolean.class),
 		
 		TURTLE_HOME_POSITION(13,15,16,16,17,BlockVector.class),
 		TURTLE_HAS_EGG(14,16,17,17,18,Boolean.class),
@@ -176,10 +174,16 @@ public class MCMetadata {
 		TURTLE_IS_TRAVELING(18,20,21,21,22,Boolean.class),
 		
 		POLARBEAR_STANDING_UP(13,15,16,16,17,Boolean.class),
+		
+		HOGLIN_IMMUNE_TO_ZOMBIFICATION(-1,-1,-1,16,17,Boolean.class),
 
 		MOOSHROOM_VARIANT(-1,15,16,16,17,String.class),
 		
 		SHEEP_OPTIONS(13,15,16,16,17,Byte.class),
+
+		STRIDER_BOOST_TIME(-1,-1,-1,16,17,Integer.class),
+		STRIDER_IS_SHAKING(-1,-1,-1,17,18,Boolean.class),
+		STRIDER_HAS_SADDLE(-1,-1,-1,18,19,Boolean.class),
 		
 		TAMEABLE_STATE(13,15,16,16,17,Byte.class),
 		TAMEABLE_OWNER_UUID(14,16,17,17,18,UUID.class), //TODO: OptUUID
@@ -208,6 +212,11 @@ public class MCMetadata {
 		SHULKER_ATTACH_POSITION(13,15,16,16,17,BlockVector.class), //TODO: OptPosition
 		SHULKER_SHIELD_HEIGHT(14,16,17,17,18,Byte.class),
 		SHULKER_COLOR(15,17,18,18,19,Byte.class),
+		
+		PIGLIN_IMMUNE_TO_ZOMBIFICATION(-1,-1,-1,15,16,Boolean.class),
+		PIGLIN_IS_BABY(-1,-1,-1,16,17,Boolean.class),
+		PIGLIN_IS_CHARGING_CROSSBOW(-1,-1,-1,17,18,Boolean.class),
+		PIGLIN_IS_DANCING(-1,-1,-1,18,19,Boolean.class),
 
 		BLAZE_IS_ON_FIRE(12,14,15,15,16,Byte.class),
 
@@ -217,11 +226,6 @@ public class MCMetadata {
 
 		GUARDIAN_IS_RETRACTING_SPIKES(12,14,15,15,16,Boolean.class),
 		GUARDIAN_TARGET_ENTITY_ID(13,15,16,16,17,Integer.class),
-		
-		PIGLIN_IMMUNE_TO_ZOMBIFICATION(-1,-1,-1,15,16,Boolean.class),
-		PIGLIN_IS_BABY(-1,-1,-1,16,17,Boolean.class),
-		PIGLIN_IS_CHARGING_CROSSBOW(-1,-1,-1,17,18,Boolean.class),
-		PIGLIN_IS_DANCING(-1,-1,-1,18,19,Boolean.class),
 
 		RAIDER_IS_CELEBRATING(-1,14,15,15,16,Boolean.class),
 
@@ -281,8 +285,8 @@ public class MCMetadata {
 
 		TNTPRIMED_FUSE_TIME(6,7,7,7,8,Integer.class);
 		
-		private int v1_13, v1_14, v1_15, v1_16, v1_17;
-		private Class<?> type;
+		private final int v1_13, v1_14, v1_15, v1_16, v1_17;
+		private final Class<?> type;
 		
 		private EntityMeta(int v1_13, int v1_14, int v1_15, int v1_16, int v1_17, Class<?> type) {
 			this.v1_13 = v1_13;
@@ -303,7 +307,7 @@ public class MCMetadata {
 					return this.v1_15;
 				case v1_16_1: case v1_16_2: case v1_16_3: case v1_16_4: case v1_16_5:
 					return this.v1_16;
-				case v1_17: case v1_17_1:
+				case v1_17: case v1_17_1: case v1_18: case v1_18_1:
 					return this.v1_17;
 				default: return -1;
 			}

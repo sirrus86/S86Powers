@@ -28,6 +28,13 @@
 		</dependency>
 		<dependency>
 			<groupId>me.sirrus86</groupId>
+			<artifactId>s86powers-reflect</artifactId>
+			<version>reflect</version>
+			<scope>compile</scope>
+			<optional>true</optional>
+		</dependency>
+		<dependency>
+			<groupId>me.sirrus86</groupId>
 			<artifactId>s86powers-v1_13_R1</artifactId>
 			<version>v1_13_R1</version>
 			<scope>compile</scope>
@@ -86,6 +93,20 @@
 			<groupId>me.sirrus86</groupId>
 			<artifactId>s86powers-v1_17_1</artifactId>
 			<version>v1_17_1</version>
+			<scope>compile</scope>
+			<optional>true</optional>
+		</dependency>
+		<dependency>
+			<groupId>me.sirrus86</groupId>
+			<artifactId>s86powers-v1_18</artifactId>
+			<version>v1_18</version>
+			<scope>compile</scope>
+			<optional>true</optional>
+		</dependency>
+		<dependency>
+			<groupId>me.sirrus86</groupId>
+			<artifactId>s86powers-v1_18_1</artifactId>
+			<version>v1_18_1</version>
 			<scope>compile</scope>
 			<optional>true</optional>
 		</dependency>
