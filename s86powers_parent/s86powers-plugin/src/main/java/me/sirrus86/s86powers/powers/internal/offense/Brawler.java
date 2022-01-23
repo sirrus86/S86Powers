@@ -1,6 +1,7 @@
 package me.sirrus86.s86powers.powers.internal.offense;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.bukkit.Material;
@@ -24,15 +25,15 @@ import me.sirrus86.s86powers.users.PowerUser;
 import me.sirrus86.s86powers.utils.PowerTime;
 
 @PowerManifest(name = "Brawler", type = PowerType.OFFENSE, author = "sirrus86", concept = "diamondmario", icon = Material.DAMAGED_ANVIL,
-	description = "All barehanded attacks deal [damage-increase]% normal damage. Barehanded attacks while crouching will slow the target for [sweep-slow-duration],"
+	description = "All barehanded attacks deal [damage-increase]% normal damage. Barehanded attacks while crouching will afflict them with status effects,"
 			+ " while attacks within [uppercut-buffer] of rising will uppercut them into the air. Falling enemies above you can be juggled for additional damage.")
 public final class Brawler extends Power {
 
 	private Map<PowerUser, Long> canUppercut;
 	
 	private PowerOption<Double> dmgIncr, juggleVert, offHandDef, uppercutVert;
-	private PowerOption<Integer> slowAmp;
-	private PowerOption<Long> slowDur, uppercutBuffer;
+	private PowerOption<Long> uppercutBuffer;
+	private PowerOption<List<PotionEffect>> sweepEffects;
 	private PowerStat totalDmg;
 	
 	@Override
@@ -45,8 +46,7 @@ public final class Brawler extends Power {
 		dmgIncr = option("damage-increase", 400.0D, "Percentage increase for damage done while barehanded.");
 		juggleVert = option("juggle-vertical-modifier", 0.5D, "Velocity modifier to entities hit while falling.");
 		offHandDef = option("offhand-defense", 75.0D, "Percentage decrease to incoming melee damage while off-hand has no item equipped.");
-		slowAmp = option("sweep-slow-amplifier", 2, "Amplifier of slow effect applied to those hit by low sweep attacks.");
-		slowDur = option("sweep-slow-duration", PowerTime.toMillis(3, 0), "Amount of time to slow those hit by low sweep attacks.");
+		sweepEffects = option("sweep-effects", List.of(new PotionEffect(PotionEffectType.SLOW, PowerTime.toTicks(3, 0), 2)), "Effects to afflict on entities hit by sweeping attacks.");
 		totalDmg = stat("total-barehanded-damage", 100, "Damage dealt while barehanded", "Keeping you off-hand empty allows you to block [offhand-defense]% of melee damage from enemies.");
 		uppercutBuffer = option("uppercut-buffer", PowerTime.toMillis(500), "Amount of time after standing from crouch to perform an uppercut.");
 		uppercutVert = option("uppercut-vertical-modifier", 0.75D, "Velocity modifier to entities hit by an uppercut.");
@@ -61,8 +61,7 @@ public final class Brawler extends Power {
 				event.setDamage(event.getDamage() * (user.getOption(dmgIncr) / 100.0D));
 				if (user.getPlayer().isSneaking()
 						&& event.getEntity() instanceof LivingEntity) {
-					((LivingEntity) event.getEntity()).addPotionEffect(new PotionEffect(PotionEffectType.SLOW, (int) PowerTime.toTicks(user.getOption(slowDur)),
-							user.getOption(slowAmp), false, false, false));
+					((LivingEntity) event.getEntity()).addPotionEffects(user.getOption(sweepEffects));
 				}
 				else if (canUppercut.containsKey(user)
 						&& System.currentTimeMillis() < canUppercut.get(user)) {

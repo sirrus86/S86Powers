@@ -1,6 +1,7 @@
 package me.sirrus86.s86powers.powers.internal.defense;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.bukkit.ChatColor;
@@ -27,15 +28,15 @@ import me.sirrus86.s86powers.utils.PowerTime;
 
 @PowerManifest(name = "Bulwark", type = PowerType.DEFENSE, author = "sirrus86", concept = "Neubulae", icon = Material.SHIELD,
 	description = "Blocking with a shield [parry-window] before being hit will parry melee attacks, or deflect arrows back at the shooter."
-			+ " [fatigue]Entities that are parried will also be afflicted with fatigue for [fatigue-duration]. [/fatigue][cooldown] cooldown.")
+			+ " [effects.enable]Entities that are parried will also be afflicted with status effects. [/effects.enable][cooldown] cooldown.")
 public final class Bulwark extends Power {
 	
 	private Map<PowerUser, Long> parryWindow;
 	
-	private PowerOption<Boolean> doFatigue;
-	private PowerOption<Integer> fatigueAmp;
+	private PowerOption<Boolean> doEffects;
+	private PowerOption<List<PotionEffect>> effects;
 	private PowerOption<Double> knockback;
-	private PowerOption<Long> fatigueTime, parryTime;
+	private PowerOption<Long> parryTime;
 
 	private String didDeflect, didParry, wasParried;
 	
@@ -47,9 +48,8 @@ public final class Bulwark extends Power {
 	@Override
 	protected void config() {
 		cooldown = option("cooldown", PowerTime.toMillis(3, 0), "Amount of time after a successful parry before an attack can be parried again.");
-		doFatigue = option("fatigue", true, "Whether to afflict the parried entity with fatigue.");
-		fatigueAmp = option("fatigue-amplifier", 0, "Amplifier for fatigue effect.");
-		fatigueTime = option("fatigue-duration", PowerTime.toMillis(5, 0), "Duration for fatigue effect.");
+		doEffects = option("effects.enable", true, "Whether to afflict the parried entity with status effects.");
+		effects = option("effects", List.of(new PotionEffect(PotionEffectType.SLOW_DIGGING, (int) PowerTime.toMillis(5, 0), 0)), "Effects to afflict parried entities.");
 		item = option("item", new ItemStack(Material.SHIELD), "Item used for blocking.", true);
 		knockback = option("knockback", 1.3D, "Velocity modifier for knockback when an attack is parried.");
 		parryTime = option("parry-window", PowerTime.toMillis(1, 0), "Maximum amount of time after blocking to successfully parry an attack.");
@@ -88,8 +88,8 @@ public final class Bulwark extends Power {
 						getUser((Player) target).sendMessage(wasParried.replace("[name]", user.getName() + ChatColor.RED));
 					}
 					user.sendMessage(didParry.replace("[name]", PowerTools.getFriendlyName(target) + ChatColor.GREEN));
-					if (user.getOption(doFatigue)) {
-						target.addPotionEffect(new PotionEffect(PotionEffectType.SLOW_DIGGING, (int) PowerTime.toTicks(user.getOption(fatigueTime)), user.getOption(fatigueAmp)));
+					if (user.getOption(doEffects)) {
+						target.addPotionEffects(user.getOption(effects));
 					}
 				}
 				else if (event.getDamager() instanceof Arrow

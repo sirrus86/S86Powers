@@ -1,6 +1,10 @@
 package me.sirrus86.s86powers.powers.internal.offense;
 
-import java.util.EnumSet;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -16,11 +20,10 @@ import org.bukkit.event.inventory.InventoryType.SlotType;
 import org.bukkit.inventory.CraftingInventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
-
-import com.google.common.collect.Lists;
 
 import me.sirrus86.s86powers.powers.Power;
 import me.sirrus86.s86powers.powers.PowerManifest;
@@ -35,40 +38,112 @@ import me.sirrus86.s86powers.utils.PowerTime;
 	description = "Able to craft Polar Blades. Polar Blades require a sword and snow materials. When crafted, comes equipped with a Sharpness enchant. Attacks with a Polar Blade also slow enemies.")
 public final class PolarBlade extends Power {
 
-	private final EnumSet<Material> snowMats = EnumSet.of(Material.ICE, Material.SNOWBALL, Material.SNOW_BLOCK);
-	private PowerOption<Integer> maxSharp;
-	private PowerOption<Long> slowDur;
-	private String slowDesc;
+	private PowerOption<List<String>> snowMats1, snowMats2, snowMats3;
+	private PowerOption<List<PotionEffect>> snowMats1Effects, snowMats2Effects, snowMats3Effects;
+	private PowerOption<Map<String, Integer>> snowMats1Enchants, snowMats2Enchants, snowMats3Enchants;
+	private String effectDesc;
 	
 	private final NamespacedKey isPolar = createNamespacedKey("is-polar-blade"),
-			slowFactor = createNamespacedKey("slow-factor");
+			pBladeEffectAmps = createNamespacedKey("effect-amps"),
+			pBladeEffectDurs = createNamespacedKey("effect-durs"),
+			pBladeEffectTypes = createNamespacedKey("effect-types");
 	
 	@Override
 	protected void config() {
-		maxSharp = option("maximum-sharpness", 8, "Maximum sharpness enchant that can be applied to a Polar Blade.");
-		slowDur = option("slowness-duration", PowerTime.toMillis(5, 0), "Amount of time slowness effect lasts.");
-		slowDesc = locale("message.slowness-descriptor", ChatColor.RED + "Slowness [power] ([time])");
+		effectDesc = locale("message.effect-descriptor", ChatColor.RED + "[effect] [power] ([time])");
+		snowMats1 = option("material1.types", List.of("ICE"), "Materials used in creating Polar Blades.");
+		snowMats1Effects = option("material1.effects", List.of(new PotionEffect(PotionEffectType.SLOW, 0, 0)), "Effects caused by Polar Blades.");
+		snowMats1Enchants = option("material1.enchants", Map.of("SHARPNESS", 0), "Enchants placed on Polar Blades.");
+		snowMats2 = option("material2.types", List.of("SNOWBALL"), "Materials used in creating Polar Blades.");
+		snowMats2Effects = option("material2.effects", List.of(new PotionEffect(PotionEffectType.SLOW, (int) PowerTime.toMillis(5, 0), 0)), "Effects caused by Polar Blades.");
+		snowMats2Enchants = option("material2.enchants", new HashMap<>(), "Enchants placed on Polar Blades.");
+		snowMats3 = option("material3.types", List.of("SNOW_BLOCK"), "Materials used in creating Polar Blades.");
+		snowMats3Effects = option("material3.effects", List.of(new PotionEffect(PotionEffectType.SLOW, (int) PowerTime.toMillis(5, 0), 3)), "Effects caused by Polar Blades.");
+		snowMats3Enchants = option("material3.enchants", new HashMap<>(), "Enchants placed on Polar Blades.");
 		supplies(new ItemStack(Material.IRON_SWORD), new ItemStack(Material.ICE, 16), new ItemStack(Material.SNOW_BLOCK, 16));
 	}
 	
-	private ItemStack createPBlade(ItemStack[] matrix) {
+	@SuppressWarnings("deprecation")
+	private ItemStack createPBlade(PowerUser user, ItemStack[] matrix) {
 		ItemStack sword = null;
-		int slow = 0, sharp = 0;
+		Map<PotionEffectType, PotionEffect> effects = new HashMap<>();
+		Map<Enchantment, Integer> enchants = new HashMap<>();
 		for (int i = 0; i < matrix.length; i ++) {
 			ItemStack stack = matrix[i];
 			if (stack != null && stack.getType() != Material.AIR) {
 				if (PowerTools.isSword(stack)) {
 					sword = stack.clone();
 				}
-				else if (snowMats.contains(stack.getType())) {
-					if (stack.getType() == Material.ICE) {
-						sharp ++;
+				else if (user.getOption(snowMats1).contains(stack.getType().name())){
+					if (!user.getOption(snowMats1Effects).isEmpty()) {
+						for (PotionEffect effect : user.getOption(snowMats1Effects)) {
+							PotionEffectType effectType = effect.getType();
+							int amp = effect.getAmplifier(),
+									dur = effect.getDuration();
+							if (effects.containsKey(effectType)) {
+								amp += effects.get(effect.getType()).getAmplifier() + 1;
+								dur = Math.max(dur, effects.get(effect.getType()).getDuration());
+							}
+							effects.put(effectType, new PotionEffect(effectType, amp, dur));
+						}
 					}
-					else if (stack.getType() == Material.SNOWBALL) {
-						slow ++;
+					if (!user.getOption(snowMats1Enchants).isEmpty()) {
+						for (String enchantStr : user.getOption(snowMats1Enchants).keySet()) {
+							Enchantment enchant = Enchantment.getByName(enchantStr);
+							int strength = user.getOption(snowMats1Enchants).get(enchantStr);
+							if (enchants.containsKey(enchant)) {
+								strength += enchants.get(enchant);
+							}
+							enchants.put(enchant, strength);
+						}
 					}
-					else if (stack.getType() == Material.SNOW_BLOCK) {
-						slow += 4;
+				}
+				else if (user.getOption(snowMats2).contains(stack.getType().name())){
+					if (!user.getOption(snowMats2Effects).isEmpty()) {
+						for (PotionEffect effect : user.getOption(snowMats2Effects)) {
+							PotionEffectType effectType = effect.getType();
+							int amp = effect.getAmplifier(),
+									dur = effect.getDuration();
+							if (effects.containsKey(effectType)) {
+								amp += effects.get(effect.getType()).getAmplifier() + 1;
+								dur = Math.max(dur, effects.get(effect.getType()).getDuration());
+							}
+							effects.put(effectType, new PotionEffect(effectType, amp, dur));
+						}
+					}
+					if (!user.getOption(snowMats2Enchants).isEmpty()) {
+						for (String enchantStr : user.getOption(snowMats2Enchants).keySet()) {
+							Enchantment enchant = Enchantment.getByName(enchantStr);
+							int strength = user.getOption(snowMats2Enchants).get(enchantStr);
+							if (enchants.containsKey(enchant)) {
+								strength += enchants.get(enchant);
+							}
+							enchants.put(enchant, strength);
+						}
+					}
+				}
+				else if (user.getOption(snowMats3).contains(stack.getType().name())){
+					if (!user.getOption(snowMats3Effects).isEmpty()) {
+						for (PotionEffect effect : user.getOption(snowMats3Effects)) {
+							PotionEffectType effectType = effect.getType();
+							int amp = effect.getAmplifier(),
+									dur = effect.getDuration();
+							if (effects.containsKey(effectType)) {
+								amp += effects.get(effect.getType()).getAmplifier() + 1;
+								dur = Math.max(dur, effects.get(effect.getType()).getDuration());
+							}
+							effects.put(effectType, new PotionEffect(effectType, amp, dur));
+						}
+					}
+					if (!user.getOption(snowMats3Enchants).isEmpty()) {
+						for (String enchantStr : user.getOption(snowMats3Enchants).keySet()) {
+							Enchantment enchant = Enchantment.getByName(enchantStr);
+							int strength = user.getOption(snowMats3Enchants).get(enchantStr);
+							if (enchants.containsKey(enchant)) {
+								strength += enchants.get(enchant);
+							}
+							enchants.put(enchant, strength);
+						}
 					}
 				}
 			}
@@ -77,25 +152,53 @@ public final class PolarBlade extends Power {
 			ItemMeta meta = sword.hasItemMeta() ? getRequiredItem().getItemMeta() : Bukkit.getServer().getItemFactory().getItemMeta(sword.getType());
 			meta.setDisplayName(ChatColor.RESET + this.getName());
 			meta.getPersistentDataContainer().set(isPolar, PersistentDataType.BYTE, (byte) 0x1);
-			if (slow > 0) {
-				meta.getPersistentDataContainer().set(slowFactor, PersistentDataType.INTEGER, slow - 1);
-				String slowing = slowDesc.replace("[power]", PowerTools.getRomanNumeral(slow)).replace("[time]", PowerTime.asClock(getOption(slowDur), false, false, true, true, false));
-				meta.setLore(Lists.newArrayList(slowing));
+			if (!effects.isEmpty()) {
+				List<String> newLore = new ArrayList<>();
+				int[] amps = new int[effects.size()],
+						durs = new int[effects.size()],
+						types = new int[effects.size()];
+				for (int i = 0; i < effects.size(); i ++) {
+					PotionEffect effect = effects.get(effects.keySet().toArray()[i]);
+					amps[i] = effect.getAmplifier();
+					durs[i] = effect.getDuration();
+					types[i] = effect.getType().getId();
+					String effectText = effectDesc.replace("[type]", PowerTools.getPotionEffectName(effect.getType()))
+							.replace("[power]", PowerTools.getRomanNumeral(effect.getAmplifier()))
+							.replace("[time]", PowerTime.asClock(effect.getDuration(), false, false, true, true, false));
+					newLore.add(effectText);
+				}
+				meta.getPersistentDataContainer().set(pBladeEffectAmps, PersistentDataType.INTEGER_ARRAY, amps);
+				meta.getPersistentDataContainer().set(pBladeEffectDurs, PersistentDataType.INTEGER_ARRAY, durs);
+				meta.getPersistentDataContainer().set(pBladeEffectTypes, PersistentDataType.INTEGER_ARRAY, types);
+				meta.setLore(newLore);
 			}
-			if (sharp > 0) {
-				meta.addEnchant(Enchantment.DAMAGE_ALL, sharp < getOption(maxSharp) ? sharp : getOption(maxSharp), true);
+			if (!enchants.isEmpty()) {
+				for (Enchantment enchant : enchants.keySet()) {
+					meta.addEnchant(enchant, enchants.get(enchant), true);
+				}
 			}
 			sword.setItemMeta(meta);
 		}
 		return sword;
 	}
 	
-	private int getPBladeSlow(ItemStack sword) {
-		if (isPBlade(sword)
-				&& sword.getItemMeta().getPersistentDataContainer().has(slowFactor, PersistentDataType.INTEGER)) {
-			return sword.getItemMeta().getPersistentDataContainer().get(slowFactor, PersistentDataType.INTEGER);
+	@SuppressWarnings("deprecation")
+	private Collection<PotionEffect> getPBladeEffects(ItemStack sword) {
+		List<PotionEffect> effects = new ArrayList<>();
+		if (isPBlade(sword)) {
+			PersistentDataContainer container = sword.getItemMeta().getPersistentDataContainer();
+			if (container.has(pBladeEffectAmps, PersistentDataType.INTEGER_ARRAY)
+					&& container.has(pBladeEffectDurs, PersistentDataType.INTEGER_ARRAY)
+					&& container.has(pBladeEffectTypes, PersistentDataType.INTEGER_ARRAY)) {
+				int[] amps = container.get(pBladeEffectAmps, PersistentDataType.INTEGER_ARRAY),
+						durs = container.get(pBladeEffectDurs, PersistentDataType.INTEGER_ARRAY),
+						types = container.get(pBladeEffectTypes, PersistentDataType.INTEGER_ARRAY);
+				for (int i = 0; i < types.length; i ++) {
+					effects.add(new PotionEffect(PotionEffectType.getById(types[i]), amps[i], durs[i]));
+				}
+			}
 		}
-		return -1;
+		return effects;
 	}
 	
 	private boolean hasPBlade(LivingEntity entity) {
@@ -110,8 +213,8 @@ public final class PolarBlade extends Power {
 				&& sword.getItemMeta().getPersistentDataContainer().has(isPolar, PersistentDataType.BYTE);
 	}
 	
-	private boolean isPBladeRecipe(ItemStack[] matrix) {
-		boolean broken = false, hasSnow = false, hasSword = false;
+	private boolean isPBladeRecipe(PowerUser user, ItemStack[] matrix) {
+		boolean broken = false, hasMats = false, hasSword = false;
 		for (int i = 0; i < matrix.length; i ++) {
 			ItemStack stack = matrix[i];
 			if (stack != null && stack.getType() != Material.AIR) {
@@ -123,8 +226,10 @@ public final class PolarBlade extends Power {
 						break;
 					}
 				}
-				else if (snowMats.contains(stack.getType())) {
-					hasSnow = true;
+				else if (user.getOption(snowMats1).contains(stack.getType().name())
+						|| user.getOption(snowMats2).contains(stack.getType().name())
+						|| user.getOption(snowMats3).contains(stack.getType().name())) {
+					hasMats = true;
 				}
 				else {
 					broken = true;
@@ -132,7 +237,7 @@ public final class PolarBlade extends Power {
 				}
 			}
 		}
-		return !broken && hasSnow && hasSword;
+		return !broken && hasMats && hasSword;
 	}
 	
 	@EventHandler(ignoreCancelled = true)
@@ -146,11 +251,8 @@ public final class PolarBlade extends Power {
 					user.causeDamage(this, event);
 				}
 				ItemStack sword = damager instanceof Player ? ((Player) damager).getInventory().getItemInMainHand() : damager.getEquipment().getItemInMainHand();
-				int slow = getPBladeSlow(sword);
-				if (slow >= 0) {
-					LivingEntity entity = (LivingEntity) event.getEntity();
-					entity.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, (int) PowerTime.toTicks(getOption(slowDur)), slow, true));
-				}
+				LivingEntity entity = (LivingEntity) event.getEntity();
+				entity.addPotionEffects(getPBladeEffects(sword));
 			}
 		}
 	}
@@ -166,8 +268,8 @@ public final class PolarBlade extends Power {
 				runTaskLater(new Runnable() {
 					@Override
 					public void run() {
-						if (isPBladeRecipe(inv.getMatrix())) {
-							inv.setResult(createPBlade(inv.getMatrix()));
+						if (isPBladeRecipe(user, inv.getMatrix())) {
+							inv.setResult(createPBlade(user, inv.getMatrix()));
 							user.getPlayer().updateInventory();
 						}
 					}

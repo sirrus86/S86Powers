@@ -1,8 +1,8 @@
 package me.sirrus86.s86powers.powers.internal.defense;
 
-import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -40,16 +40,12 @@ import me.sirrus86.s86powers.utils.PowerTime;
 	description = "[act:item]ing while holding [item] will cause Silverfish to break from any nearby [infested-only]infested [/infested-only]stone blocks,"
 			+ " targeting nearby entities at random. After [silverfish-lifespan], spawned Silverfish reform into blocks. [cooldown] cooldown.")
 public final class LocustSwarm extends Power {
-
-	private final EnumSet<Material> sBlocks = EnumSet.of(Material.CHISELED_STONE_BRICKS, Material.COBBLESTONE, Material.CRACKED_STONE_BRICKS,
-			Material.INFESTED_CHISELED_STONE_BRICKS, Material.INFESTED_COBBLESTONE, Material.INFESTED_CRACKED_STONE_BRICKS,
-			Material.INFESTED_MOSSY_STONE_BRICKS, Material.INFESTED_STONE, Material.INFESTED_STONE_BRICKS, Material.MOSSY_STONE_BRICKS,
-			Material.STONE, Material.STONE_BRICKS);
 	
 	private Map<PowerUser, Set<Swarm>> swarms;
 	
 	private PowerOption<Boolean> infestOnly;
 	private PowerOption<Long> lifespan;
+	private PowerOption<List<String>> spawnBlocks;
 	private PowerStat summonCount;
 	private PowerOption<Integer> summonMax;
 	private PowerOption<Double> summonRad;
@@ -75,6 +71,9 @@ public final class LocustSwarm extends Power {
 		infestOnly = option("infested-only", true, "Whether only infested stone blocks should spawn Silverfish. If false, all nearby stone blocks will spawn them.");
 		item = option("item", new ItemStack(Material.ROTTEN_FLESH, 1), "Item used to summon silverfish.");
 		lifespan = option("silverfish-lifespan", PowerTime.toMillis(15, 0), "How long before silverfish should despawn or reform.");
+		spawnBlocks = option("spawnable-blocks", List.of("CHISELED_STONE_BRICKS", "COBBLESTONE", "CRACKED_STONE_BRICKS", "DEEPSLATE", "INFESTED_CHISELED_STONE_BRICKS",
+				"INFESTED_COBBLESTONE", "INFESTED_CRACKED_STONE_BRICKS", "INFESTED_DEEPSLATE", "INFESTED_MOSSY_STONE_BRICKS", "INFESTED_STONE", "INFESTED_STONE_BRICKS",
+				"MOSSY_STONE_BRICKS", "STONE", "STONE_BRICKS"), "Blocks which can spawn silverfish when summoned.");
 		summonMax = option("summon-maximum", 15, "Maximum number of silverfish that can be summoned at one time.");
 		summonRad = option("summon-radius", 10.0D, "Radius at which silverfish are summoned.");
 		summonCount = stat("summon-count", 100, "Silverfish summoned",
@@ -185,8 +184,9 @@ public final class LocustSwarm extends Power {
 		public Swarm(PowerUser owner, Location loc) {
 			this.owner = owner;
 			for (int i = 0; i < owner.getOption(summonRad); i ++) {
-				for (Block block : PowerTools.getNearbyBlocks(loc, i, sBlocks)) {
+				for (Block block : PowerTools.getNearbyBlocks(loc, i)) {
 					if (sList.size() < owner.getOption(summonMax)
+							&& owner.getOption(spawnBlocks).contains(block.getType().name())
 							&& (!owner.getOption(infestOnly) || block.getType().name().startsWith("INFESTED"))) {
 						Material mat = block.getState().getType();
 						loc.getWorld().playEffect(block.getLocation(), Effect.STEP_SOUND, block.getType());

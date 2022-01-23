@@ -1,6 +1,7 @@
 package me.sirrus86.s86powers.powers.internal.passive;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import me.sirrus86.s86powers.events.PowerUseEvent;
@@ -8,6 +9,7 @@ import me.sirrus86.s86powers.powers.Power;
 import me.sirrus86.s86powers.powers.PowerManifest;
 import me.sirrus86.s86powers.powers.PowerOption;
 import me.sirrus86.s86powers.powers.PowerType;
+import me.sirrus86.s86powers.tools.PowerTools;
 import me.sirrus86.s86powers.users.PowerUser;
 
 import org.bukkit.ChatColor;
@@ -15,41 +17,43 @@ import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.entity.EntityDamageEvent;
-import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
+import com.google.common.collect.Lists;
+
 @PowerManifest(name = "Acrobat", type = PowerType.PASSIVE, author = "sirrus86", concept = "Air_spike", icon = Material.FEATHER,
-	description = "Jump much higher than other players[negate-fall-damage] and take no damage from falls[/negate-fall-damage]. By [act:item]ing with [item], can adjust jump height.")
+	description = "Jump much higher than other players and take no damage from falls. By [act:item]ing with [item], can adjust jump height.")
 public final class Acrobat extends Power {
 
-	private Map<PowerUser, Integer> jumpPower;
-	private PowerOption<Integer> maxJump;
-	private PowerOption<Boolean> noDmg;
-	private String jumpPwr, jumpOff;
+	private Map<PowerUser, Integer> effectPower;
+	private PowerOption<List<String>> effectTypes, negateTypes;
+	private PowerOption<Integer> maxEffect;
+	private String effectPwr, effectOff;
 	
 	@Override
 	protected void onEnable() {
-		jumpPower = new HashMap<>();
+		effectPower = new HashMap<>();
 	}
 	
 	@Override
 	protected void onDisable(PowerUser user) {
-		if (jumpPower.containsKey(user)
-				&& jumpPower.get(user) > -1) {
-			jumpPower.remove(user);
+		if (effectPower.containsKey(user)
+				&& effectPower.get(user) > -1) {
+			effectPower.remove(user);
 			user.removePotionEffect(PotionEffectType.JUMP);
 		}
 	}
 	
 	@Override
 	protected void config() {
+		effectTypes = option("effect-types", Lists.newArrayList("JUMP"), "Effects to be controlled with this power.");
 		item = option("item", new ItemStack(Material.FEATHER), "Item used to change jump levels.");
-		maxJump = option("max-jump-level", 3, "Maximum jump level user can achieve.");
-		noDmg = option("negate-fall-damage", true, "Whether fall damage should be ignored.");
-		jumpOff = locale("message.jump-off", ChatColor.YELLOW + "Jump power turned off.");
-		jumpPwr = locale("message.jump-power", ChatColor.YELLOW + "Jump power set to [amount].");
+		maxEffect = option("max-effect-level", 3, "Maximum effect level user can achieve.");
+		negateTypes = option("negate-damage-types", Lists.newArrayList("FALL"), "Damage types to be negated by this power.");
+		effectOff = locale("message.effect-off", ChatColor.YELLOW + "[type] power turned off.");
+		effectPwr = locale("message.effect-power", ChatColor.YELLOW + "[type] power set to [amount].");
 		supplies(getRequiredItem());
 	}
 	
@@ -58,8 +62,7 @@ public final class Acrobat extends Power {
 		if (event.getEntity() instanceof Player) {
 			PowerUser user = getUser((Player) event.getEntity());
 			if (user.allowPower(this)
-					&& event.getCause() == DamageCause.FALL
-					&& user.getOption(noDmg)) {
+					&& user.getOption(negateTypes).contains(event.getCause().name())) {
 				event.setCancelled(true);
 			}
 		}
@@ -69,17 +72,21 @@ public final class Acrobat extends Power {
 	private void onUse(PowerUseEvent event) {
 		if (event.getPower() == this) {
 			PowerUser user = event.getUser();
-			if (!jumpPower.containsKey(user)) {
-				jumpPower.put(user, -1);
+			if (!effectPower.containsKey(user)) {
+				effectPower.put(user, -1);
 			}
-			jumpPower.put(user, jumpPower.get(user) < user.getOption(maxJump) ? jumpPower.get(user) + 1 : -1);
-			if (jumpPower.get(user) >= 0) {
-				user.sendMessage(jumpPwr.replace("[amount]", Integer.toString(jumpPower.get(user) + 1)));
-				user.addPotionEffect(new PotionEffect(PotionEffectType.JUMP, Integer.MAX_VALUE, jumpPower.get(user)));
-			}
-			else {
-				user.removePotionEffect(PotionEffectType.JUMP);
-				user.sendMessage(jumpOff);
+			effectPower.put(user, effectPower.get(user) < user.getOption(maxEffect) ? effectPower.get(user) + 1 : -1);
+			for (String effect : user.getOption(effectTypes)) {
+				PotionEffectType type = PotionEffectType.getByName(effect);
+				if (effectPower.get(user) >= 0) {
+					user.sendMessage(effectPwr.replace("[type]", PowerTools.getPotionEffectName(type))
+							.replace("[amount]", Integer.toString(effectPower.get(user) + 1)));
+					user.addPotionEffect(new PotionEffect(type, Integer.MAX_VALUE, effectPower.get(user)));
+				}
+				else {
+					user.removePotionEffect(type);
+					user.sendMessage(effectOff.replace("[type]", PowerTools.getPotionEffectName(type)));
+				}
 			}
 		}
 	}

@@ -1,5 +1,7 @@
 package me.sirrus86.s86powers.powers.internal.defense;
 
+import java.util.List;
+
 import org.bukkit.Material;
 import org.bukkit.entity.EnderPearl;
 import org.bukkit.entity.Player;
@@ -24,21 +26,21 @@ import me.sirrus86.s86powers.utils.PowerTime;
 @PowerManifest(name = "Ender Soul", type = PowerType.DEFENSE, author = "sirrus86", concept = "sirrus86", icon = Material.ENDER_PEARL,
 	description = "[velOrRefund]Ender pearls [modify-pearl-velocity]are thrown at greater velocity[/modify-pearl-velocity][velAndRefund]"
 			+ " and [/velAndRefund][refund-pearl]are immediately refunded after being thrown[/refund-pearl]."
-			+ " [/velOrRefund][pearl-damage-immunity]Damage from ender pearls is negated. [/pearl-damage-immunity]")
+			+ " [/velOrRefund][pearl-damage-immunity]Damage from ender pearls is negated.[/pearl-damage-immunity]")
 public final class EnderSoul extends Power {
 
-	private PowerOption<Boolean> doPot, immunePearl, modVel, refundPearl;
+	private PowerOption<Boolean> doEffects, immunePearl, modVel, refundPearl;
+	private PowerOption<List<PotionEffect>> effects;
 	@SuppressWarnings("unused")
 	private boolean velAndRefund, velOrRefund;
-	private PowerOption<Long> potDur;
 	private PowerOption<Double> velMod;
 	
 	@Override
 	protected void config() {
-		doPot = option("slowfall.enable", true, "Whether slow fall should activate when teleporting somewhere off the ground.");
+		doEffects = option("effects.enable", true, "Whether effects should be applied to user after teleporting.");
+		effects = option("effects", List.of(new PotionEffect(PotionEffectType.SLOW_FALLING, (int) PowerTime.toMillis(1, 0), 0)), "Effects to apply to users after teleporting.");
 		immunePearl = option("pearl-damage-immunity", true, "Whether users should be immune to ender pearl damage.");
 		modVel = option("modify-pearl-velocity", true, "Whether ender pearl velocity should be modified. If false, pearls are thrown normally.");
-		potDur = option("slowfall.effect-duration", PowerTime.toMillis(1, 0), "Amount of ticks slow fall is in effect after teleporting.");
 		refundPearl = option("refund-pearl", true, "Whether ender pearls should be refunded immediately after use.");
 		velMod = option("velocity-modifier", 2.0D, "Modifier for pearl velocity. Higher value leads to faster, but less accurate throws.");
 		velAndRefund = getOption(modVel) && getOption(refundPearl);
@@ -60,10 +62,10 @@ public final class EnderSoul extends Power {
 	@EventHandler
 	private void onTeleport(PlayerTeleportEvent event) {
 		PowerUser user = getUser(event.getPlayer());
-		if (user.getOption(doPot)
+		if (user.getOption(doEffects)
 				&& user.allowPower(this)
 				&& event.getCause() == TeleportCause.ENDER_PEARL) {
-			user.getPlayer().addPotionEffect(new PotionEffect(PotionEffectType.SLOW_FALLING, (int) PowerTime.toTicks(user.getOption(potDur)), 0, false, false));
+			user.getPlayer().addPotionEffects(user.getOption(effects));
 		}
 	}
 

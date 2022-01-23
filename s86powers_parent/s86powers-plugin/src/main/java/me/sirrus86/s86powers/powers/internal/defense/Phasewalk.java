@@ -1,6 +1,7 @@
 package me.sirrus86.s86powers.powers.internal.defense;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -43,7 +44,7 @@ public final class Phasewalk extends Power {
 	private String beginDestab, phaseBack, phaseOut;
 	private PowerOption<Boolean> consume, destabilize;
 	private PowerOption<Long> destabFreq, destabTimer;
-	private PowerOption<Integer> speedDegree;
+	private PowerOption<List<PotionEffect>> phaseEffects;
 	
 	@Override
 	protected void onEnable() {
@@ -66,7 +67,8 @@ public final class Phasewalk extends Power {
 		destabilize = option("destabilize.enabled", true, "Whether power should destabilize over time.");
 		destabTimer = option("destabilize.duration", PowerTime.toMillis(30, 0), "How long before destabilization should occur after power is first used.");
 		item = option("item", new ItemStack(Material.PHANTOM_MEMBRANE, 1), "Item used to trigger phasewalking, as well as the item consumed if it destabilizes.");
-		speedDegree = option("run-speed", 1, "Level of speed increase while power is active.");
+		phaseEffects = option("phase-effects", List.of(new PotionEffect(PotionEffectType.NIGHT_VISION, Integer.MAX_VALUE, 0, false, false, false),
+				new PotionEffect(PotionEffectType.SPEED, Integer.MAX_VALUE, 1, false, false, false)), "Potion effects that should affect a user while phasewalking.");
 		beginDestab = locale("message.begin-destabilizing", ChatColor.RED + "Phasewalk begins destabilizing.");
 		phaseBack = locale("message.phase-back", ChatColor.RED + "You phase back into reality.");
 		phaseOut = locale("message.phase-out", ChatColor.GREEN + "You phase out of reality...");
@@ -97,8 +99,7 @@ public final class Phasewalk extends Power {
 	
 	private void unphase(PowerUser user) {
 		user.sendMessage(phaseBack);
-		user.removePotionEffect(PotionEffectType.NIGHT_VISION);
-		user.removePotionEffect(PotionEffectType.SPEED);
+		user.removePotionEffects(user.getOption(phaseEffects));
 		destabilizing.remove(user);
 		PowerTools.removeGhost(user.getPlayer());
 		if (tasks.containsKey(user)) {
@@ -143,8 +144,7 @@ public final class Phasewalk extends Power {
 			PowerUser user = event.getUser();
 			if (user.getCooldown(this) <= 0) {
 				if (!tasks.containsKey(user)) {
-					user.addPotionEffect(new PotionEffect(PotionEffectType.NIGHT_VISION, Integer.MAX_VALUE, 0));
-					user.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, Integer.MAX_VALUE, user.getOption(speedDegree)));
+					user.addPotionEffects(user.getOption(phaseEffects));
 					PowerTools.addGhost(user.getPlayer());
 					user.sendMessage(phaseOut);
 					if (user.getOption(consume)) {

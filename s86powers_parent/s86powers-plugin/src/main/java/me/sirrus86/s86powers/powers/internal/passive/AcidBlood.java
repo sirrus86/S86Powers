@@ -1,12 +1,13 @@
 package me.sirrus86.s86powers.powers.internal.passive;
 
+import java.util.List;
+
 import org.bukkit.Material;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
-import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
@@ -22,17 +23,17 @@ import me.sirrus86.s86powers.utils.PowerTime;
 public final class AcidBlood extends Power {
 
 	private PowerOption<Double> absorb;
-	private PowerOption<Long> affDur;
-	private PowerOption<Integer> affInt;
+	private PowerOption<List<String>> absorbTypes;
 	private PowerOption<Boolean> afflict;
+	private PowerOption<List<PotionEffect>> effects;
 	
 	@Override
 	protected void config() {
-		absorb = option("absorb-percentage", 100.0D, "Percent of poison damage to be absorbed as health.");
-		affDur = option("afflict-duration", PowerTime.toMillis(5, 0), "How long attackers should be afflicted with poison.");
-		affInt = option("afflict-intensity", 1, "Intensity of poison afflicted to attackers.");
-		afflict = option("afflict-attackers", true, "Whether to afflict attackers with poison.");
+		absorb = option("absorb.percentage", 100.0D, "Percent of poison damage to be absorbed as health.");
+		absorbTypes = option("absorb.types", List.of("POISON"), "Damage types to absorb.");
+		afflict = option("afflict-attackers", true, "Whether to afflict attackers with status effects.");
 		cooldown = option("cooldown", PowerTime.toMillis(0), "Period of time before an attacker can be afflicted again.");
+		effects = option("afflict-effects", List.of(new PotionEffect(PotionEffectType.POISON, (int) PowerTime.toMillis(5, 0), 1)), "Effects to afflict on attackers.");
 	}
 	
 	@EventHandler(ignoreCancelled = true)
@@ -40,7 +41,8 @@ public final class AcidBlood extends Power {
 		if (event.getEntity() instanceof Player) {
 			PowerUser user = getUser((Player) event.getEntity());
 			if (user.allowPower(this)) {
-				if (event.getCause() == DamageCause.POISON) {
+//				if (event.getCause() == DamageCause.POISON) {
+				if (user.getOption(absorbTypes).contains(event.getCause().name())) {
 					double abs = event.getDamage() * (user.getOption(absorb) / 100.0D);
 					user.heal(abs);
 					event.setCancelled(true);
@@ -49,7 +51,7 @@ public final class AcidBlood extends Power {
 					if (((EntityDamageByEntityEvent) event).getDamager() instanceof LivingEntity
 							&& user.getOption(afflict) && user.getCooldown(this) <= 0) {
 						LivingEntity target = (LivingEntity) ((EntityDamageByEntityEvent) event).getDamager();
-						target.addPotionEffect(new PotionEffect(PotionEffectType.POISON, (int) PowerTime.toTicks(user.getOption(affDur)), user.getOption(affInt)));
+						target.addPotionEffects(user.getOption(effects));
 						user.setCooldown(this, user.getOption(cooldown));
 					}
 				}

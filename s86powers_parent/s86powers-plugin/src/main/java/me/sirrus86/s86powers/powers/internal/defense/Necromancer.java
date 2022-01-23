@@ -3,6 +3,7 @@ package me.sirrus86.s86powers.powers.internal.defense;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -31,7 +32,7 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
 
-import com.google.common.collect.Sets;
+import com.google.common.collect.Lists;
 
 import me.sirrus86.s86powers.events.PowerUseEvent;
 import me.sirrus86.s86powers.powers.Power;
@@ -47,14 +48,13 @@ import me.sirrus86.s86powers.utils.PowerTime;
 	description = "[act:item]ing while holding [item] creates an aura of death around you. The aura causes nearby vegetation to decay,"
 			+ " causes weakness to the living, and pulls the dead from their graves. Reanimated undead will follow and defend you. [cooldown] cooldown.")
 public final class Necromancer extends Power {
-
-	private final Set<Material> turnToDirt = Sets.newHashSet(Material.GRASS_BLOCK, Material.MYCELIUM, Material.PODZOL);
 	
 	private Set<Aura> auras;
 	private Map<Monster, PowerUser> minions;
 	
 	private PowerOption<Long> auraDur;
 	private PowerOption<Integer> auraRad, maxMinions, wkLvl;
+	private PowerOption<List<String>> decayBlocks;
 	private PowerOption<Boolean> noIgnite;
 	private PowerStat summons;
 	
@@ -90,6 +90,7 @@ public final class Necromancer extends Power {
 		auraDur = option("aura-duration", PowerTime.toMillis(10, 0), "Amount of time an aura will last before dissipating.");
 		auraRad = option("aura-radius", 5, "Maximum radius of a given aura.");
 		cooldown = option("cooldown", PowerTime.toMillis(30, 0), "Amount of time before power can be used again.");
+		decayBlocks = option("decay-blocks", Lists.newArrayList("GRASS_BLOCK", "MYCELIUM", "PODZOL"), "Block types which should turn to dirt when undead are summoned.");
 		item = option("item", new ItemStack(Material.ROTTEN_FLESH), "Item used to create auras.");
 		maxMinions = option("maximum-undead", 3, "Maximum number of undead that can be reanimated. Players will be reanimated regardless of whether the cap is met.");
 		noIgnite = option("prevent-ignition", true, "Whether to prevent undead from igniting in sunlight.");
@@ -247,7 +248,7 @@ public final class Necromancer extends Power {
 					i ++;
 				}
 				for (Block block : blocks) {
-					if (turnToDirt.contains(block.getType())) {
+					if (user.getOption(decayBlocks).contains(block.getType().name())) {
 						block.setType(Material.DIRT);
 					}
 					if (!block.getType().isSolid()

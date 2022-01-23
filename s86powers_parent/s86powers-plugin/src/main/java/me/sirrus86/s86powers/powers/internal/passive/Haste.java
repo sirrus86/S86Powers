@@ -1,6 +1,7 @@
 package me.sirrus86.s86powers.powers.internal.passive;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.bukkit.Material;
@@ -17,34 +18,34 @@ import me.sirrus86.s86powers.users.PowerUser;
 	description = "Perform hand-related tasks (mining, digging, attacking, etc) much faster than other players.")
 public final class Haste extends Power {
 
-	private Set<PowerUser> hasHaste;
-	private PowerOption<Integer> deg;
+	private Set<PowerUser> hasEffects;
+	private PowerOption<List<PotionEffect>> effects;
 	
 	@Override
 	protected void onEnable() {
-		hasHaste = new HashSet<>();
+		hasEffects = new HashSet<>();
 	}
 	
 	@Override
 	protected void onEnable(PowerUser user) {
 		if (user.allowPower(this)
-				&& !hasHaste.contains(user)) {
-			user.addPotionEffect(new PotionEffect(PotionEffectType.FAST_DIGGING, Integer.MAX_VALUE, user.getOption(deg)));
-			hasHaste.add(user);
+				&& !hasEffects.contains(user)) {
+			user.addPotionEffects(user.getOption(effects));
+			hasEffects.add(user);
 		}
 	}
 	
 	@Override
 	protected void onDisable(PowerUser user) {
-		if (hasHaste.contains(user)) {
-			user.removePotionEffect(PotionEffectType.FAST_DIGGING);
-			hasHaste.remove(user);
+		if (hasEffects.contains(user)) {
+			user.removePotionEffects(user.getOption(effects));
+			hasEffects.remove(user);
 		}
 	}
 
 	@Override
 	protected void config() {
-		deg = option("haste-degree", 3, "Degree of Haste effect given to users.");
+		effects = option("effects", List.of(new PotionEffect(PotionEffectType.FAST_DIGGING, Integer.MAX_VALUE, 3)), "Effects to be given to users.");
 	}
 
 }

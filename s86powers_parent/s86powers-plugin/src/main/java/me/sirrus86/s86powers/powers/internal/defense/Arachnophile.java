@@ -8,10 +8,8 @@ import java.util.Map;
 import org.bukkit.EntityEffect;
 import org.bukkit.Material;
 import org.bukkit.entity.CaveSpider;
-import org.bukkit.entity.Endermite;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
-import org.bukkit.entity.Silverfish;
 import org.bukkit.entity.Snowball;
 import org.bukkit.entity.Spider;
 import org.bukkit.event.EventHandler;
@@ -44,11 +42,13 @@ import me.sirrus86.s86powers.utils.PowerTime;
 public final class Arachnophile extends Power {
 
 	private PowerOption<Double> fallRed;
+	private PowerOption<List<String>> ignoreTypes;
 	private PowerOption<Boolean> noPoison;
 	private Map<PowerUser, TamedSpider> spiders;
 	private PowerStat spiderDmg;
-	private PowerOption<Long> webCooldown, webDur;
-	private final ItemStack webItem = new ItemStack(Material.COBWEB, 1);
+	private PowerOption<Long> webCooldown;
+	private PowerOption<List<PotionEffect>> webEffects;
+	private PowerOption<ItemStack> webItem;
 	
 	@Override
 	protected void onEnable() {
@@ -66,11 +66,13 @@ public final class Arachnophile extends Power {
 	@Override
 	protected void config() {
 		fallRed = option("fall-damage-reduction", 50.0D, "Percentage of fall damage to negate.");
+		ignoreTypes = option("ignoring-entity-types", List.of("CAVE_SPIDER", "ENDERMITE", "SILVERFISH", "SPIDER"), "Entity types which will ignore users.");
 		item = option("item", new ItemStack(Material.STICK), "Item used to tame and direct spiders.");
 		noPoison = option("poison-immunity", true, "Whether user should be immune to poison.");
 		spiderDmg = stat("damage-by-tamed-spiders", 50, "Damage caused by tamed spiders", "Tamed spiders will occassionally shoot webs at targets, slowing them down.");
 		webCooldown = option("web-cooldown", PowerTime.toMillis(5, 0), "Amount of time between webs shot by tamed spiders.");
-		webDur = option("web-duration", PowerTime.toMillis(3, 0), "How long webs should slow down targets.");
+		webEffects = option("web-effects", List.of(new PotionEffect(PotionEffectType.SLOW, (int) PowerTime.toMillis(3, 0), 1)), "Effects caused when spider webs hit targets.");
+		webItem = option("web-item", new ItemStack(Material.COBWEB, 1), "Item used to show the projectile shot by tamed spiders.");
 		supplies(new ItemStack(getRequiredItem().getType(), 1));
 	}
 	
@@ -92,12 +94,10 @@ public final class Arachnophile extends Power {
 	
 	@EventHandler(ignoreCancelled = true)
 	private void noTarget(EntityTargetLivingEntityEvent event) {
-		if (event.getTarget() instanceof Player
-				&& (event.getEntity() instanceof Spider
-						|| event.getEntity() instanceof Silverfish
-						|| event.getEntity() instanceof Endermite)) {
+		if (event.getTarget() instanceof Player) {
 			PowerUser user = getUser((Player) event.getTarget());
-			if (user.allowPower(this)) {
+			if (user.allowPower(this)
+					&& user.getOption(ignoreTypes).contains(event.getEntityType().name())) {
 				event.setCancelled(true);
 			}
 		}
@@ -141,7 +141,7 @@ public final class Arachnophile extends Power {
 			public void run() {
 				if (spider.getTarget() != null) {
 					Snowball web = spider.launchProjectile(Snowball.class);
-					PowerTools.addDisguise(web, webItem);
+					PowerTools.addDisguise(web, owner.getOption(webItem));
 					webs.add(web);
 				}
 				task = getInstance().runTaskLater(shootWeb, PowerTime.toTicks(owner.getOption(webCooldown))).getTaskId();
@@ -180,7 +180,7 @@ public final class Arachnophile extends Power {
 				if (event.getHitEntity() != null
 						&& event.getHitEntity() instanceof LivingEntity) {
 					LivingEntity entity = (LivingEntity) event.getHitEntity();
-					entity.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, (int) PowerTime.toTicks(owner.getOption(webDur)), 1));
+					entity.addPotionEffects(owner.getOption(webEffects));
 				}
 				webs.remove(event.getEntity());
 			}
