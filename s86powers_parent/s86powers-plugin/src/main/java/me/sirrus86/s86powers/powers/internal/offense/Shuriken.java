@@ -31,7 +31,7 @@ public final class Shuriken extends Power {
 	private Map<Snowball, PowerUser> shurikens;
 	
 	private PowerOption<Double> damage;
-	private PowerOption<Boolean> pArmor, pBlock;
+	private PowerOption<Boolean> drop, pArmor, pBlock;
 	@SuppressWarnings("unused")
 	private boolean pBoth, pEither;
 	
@@ -44,6 +44,7 @@ public final class Shuriken extends Power {
 	protected void config() {
 		cooldown = option("cooldown", PowerTime.toMillis(5), "Amount of time before power can be used again.");
 		damage = option("damage", 3.0D, "Amount of damage caused by shurikens.");
+		drop = option("drop-after-impact", true, "Whether thrown shuriken should become an item drop after hitting something.");
 		item = option("item", new ItemStack(Material.FLINT), "Item to be thrown as a shuriken.");
 		pArmor = option("penetrate-armor", false, "Whether shurikens should penetrate armor.");
 		pBlock = option("penetrate-blocking", false, "Whether shurikens should penetrate blocking.");
@@ -73,7 +74,9 @@ public final class Shuriken extends Power {
 			if ((!user.getOption(pArmor) && hasArmor(target))
 					|| (!user.getOption(pBlock) && target instanceof Player && ((Player) target).isBlocking())) {
 				target.getWorld().playSound(shuriken.getLocation(), Sound.BLOCK_ANVIL_LAND, 1.0F, 1.0F);
-				target.getWorld().dropItemNaturally(shuriken.getLocation(), getRequiredItem());
+				if (user.getOption(drop)) {
+					shuriken.getWorld().dropItemNaturally(shuriken.getLocation(), getRequiredItem());
+				}
 				event.setCancelled(true);
 			}
 			else {
@@ -103,7 +106,9 @@ public final class Shuriken extends Power {
 	private void onHit(ProjectileHitEvent event) {
 		if (shurikens.containsKey(event.getEntity())) {
 			Snowball shuriken = (Snowball) event.getEntity();
-			shuriken.getWorld().dropItemNaturally(shuriken.getLocation(), getRequiredItem());
+			if (shurikens.get(shuriken).getOption(drop)) {
+				shuriken.getWorld().dropItemNaturally(shuriken.getLocation(), getRequiredItem());
+			}
 			shurikens.remove(shuriken);
 			shuriken.remove();
 		}

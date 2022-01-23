@@ -18,21 +18,28 @@ import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.entity.Ageable;
+import org.bukkit.entity.Axolotl;
+import org.bukkit.entity.Bee;
 import org.bukkit.entity.Cat;
 import org.bukkit.entity.Creeper;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Fox;
+import org.bukkit.entity.Goat;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.MushroomCow;
 import org.bukkit.entity.Panda;
 import org.bukkit.entity.Parrot;
+import org.bukkit.entity.Phantom;
 import org.bukkit.entity.Pig;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Rabbit;
 import org.bukkit.entity.Sheep;
+import org.bukkit.entity.Shulker;
 import org.bukkit.entity.Slime;
 import org.bukkit.entity.Snowball;
+import org.bukkit.entity.Steerable;
+import org.bukkit.entity.Strider;
 import org.bukkit.entity.Tameable;
 import org.bukkit.entity.Wolf;
 import org.bukkit.entity.Zombie;
@@ -42,6 +49,8 @@ import org.bukkit.event.entity.EntityPickupItemEvent;
 import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.material.Colorable;
+import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 
 import me.sirrus86.s86powers.events.PowerUseEvent;
@@ -67,23 +76,31 @@ public final class MobCatcher extends Power {
 			EntityType.TURTLE, EntityType.WITCH, EntityType.WITHER_SKELETON, EntityType.WOLF, EntityType.ZOMBIE);
 	
 	private final NamespacedKey ageableAge = createNamespacedKey("ageable-age"),
+			axolotlVariant = createNamespacedKey("axolotl-variant"),
+			beeHasNectar = createNamespacedKey("bee-has-nectar"),
+			beeHasStung = createNamespacedKey("bee-has-stung"),
 			catType = createNamespacedKey("cat-type"),
 			collarColor = createNamespacedKey("collar-color"),
+			colorableColor = createNamespacedKey("colorable-color"),
 			creeperPowered = createNamespacedKey("creeper-powered"),
 			customName = createNamespacedKey("custom-name"),
 			entityHealth = createNamespacedKey("entity-health"),
 			entityType = createNamespacedKey("entity-type"),
 			foxType = createNamespacedKey("fox-type"),
+			goatScreaming = createNamespacedKey("goat-screaming"),
 			mooshroomVariant = createNamespacedKey("mooshroom-variant"),
 			ownerUUID = createNamespacedKey("owner-uuid"),
 			pandaHiddenGene = createNamespacedKey("panda-hidden-gene"),
 			pandaMainGene = createNamespacedKey("panda-main-gene"),
 			parrotVariant = createNamespacedKey("parrot-variant"),
-			pigSaddle = createNamespacedKey("pig-saddle"),
+			phantomSize = createNamespacedKey("phantom-size"),
+//			pigSaddle = createNamespacedKey("pig-saddle"),
 			rabbitType = createNamespacedKey("rabbit-type"),
-			sheepColor = createNamespacedKey("sheep-color"),
+//			sheepColor = createNamespacedKey("sheep-color"),
 			sheepSheared = createNamespacedKey("sheep-sheared"),
+//			shulkerColor = createNamespacedKey("shulker-color"),
 			slimeSize = createNamespacedKey("slime-size"),
+			steerableSaddle = createNamespacedKey("steerable-saddle"),
 			zombieBaby = createNamespacedKey("zombie-baby");
 	
 	private Set<EntityType> allowCapture;
@@ -121,135 +138,172 @@ public final class MobCatcher extends Power {
 	private ItemStack createEgg(LivingEntity entity) {
 		ItemStack egg = new ItemStack(getRequiredItem().getType(), 1);
 		ItemMeta meta = egg.hasItemMeta() ? getRequiredItem().getItemMeta() : entity.getServer().getItemFactory().getItemMeta(getRequiredItem().getType());
+		PersistentDataContainer iData = meta.getPersistentDataContainer();
 		List<String> stats = new ArrayList<String>();
-		meta.getPersistentDataContainer().set(entityType, PersistentDataType.STRING, entity.getType().toString());
-		meta.getPersistentDataContainer().set(entityHealth, PersistentDataType.DOUBLE, entity.getHealth());
+		iData.set(entityType, PersistentDataType.STRING, entity.getType().toString());
+		iData.set(entityHealth, PersistentDataType.DOUBLE, entity.getHealth());
 		stats.add("Health: " + entity.getHealth() + "/" + entity.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue());
 		if (entity instanceof Ageable) {
 			if (!((Ageable)entity).isAdult()) {
 				stats.add("Juvenile");
 			}
-			meta.getPersistentDataContainer().set(ageableAge, PersistentDataType.INTEGER, ((Ageable) entity).getAge());
-		}
-		if (entity instanceof Cat) {
-			stats.add("Type: " + WordUtils.capitalize(((Cat)entity).getCatType().toString().replace("_", " ").toLowerCase()));
-			meta.getPersistentDataContainer().set(catType, PersistentDataType.STRING, ((Cat)entity).getCatType().toString());
-			meta.getPersistentDataContainer().set(collarColor, PersistentDataType.STRING, ((Cat)entity).getCollarColor().toString());
-		}
-		if (entity instanceof Creeper) {
-			if (((Creeper)entity).isPowered()) {
-				stats.add("Powered");
-			}
-			meta.getPersistentDataContainer().set(creeperPowered, PersistentDataType.BYTE, ((Creeper)entity).isPowered() ? (byte) 1 : (byte) 0);
-		}
-		if (entity instanceof Fox) {
-			stats.add("Type: " + WordUtils.capitalize(((Fox)entity).getFoxType().toString().replace("_", " ").toLowerCase()));
-			meta.getPersistentDataContainer().set(foxType, PersistentDataType.STRING, ((Fox)entity).getFoxType().toString());
-		}
-		if (entity instanceof MushroomCow) {
-			stats.add("Color: " + WordUtils.capitalize(((MushroomCow)entity).getVariant().toString().replace("_", " ").toLowerCase()));
-			meta.getPersistentDataContainer().set(foxType, PersistentDataType.STRING, ((MushroomCow)entity).getVariant().toString());
-		}
-		if (entity instanceof Panda) {
-			meta.getPersistentDataContainer().set(pandaHiddenGene, PersistentDataType.STRING, ((Panda)entity).getHiddenGene().toString());
-			meta.getPersistentDataContainer().set(pandaMainGene, PersistentDataType.STRING, ((Panda)entity).getMainGene().toString());
-		}
-		if (entity instanceof Parrot) {
-			stats.add("Color: " + WordUtils.capitalize(((Parrot)entity).getVariant().toString().replace("_", " ").toLowerCase()));
-			meta.getPersistentDataContainer().set(parrotVariant, PersistentDataType.STRING, ((Parrot)entity).getVariant().toString());
-		}
-		if (entity instanceof Pig) {
-			if (((Pig)entity).hasSaddle()) {
-				stats.add("Saddled");
-			}
-			meta.getPersistentDataContainer().set(pigSaddle, PersistentDataType.BYTE, ((Pig)entity).hasSaddle() ? (byte) 1 : (byte) 0);
-		}
-		if (entity instanceof Rabbit) {
-			stats.add("Type: " + WordUtils.capitalize(((Rabbit)entity).getRabbitType().toString().replace("_", " ").toLowerCase()));
-			meta.getPersistentDataContainer().set(rabbitType, PersistentDataType.STRING, ((Rabbit)entity).getRabbitType().toString());
-		}
-		if (entity instanceof Sheep) {
-			stats.add("Color: " + WordUtils.capitalize(((Sheep)entity).getColor().toString().replace("_", " ").toLowerCase()));
-			meta.getPersistentDataContainer().set(sheepColor, PersistentDataType.STRING, ((Sheep)entity).getColor().toString());
-			meta.getPersistentDataContainer().set(sheepSheared, PersistentDataType.BYTE, ((Sheep)entity).isSheared() ? (byte) 1 : (byte) 0);
-		}
-		if (entity instanceof Slime) {
-			stats.add("Size: " + ((Slime)entity).getSize());
-			meta.getPersistentDataContainer().set(slimeSize, PersistentDataType.INTEGER, ((Slime)entity).getSize());
+			iData.set(ageableAge, PersistentDataType.INTEGER, ((Ageable) entity).getAge());
 		}
 		if (entity instanceof Tameable) {
 			if (((Tameable)entity).isTamed()) {
-				meta.getPersistentDataContainer().set(ownerUUID, PersistentDataType.STRING, ((Tameable)entity).getOwner().getUniqueId().toString());
+				iData.set(ownerUUID, PersistentDataType.STRING, ((Tameable)entity).getOwner().getUniqueId().toString());
 			}
 		}
-		if (entity instanceof Wolf) {
-			meta.getPersistentDataContainer().set(collarColor, PersistentDataType.STRING, ((Wolf)entity).getCollarColor().toString());
-		}
-		if (entity instanceof Zombie) {
-			if (((Zombie)entity).isBaby()) { //Deprecated 1.16
-				stats.add("Juvenile");
+		switch (entity.getType().name()) {
+			case "AXOLOTL": {
+				stats.add("Type: " + WordUtils.capitalize(((Axolotl)entity).getVariant().toString().replace("_", " ").toLowerCase()));
+				iData.set(axolotlVariant, PersistentDataType.INTEGER, ((Axolotl)entity).getVariant().ordinal());
 			}
-			meta.getPersistentDataContainer().set(zombieBaby, PersistentDataType.BYTE, ((Zombie)entity).isBaby() ? (byte) 1 : (byte) 0); //Deprecated 1.16
+			case "BEE": {
+				iData.set(beeHasNectar, PersistentDataType.BYTE, ((Bee)entity).hasNectar() ? (byte) 1 : (byte) 0);
+				iData.set(beeHasStung, PersistentDataType.BYTE, ((Bee)entity).hasStung() ? (byte) 1 : (byte) 0);
+			}
+			case "CAT": {
+				stats.add("Type: " + WordUtils.capitalize(((Cat)entity).getCatType().toString().replace("_", " ").toLowerCase()));
+				iData.set(catType, PersistentDataType.STRING, ((Cat)entity).getCatType().toString());
+				iData.set(collarColor, PersistentDataType.STRING, ((Cat)entity).getCollarColor().toString());
+			}
+			case "CREEPER": {
+				if (((Creeper)entity).isPowered()) {
+					stats.add("Powered");
+				}
+				iData.set(creeperPowered, PersistentDataType.BYTE, ((Creeper)entity).isPowered() ? (byte) 1 : (byte) 0);
+			}
+			case "FOX": {
+				stats.add("Type: " + WordUtils.capitalize(((Fox)entity).getFoxType().toString().replace("_", " ").toLowerCase()));
+				iData.set(foxType, PersistentDataType.STRING, ((Fox)entity).getFoxType().toString());
+			}
+			case "GOAT": {
+				iData.set(goatScreaming, PersistentDataType.BYTE, ((Goat)entity).isScreaming() ? (byte) 1 : (byte) 0);
+			}
+			case "MAGMA_CUBE": case "SLIME": {
+				stats.add("Size: " + ((Slime)entity).getSize());
+				iData.set(slimeSize, PersistentDataType.INTEGER, ((Slime)entity).getSize());
+			}
+			case "MUSHROOM_COW": {
+				stats.add("Color: " + WordUtils.capitalize(((MushroomCow)entity).getVariant().toString().replace("_", " ").toLowerCase()));
+				iData.set(foxType, PersistentDataType.STRING, ((MushroomCow)entity).getVariant().toString());
+			}
+			case "PANDA": {
+				iData.set(pandaHiddenGene, PersistentDataType.STRING, ((Panda)entity).getHiddenGene().toString());
+				iData.set(pandaMainGene, PersistentDataType.STRING, ((Panda)entity).getMainGene().toString());
+			}
+			case "PARROT": {
+				stats.add("Color: " + WordUtils.capitalize(((Parrot)entity).getVariant().toString().replace("_", " ").toLowerCase()));
+				iData.set(parrotVariant, PersistentDataType.STRING, ((Parrot)entity).getVariant().toString());
+			}
+			case "PHANTOM": {
+				iData.set(phantomSize, PersistentDataType.INTEGER, ((Phantom)entity).getSize());
+			}
+			case "PIG": {
+				if (((Pig)entity).hasSaddle()) {
+					stats.add("Saddled");
+				}
+				iData.set(steerableSaddle, PersistentDataType.BYTE, ((Pig)entity).hasSaddle() ? (byte) 1 : (byte) 0);
+			}
+			case "PIGZOMBIE": case "ZOMBIE": {
+				if (((Zombie)entity).isBaby()) { //Deprecated 1.16
+					stats.add("Juvenile");
+				}
+				iData.set(zombieBaby, PersistentDataType.BYTE, ((Zombie)entity).isBaby() ? (byte) 1 : (byte) 0); //Deprecated 1.16
+			}
+			case "RABBIT": {
+				stats.add("Type: " + WordUtils.capitalize(((Rabbit)entity).getRabbitType().toString().replace("_", " ").toLowerCase()));
+				iData.set(rabbitType, PersistentDataType.STRING, ((Rabbit)entity).getRabbitType().toString());
+			}
+			case "SHEEP": {
+				stats.add("Color: " + WordUtils.capitalize(((Sheep)entity).getColor().toString().replace("_", " ").toLowerCase()));
+				iData.set(colorableColor, PersistentDataType.STRING, ((Sheep)entity).getColor().toString());
+				iData.set(sheepSheared, PersistentDataType.BYTE, ((Sheep)entity).isSheared() ? (byte) 1 : (byte) 0);
+			}
+			case "SHULKER": {
+				stats.add("Color: " + WordUtils.capitalize(((Shulker)entity).getColor().toString().replace("_", " ").toLowerCase()));
+				iData.set(colorableColor, PersistentDataType.STRING, ((Shulker)entity).getColor().toString());
+			}
+			case "STRIDER": {
+				if (((Strider)entity).hasSaddle()) {
+					stats.add("Saddled");
+				}
+				iData.set(steerableSaddle, PersistentDataType.BYTE, ((Strider)entity).hasSaddle() ? (byte) 1 : (byte) 0);
+			}
+			case "WOLF": {
+				iData.set(collarColor, PersistentDataType.STRING, ((Wolf)entity).getCollarColor().toString());
+			}
 		}
 		meta.setDisplayName(WordUtils.capitalize(entity.getType().name().replaceAll("_", " ").toLowerCase()));
 		if (entity.getCustomName() != null) {
 			meta.setDisplayName(entity.getCustomName());
-			meta.getPersistentDataContainer().set(customName, PersistentDataType.STRING, entity.getCustomName());
+			iData.set(customName, PersistentDataType.STRING, entity.getCustomName());
 		}
 		meta.setLore(stats);
 		egg.setItemMeta(meta);
 		return egg;
 	}
 	
+	// TODO
 	private LivingEntity createEntity(ItemStack egg, Location loc) {
 		ItemMeta meta = egg.getItemMeta();
+		PersistentDataContainer iData = meta.getPersistentDataContainer();
 		LivingEntity entity = (LivingEntity) loc.getWorld().spawnEntity(loc, EntityType.valueOf(meta.getPersistentDataContainer().get(entityType, PersistentDataType.STRING)));
 		if (entity instanceof Ageable) {
-			((Ageable)entity).setAge(meta.getPersistentDataContainer().get(ageableAge, PersistentDataType.INTEGER));
+			((Ageable)entity).setAge(iData.get(ageableAge, PersistentDataType.INTEGER));
 		}
 		if (entity instanceof Cat) {
-			((Cat)entity).setCatType(Cat.Type.valueOf(meta.getPersistentDataContainer().get(catType, PersistentDataType.STRING)));
-			((Cat)entity).setCollarColor(DyeColor.valueOf(meta.getPersistentDataContainer().get(collarColor, PersistentDataType.STRING)));
+			((Cat)entity).setCatType(Cat.Type.valueOf(iData.get(catType, PersistentDataType.STRING)));
+			((Cat)entity).setCollarColor(DyeColor.valueOf(iData.get(collarColor, PersistentDataType.STRING)));
+		}
+		if (entity instanceof Colorable) {
+			((Colorable)entity).setColor(DyeColor.valueOf(iData.get(colorableColor, PersistentDataType.STRING)));
 		}
 		if (entity instanceof Creeper) {
-			((Creeper)entity).setPowered(meta.getPersistentDataContainer().get(creeperPowered, PersistentDataType.BYTE) == 1);
+			((Creeper)entity).setPowered(iData.get(creeperPowered, PersistentDataType.BYTE) == 1);
 		}
 		if (entity instanceof Fox) {
-			((Fox)entity).setFoxType(Fox.Type.valueOf(meta.getPersistentDataContainer().get(foxType, PersistentDataType.STRING)));
+			((Fox)entity).setFoxType(Fox.Type.valueOf(iData.get(foxType, PersistentDataType.STRING)));
+		}
+		if (entity instanceof Goat) {
+			((Goat)entity).setScreaming(iData.get(goatScreaming, PersistentDataType.BYTE) == 1);
 		}
 		if (entity instanceof MushroomCow) {
-			((MushroomCow)entity).setVariant(MushroomCow.Variant.valueOf(meta.getPersistentDataContainer().get(mooshroomVariant, PersistentDataType.STRING)));
+			((MushroomCow)entity).setVariant(MushroomCow.Variant.valueOf(iData.get(mooshroomVariant, PersistentDataType.STRING)));
 		}
 		if (entity instanceof Panda) {
-			((Panda)entity).setHiddenGene(Panda.Gene.valueOf(meta.getPersistentDataContainer().get(pandaHiddenGene, PersistentDataType.STRING)));
-			((Panda)entity).setMainGene(Panda.Gene.valueOf(meta.getPersistentDataContainer().get(pandaMainGene, PersistentDataType.STRING)));
+			((Panda)entity).setHiddenGene(Panda.Gene.valueOf(iData.get(pandaHiddenGene, PersistentDataType.STRING)));
+			((Panda)entity).setMainGene(Panda.Gene.valueOf(iData.get(pandaMainGene, PersistentDataType.STRING)));
 		}
 		if (entity instanceof Parrot) {
-			((Parrot)entity).setVariant(Parrot.Variant.valueOf(meta.getPersistentDataContainer().get(parrotVariant, PersistentDataType.STRING)));
+			((Parrot)entity).setVariant(Parrot.Variant.valueOf(iData.get(parrotVariant, PersistentDataType.STRING)));
 		}
-		if (entity instanceof Pig) {
-			((Pig)entity).setSaddle(meta.getPersistentDataContainer().get(pigSaddle, PersistentDataType.BYTE) == 1);
+		if (entity instanceof Phantom) {
+			((Phantom)entity).setSize(iData.get(phantomSize, PersistentDataType.INTEGER));
 		}
 		if (entity instanceof Rabbit) {
-			((Rabbit)entity).setRabbitType(Rabbit.Type.valueOf(meta.getPersistentDataContainer().get(rabbitType, PersistentDataType.STRING)));
+			((Rabbit)entity).setRabbitType(Rabbit.Type.valueOf(iData.get(rabbitType, PersistentDataType.STRING)));
 		}
 		if (entity instanceof Sheep) {
-			((Sheep)entity).setColor(DyeColor.valueOf(meta.getPersistentDataContainer().get(sheepColor, PersistentDataType.STRING)));
-			((Sheep)entity).setSheared(meta.getPersistentDataContainer().get(sheepSheared, PersistentDataType.BYTE) == 1);
+			((Sheep)entity).setSheared(iData.get(sheepSheared, PersistentDataType.BYTE) == 1);
 		}
 		if (entity instanceof Slime) {
-			((Slime)entity).setSize(meta.getPersistentDataContainer().get(slimeSize, PersistentDataType.INTEGER));
+			((Slime)entity).setSize(iData.get(slimeSize, PersistentDataType.INTEGER));
+		}
+		if (entity instanceof Steerable) {
+			((Steerable)entity).setSaddle(iData.get(steerableSaddle, PersistentDataType.BYTE) == 1);
 		}
 		if (entity instanceof Tameable) {
-			if (meta.getPersistentDataContainer().has(ownerUUID, PersistentDataType.STRING)) {
-				((Tameable)entity).setOwner(Bukkit.getServer().getOfflinePlayer(UUID.fromString(meta.getPersistentDataContainer().get(ownerUUID, PersistentDataType.STRING))));
+			if (iData.has(ownerUUID, PersistentDataType.STRING)) {
+				((Tameable)entity).setOwner(Bukkit.getServer().getOfflinePlayer(UUID.fromString(iData.get(ownerUUID, PersistentDataType.STRING))));
 			}
 		}
 		if (entity instanceof Wolf) {
-			((Wolf)entity).setCollarColor(DyeColor.valueOf(meta.getPersistentDataContainer().get(collarColor, PersistentDataType.STRING)));
+			((Wolf)entity).setCollarColor(DyeColor.valueOf(iData.get(collarColor, PersistentDataType.STRING)));
 		}
 		if (entity instanceof Zombie) {
-			((Zombie)entity).setBaby(meta.getPersistentDataContainer().get(zombieBaby, PersistentDataType.BYTE) == 1); //Deprecated 1.16
+			((Zombie)entity).setBaby(iData.get(zombieBaby, PersistentDataType.BYTE) == 1); //Deprecated 1.16
 		}
 		entity.setHealth(meta.getPersistentDataContainer().get(entityHealth, PersistentDataType.DOUBLE));
 		return entity;

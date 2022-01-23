@@ -28,6 +28,7 @@ import me.sirrus86.s86powers.utils.PowerTime;
 			+ " Skeletons and PigZombies[/instantly-kill-undead]. [cooldown] cooldown.")
 public final class HolyBlade extends Power {
 
+	private PowerOption<String> beamBlock;
 	private PowerOption<Double> dmg;
 	private PowerOption<Integer> range;
 	private PowerOption<Boolean> breakNonSolid, killUndead, swordWear;
@@ -36,6 +37,7 @@ public final class HolyBlade extends Power {
 	
 	@Override
 	protected void config() {
+		beamBlock = option("beam-block-type", "GLOWSTONE", "Block type to be used for beam effects.");
 		breakNonSolid = option("break-non-solid-blocks", true, "Whether non-solid blocks are broken by beams.");
 		cooldown = option("cooldown", PowerTime.toMillis(200), "Period of time before power can be used again.");
 		dmg = option("damage", 5.0D, "Damage done by light beams.");
@@ -113,7 +115,7 @@ public final class HolyBlade extends Power {
 				runTaskLater(new Runnable() {
 					@Override
 					public void run() {
-						selected.getWorld().playEffect(selected, Effect.STEP_SOUND, Material.GLOWSTONE);
+						selected.getWorld().playEffect(selected, Effect.STEP_SOUND, Material.getMaterial(user.getOption(beamBlock)));
 						selected.add(dir);
 						stage ++;
 						tick();

@@ -37,8 +37,8 @@ import me.sirrus86.s86powers.users.PowerUser;
 @PowerManifest(name = "Lycanthropy", type = PowerType.PASSIVE, author = "sirrus86", concept = "vashvhexx", icon = Material.RABBIT_HIDE, usesPackets = true,
 	description = "[control-transformation]By [act:item]ing while holding [item][/control-transformation][noControl]At night during a full moon [/noControl]you change into a wolf."
 			+ " As a wolf[increase-speed] sprinting speed increases,[/increase-speed][night-vision] you gain night vision,[/night-vision]"
-			+ "[either] and[/either] unarmed damage increases by [damage-multiplier]%, but you take [iron-multiplier]% damage from iron tools and weapons,"
-			+ " and are unable to wear any armor.[noControl] Effect ends at sunrise.[/noControl]")
+			+ "[either] and[/either] unarmed damage increases by [damage-multiplier]%, but you take [iron-multiplier]% damage from iron tools and weapons[prevent-armor],"
+			+ " and are unable to wear any armor[/prevent-armor].[noControl] Effect ends at sunrise.[/noControl]")
 public final class Lycanthropy extends Power {
 
 	private Set<PowerUser> isWolf;
@@ -46,7 +46,7 @@ public final class Lycanthropy extends Power {
 	private final MCMetadata angryMeta = new MCMetadata();
 	
 	private PowerOption<Double> dmgIncr, infectChance, ironDmg;
-	private PowerOption<Boolean> control, infect, nv, speed;
+	private PowerOption<Boolean> control, infect, nv, preventArmor, speed;
 	private PowerOption<Integer> moonEnd, moonStart, spdIncr;
 	private PowerStat transforms;
 	private String infected, noArmor, turnToHuman, turnToWolf;
@@ -78,6 +78,7 @@ public final class Lycanthropy extends Power {
 		moonEnd = option("full-moon-end", 22000, "Time (in game ticks) moon sets.");
 		moonStart = option("full-moon-start", 13000, "Time (in game ticks) when the moon rises.");
 		nv = option("night-vision", true, "Whether users should get night vision while transformed.");
+		preventArmor = option("prevent-armor", true, "Whether users are prevented from wearing armor while transformed.");
 		spdIncr = option("speed-amplifier", 3, "Amplifier for increased speed potion effect.");
 		speed = option("increase-speed", true, "Whether speed should increase while transformed.");
 		transforms = stat("transformations", 10, "Transformations", "[act:item]ing while holding [item] at night allows you to transform into a werewolf at will.");
@@ -96,6 +97,7 @@ public final class Lycanthropy extends Power {
 				if (user.allowPower(getInstance())) {
 					if (isWolf.contains(user)) {
 						if (user.isOnline()
+								&& user.getOption(preventArmor)
 								&& user.getPlayer().getInventory().getArmorContents() != null) {
 							boolean hadArmor = false;
 							for (ItemStack armor : user.getPlayer().getInventory().getArmorContents()) {

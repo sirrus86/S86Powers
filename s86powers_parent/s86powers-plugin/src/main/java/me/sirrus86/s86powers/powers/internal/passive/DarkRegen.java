@@ -33,7 +33,7 @@ public final class DarkRegen extends Power {
 	private Map<PowerUser, Integer> regenTask;
 	
 	private PowerOption<Boolean> doNV, noRegen, regenFood, regenHP;
-	private PowerOption<Integer> darkLvl;
+	private PowerOption<Integer> maxLvl, minLvl;
 	@SuppressWarnings("unused")
 	private boolean regenAny, regenBoth;
 	
@@ -57,7 +57,8 @@ public final class DarkRegen extends Power {
 	@Override
 	protected void config() {
 		cooldown = option("minimum-cooldown", PowerTime.toMillis(200), "Minimum amount of time before user can regenerate in darkness.");
-		darkLvl = option("maximum-light-level", 8, "Maximum light level (from 0-15, darkest to brightest) in which the power will work.");
+		maxLvl = option("maximum-light-level", 8, "Maximum light level (from 0-15, darkest to brightest) in which the power will work.");
+		minLvl = option("minimum-light-level", 0, "Minimum light level (from 0-15, darkest to brightest) in which the power will work.");
 		doNV = option("night-vision", false, "Whether night vision should be granted in dark areas.");
 		noRegen = option("prevent-regen-in-light", true, "Whether to prevent users from regenerating health in higher light levels.");
 		regenFood = option("regenerate-hunger", true, "Whether user will regenerate hunger in dark areas.");
@@ -72,7 +73,8 @@ public final class DarkRegen extends Power {
 			@Override
 			public void run() {
 				if (user.allowPower(getInstance())
-						&& user.getPlayer().getEyeLocation().getBlock().getLightLevel() <= user.getOption(darkLvl)) {
+						&& user.getPlayer().getEyeLocation().getBlock().getLightLevel() >= user.getOption(minLvl)
+						&& user.getPlayer().getEyeLocation().getBlock().getLightLevel() <= user.getOption(maxLvl)) {
 					if ((user.getPlayer().getHealth() < user.getPlayer().getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue() && user.getOption(regenHP))
 							|| (user.getPlayer().getFoodLevel() < 20 && user.getOption(regenFood))) {
 						if (user.getOption(regenHP)) {
@@ -103,7 +105,8 @@ public final class DarkRegen extends Power {
 	private void onMove(PlayerMoveEvent event) {
 		PowerUser user = getUser(event.getPlayer());
 		if (user.allowPower(this)
-				&& user.getPlayer().getEyeLocation().getBlock().getLightLevel() <= user.getOption(darkLvl)
+				&& user.getPlayer().getEyeLocation().getBlock().getLightLevel() >= user.getOption(minLvl)
+				&& user.getPlayer().getEyeLocation().getBlock().getLightLevel() <= user.getOption(maxLvl)
 				&& (!regenTask.containsKey(user) || !isTaskLive(regenTask.get(user)))) {
 			regenTask.put(user, runTask(doRegen(user)).getTaskId());
 		}
@@ -115,7 +118,8 @@ public final class DarkRegen extends Power {
 			PowerUser user = getUser((Player) event.getEntity());
 			if (user.allowPower(this)
 					&& user.getOption(noRegen)
-					&& user.getPlayer().getEyeLocation().getBlock().getLightLevel() > user.getOption(darkLvl)) {
+					&& (user.getPlayer().getEyeLocation().getBlock().getLightLevel() < user.getOption(minLvl)
+							|| user.getPlayer().getEyeLocation().getBlock().getLightLevel() > user.getOption(maxLvl))) {
 				event.setCancelled(true);
 			}
 		}

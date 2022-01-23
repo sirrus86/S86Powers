@@ -2,6 +2,7 @@ package me.sirrus86.s86powers.powers.internal.passive;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 
 import org.bukkit.Location;
@@ -10,8 +11,6 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
-
-import com.google.common.collect.Sets;
 
 import me.sirrus86.s86powers.events.PowerUseEvent;
 import me.sirrus86.s86powers.powers.Power;
@@ -77,7 +76,7 @@ public final class Rewind extends Power {
 	
 	private void trimMap(Map<Long, Location> map, long amt) {
 		if (!map.isEmpty()) {
-			for (Long time : Sets.newHashSet(map.keySet())) {
+			for (Long time : Set.copyOf(map.keySet())) {
 				if (time < System.currentTimeMillis() - amt) {
 					map.remove(time);
 				}
