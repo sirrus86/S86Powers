@@ -29,7 +29,6 @@ import me.sirrus86.s86powers.users.PowerUser;
 import me.sirrus86.s86powers.utils.PowerTime;
 
 import org.apache.commons.lang.WordUtils;
-
 import org.bukkit.Art;
 import org.bukkit.Axis;
 import org.bukkit.Bukkit;

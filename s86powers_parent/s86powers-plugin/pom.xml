@@ -9,14 +9,14 @@
 		<version>parent</version>
 	</parent>
 	<artifactId>s86powers-plugin</artifactId>
-	<version>5.2.2</version>
+	<version>5.2.3</version>
 	<name>Plugin</name>
 
 	<dependencies>
 		<dependency>
 			<groupId>com.comphenix.protocol</groupId>
 			<artifactId>ProtocolLib</artifactId>
-			<version>4.7.0-SNAPSHOT</version>
+			<version>5.0.0-SNAPSHOT</version>
 			<type>jar</type>
 			<scope>provided</scope>
 		</dependency>
@@ -107,6 +107,20 @@
 			<groupId>me.sirrus86</groupId>
 			<artifactId>s86powers-v1_18_1</artifactId>
 			<version>v1_18_1</version>
+			<scope>compile</scope>
+			<optional>true</optional>
+		</dependency>
+		<dependency>
+			<groupId>me.sirrus86</groupId>
+			<artifactId>s86powers-v1_18_2</artifactId>
+			<version>v1_18_2</version>
+			<scope>compile</scope>
+			<optional>true</optional>
+		</dependency>
+		<dependency>
+			<groupId>me.sirrus86</groupId>
+			<artifactId>s86powers-v1_19</artifactId>
+			<version>v1_19</version>
 			<scope>compile</scope>
 			<optional>true</optional>
 		</dependency>

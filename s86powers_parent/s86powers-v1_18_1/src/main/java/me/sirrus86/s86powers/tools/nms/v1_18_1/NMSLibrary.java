@@ -91,6 +91,7 @@ public class NMSLibrary extends me.sirrus86.s86powers.tools.nms.NMSLibrary {
 		return Block.i(((CraftBlock)block).getNMS());
 	}
 	
+	@SuppressWarnings("deprecation")
 	@Override
 	public EntityTypes<?> getNMSEntityType(org.bukkit.entity.EntityType type) {
 		return EntityTypes.a(type.getName().toLowerCase()).get();
@@ -123,7 +124,7 @@ public class NMSLibrary extends me.sirrus86.s86powers.tools.nms.NMSLibrary {
 			entity.setTarget(null);
 			EntityCreature handle = ((CraftCreature)entity).getHandle();
 			handle.bR = new PathfinderGoalSelector(handle.t.ac());
-			handle.bS = new PathfinderGoalSelector(handle.t.ac()); // TODO: Make separate for 1.17.1
+			handle.bS = new PathfinderGoalSelector(handle.t.ac());
 //			PathfinderGoalSelector[] goalSelectors = new PathfinderGoalSelector[] { handle.goalSelector, handle.targetSelector };
 //			for (int i = 0; i < goalSelectors.length; i ++) {
 //				Field c = goalSelectors[i].getClass().getDeclaredField("c"),

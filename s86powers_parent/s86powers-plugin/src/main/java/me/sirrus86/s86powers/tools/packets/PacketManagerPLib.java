@@ -1,6 +1,5 @@
 package me.sirrus86.s86powers.tools.packets;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -236,7 +235,6 @@ public final class PacketManagerPLib extends PacketManager {
 		createEntityPacket(entity.getEntityId(), entity.getUniqueId(), entity.getLocation(), entity.getVelocity(), type, watcher, data, null);
 	}
 
-	@SuppressWarnings("deprecation")
 	private void createEntityPacket(int id, UUID uuid, Location loc, Vector velocity, EntityType type, WrappedDataWatcher watcher, Object data, Player viewer) {
 		PacketContainer entityPacket = null, metaPacket = null;
 		if (type.isAlive()) {
@@ -772,18 +770,9 @@ public final class PacketManagerPLib extends PacketManager {
 	}
 	
 	private void sendServerPacket(Player player, PacketContainer packet) {
-		try {
-			if (player != null
-					&& packet != null) {
-				pm.sendServerPacket(player, packet);
-			}
-		} catch (InvocationTargetException e) {
-			if (ConfigOption.Plugin.SHOW_PACKET_ERRORS) {
-				e.printStackTrace();
-			}
-			else {
-				return;
-			}
+		if (player != null
+				&& packet != null) {
+			pm.sendServerPacket(player, packet);
 		}
 	}
 

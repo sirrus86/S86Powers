@@ -135,6 +135,7 @@ public final class MobCatcher extends Power {
 		supplies(new ItemStack(getRequiredItem().getType(), getRequiredItem().getMaxStackSize()));
 	}
 	
+	@SuppressWarnings("deprecation")
 	private ItemStack createEgg(LivingEntity entity) {
 		ItemStack egg = new ItemStack(getRequiredItem().getType(), 1);
 		ItemMeta meta = egg.hasItemMeta() ? getRequiredItem().getItemMeta() : entity.getServer().getItemFactory().getItemMeta(getRequiredItem().getType());
@@ -246,6 +247,7 @@ public final class MobCatcher extends Power {
 	}
 	
 	// TODO
+	@SuppressWarnings("deprecation")
 	private LivingEntity createEntity(ItemStack egg, Location loc) {
 		ItemMeta meta = egg.getItemMeta();
 		PersistentDataContainer iData = meta.getPersistentDataContainer();
