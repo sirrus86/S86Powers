@@ -10,7 +10,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
-import org.bukkit.Art;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Chunk;
@@ -25,7 +24,6 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.ExperienceOrb;
 import org.bukkit.entity.Item;
-import org.bukkit.entity.LightningStrike;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Painting;
 import org.bukkit.entity.Player;
@@ -50,9 +48,9 @@ import com.comphenix.protocol.wrappers.WrappedBlockData;
 import com.comphenix.protocol.wrappers.WrappedChatComponent;
 import com.comphenix.protocol.wrappers.WrappedDataWatcher;
 import com.comphenix.protocol.wrappers.EnumWrappers.ChatType;
-import com.comphenix.protocol.wrappers.EnumWrappers.Direction;
 import com.comphenix.protocol.wrappers.EnumWrappers.ItemSlot;
 import com.comphenix.protocol.wrappers.EnumWrappers.PlayerDigType;
+import com.comphenix.protocol.wrappers.EnumWrappers.PlayerInfoAction;
 import com.comphenix.protocol.wrappers.WrappedDataWatcher.Registry;
 
 import com.google.common.collect.Lists;
@@ -75,8 +73,8 @@ public final class PacketManagerPLib extends PacketManager {
 	public PacketManagerPLib() {
 		pm = ProtocolLibrary.getProtocolManager();
 		pm.addPacketListener(new PacketAdapter(plugin, PacketType.Play.Server.ENTITY_METADATA, PacketType.Play.Server.SPAWN_ENTITY,
-				PacketType.Play.Server.SPAWN_ENTITY_LIVING, PacketType.Play.Server.NAMED_ENTITY_SPAWN,
-				PacketType.Play.Server.BLOCK_CHANGE, PacketType.Play.Client.STEER_VEHICLE, PacketType.Play.Client.USE_ENTITY, PacketType.Play.Client.BLOCK_DIG) {
+				PacketType.Play.Server.NAMED_ENTITY_SPAWN, PacketType.Play.Server.BLOCK_CHANGE, PacketType.Play.Client.STEER_VEHICLE,
+				PacketType.Play.Client.USE_ENTITY, PacketType.Play.Client.BLOCK_DIG) {
 			
 			@Override
 			public void onPacketSending(PacketEvent event) {
@@ -98,7 +96,6 @@ public final class PacketManagerPLib extends PacketManager {
 					}
 				}
 				else if (event.getPacketType() == PacketType.Play.Server.SPAWN_ENTITY
-						|| event.getPacketType() == PacketType.Play.Server.SPAWN_ENTITY_LIVING
 						|| event.getPacketType() == PacketType.Play.Server.NAMED_ENTITY_SPAWN) {
 					if (entity != null) {
 						if (disguises.containsKey(entity.getUniqueId())) {
@@ -237,89 +234,40 @@ public final class PacketManagerPLib extends PacketManager {
 
 	private void createEntityPacket(int id, UUID uuid, Location loc, Vector velocity, EntityType type, WrappedDataWatcher watcher, Object data, Player viewer) {
 		PacketContainer entityPacket = null, metaPacket = null;
-		if (type.isAlive()) {
-			if (type == EntityType.PLAYER) {
-				if (data instanceof UUID) {
-					entityPacket = pm.createPacket(PacketType.Play.Server.NAMED_ENTITY_SPAWN, true);
-					entityPacket.getIntegers().write(0, id);
-					entityPacket.getUUIDs().write(0, (UUID) data);
-					entityPacket.getDoubles().write(0, loc.getX());
-					entityPacket.getDoubles().write(1, loc.getY());
-					entityPacket.getDoubles().write(2, loc.getZ());
-					entityPacket.getBytes().write(0, (byte) (loc.getYaw() * 256.0F / 360.0F));
-					entityPacket.getBytes().write(1, (byte) (loc.getPitch() * 256.0F / 360.0F));
-				}
-				else {
-					throw new IllegalArgumentException("UUID is required!");
-				}
-			}
-			else {
-				entityPacket = pm.createPacket(PacketType.Play.Server.SPAWN_ENTITY_LIVING, true);
-				entityPacket.getIntegers().write(0, id);
-				entityPacket.getUUIDs().write(0, uuid);
-				entityPacket.getIntegers().write(1, nms.getEntityTypeID(type));
-				entityPacket.getDoubles().write(0, loc.getX());
-				entityPacket.getDoubles().write(1, loc.getY());
-				entityPacket.getDoubles().write(2, loc.getZ());
-				entityPacket.getIntegers().write(2, velocity.getBlockX());
-				entityPacket.getIntegers().write(3, velocity.getBlockY());
-				entityPacket.getIntegers().write(4, velocity.getBlockZ());
-				entityPacket.getBytes().write(0, (byte) (loc.getYaw() * 256.0F / 360.0F));
-				entityPacket.getBytes().write(1, (byte) (loc.getPitch() * 256.0F / 360.0F));
-				entityPacket.getBytes().write(2, (byte) (loc.getYaw() * 256.0F / 360.0F));
-			}
+		if (type == EntityType.PLAYER) {
+			entityPacket = pm.createPacket(PacketType.Play.Server.NAMED_ENTITY_SPAWN, true);
+			entityPacket.getIntegers().write(0, id);
+			entityPacket.getUUIDs().write(0, (UUID) data);
+			entityPacket.getDoubles().write(0, loc.getX());
+			entityPacket.getDoubles().write(1, loc.getY());
+			entityPacket.getDoubles().write(2, loc.getZ());
+			entityPacket.getBytes().write(0, (byte) (loc.getYaw() * 256.0F / 360.0F));
+			entityPacket.getBytes().write(1, (byte) (loc.getPitch() * 256.0F / 360.0F));
+		}
+		else if (type == EntityType.EXPERIENCE_ORB) {
+			entityPacket = pm.createPacket(PacketType.Play.Server.SPAWN_ENTITY_EXPERIENCE_ORB, true);
+			entityPacket.getIntegers().write(0, id);
+			entityPacket.getDoubles().write(0, loc.getX());
+			entityPacket.getDoubles().write(1, loc.getY());
+			entityPacket.getDoubles().write(2, loc.getZ());
+			entityPacket.getIntegers().write(1, 0);
 		}
 		else {
-			switch (type) {
-				case EXPERIENCE_ORB: {
-					entityPacket = pm.createPacket(PacketType.Play.Server.SPAWN_ENTITY_EXPERIENCE_ORB, true);
-					entityPacket.getIntegers().write(0, id);
-					entityPacket.getDoubles().write(0, loc.getX());
-					entityPacket.getDoubles().write(1, loc.getY());
-					entityPacket.getDoubles().write(2, loc.getZ());
-					entityPacket.getIntegers().write(1, 0);
-					break;
-				}
-				case LIGHTNING: {
-					entityPacket = pm.createPacket(PacketType.Play.Server.SPAWN_ENTITY_WEATHER, true);
-					entityPacket.getIntegers().write(0, id);
-					entityPacket.getDoubles().write(0, loc.getX());
-					entityPacket.getDoubles().write(1, loc.getY());
-					entityPacket.getDoubles().write(2, loc.getZ());
-					entityPacket.getIntegers().write(1, 1);
-					break;
-				}
-				case PAINTING: {
-					entityPacket = pm.createPacket(PacketType.Play.Server.SPAWN_ENTITY_PAINTING, true);
-					entityPacket.getIntegers().write(0, id);
-					entityPacket.getUUIDs().write(0, uuid);
-					entityPacket.getBlockPositionModifier().write(0, new BlockPosition(loc.toVector()));
-					entityPacket.getDirections().write(0, Direction.valueOf(PowerTools.getDirection(loc, false).name()));
-					if (data != null
-							&& data instanceof Art) {
-						entityPacket.getIntegers().write(1, ((Art)data).getId());
-					}
-					break;
-				}
-				default: {
-					entityPacket = pm.createPacket(PacketType.Play.Server.SPAWN_ENTITY, true);
-					entityPacket.getIntegers().write(0, id);
-					entityPacket.getUUIDs().write(0, uuid);
-					entityPacket.getDoubles().write(0, loc.getX());
-					entityPacket.getDoubles().write(1, loc.getY());
-					entityPacket.getDoubles().write(2, loc.getZ());
-					entityPacket.getIntegers().write(1, velocity.getBlockX());
-					entityPacket.getIntegers().write(2, velocity.getBlockY());
-					entityPacket.getIntegers().write(3, velocity.getBlockZ());
-					entityPacket.getIntegers().write(4, (int) (loc.getYaw() * 256.0F / 360.0F));
-					entityPacket.getIntegers().write(5, (int) (loc.getPitch() * 256.0F / 360.0F));
-					entityPacket.getModifier().write(10, nms.getNMSEntityType(type));
-					if (data != null
-							&& data instanceof Integer) {
-						entityPacket.getIntegers().write(6, (int) data);
-					}
-					break;
-				}
+			entityPacket = pm.createPacket(PacketType.Play.Server.SPAWN_ENTITY, true);
+			entityPacket.getIntegers().write(0, id);
+			entityPacket.getUUIDs().write(0, uuid);
+			entityPacket.getDoubles().write(0, loc.getX());
+			entityPacket.getDoubles().write(1, loc.getY());
+			entityPacket.getDoubles().write(2, loc.getZ());
+			entityPacket.getIntegers().write(1, velocity.getBlockX());
+			entityPacket.getIntegers().write(2, velocity.getBlockY());
+			entityPacket.getIntegers().write(3, velocity.getBlockZ());
+			entityPacket.getIntegers().write(4, (int) (loc.getYaw() * 256.0F / 360.0F));
+			entityPacket.getIntegers().write(5, (int) (loc.getPitch() * 256.0F / 360.0F));
+			entityPacket.getModifier().write(10, nms.getNMSEntityType(type));
+			if (data != null
+					&& data instanceof Integer) {
+				entityPacket.getIntegers().write(6, (int) data);
 			}
 		}
 		Entity entity = Bukkit.getEntity(uuid);
@@ -328,6 +276,10 @@ public final class PacketManagerPLib extends PacketManager {
 				sendServerPacket(viewer, entityPacket);
 			}
 			else if (entity != null) {
+				if (entity instanceof Player) {
+					PacketContainer infoPacket = pm.createPacketConstructor(PacketType.Play.Server.PLAYER_INFO, PlayerInfoAction.ADD_PLAYER, (Player) entity).createPacket(PlayerInfoAction.ADD_PLAYER, (Player) entity);
+					pm.broadcastServerPacket(infoPacket, entity, false);
+				}
 				pm.broadcastServerPacket(entityPacket, entity, false);
 			}
 			disguises.put(uuid, entityPacket);
@@ -864,32 +816,25 @@ public final class PacketManagerPLib extends PacketManager {
 		try {
 			pm.updateEntity(entity, pm.getEntityTrackers(entity));
 		} catch (Exception e) {
-			PacketContainer packet1 = null;
+			PacketContainer packet1 = null, packet2 = null;
 			if (entity instanceof Player) {
 				packet1 = pm.createPacketConstructor(PacketType.Play.Server.NAMED_ENTITY_SPAWN, (Player) entity).createPacket(entity);
-			}
-			else if (entity instanceof LivingEntity) {
-				packet1 = pm.createPacketConstructor(PacketType.Play.Server.SPAWN_ENTITY_LIVING, (LivingEntity) entity).createPacket(entity);
+				packet2 = pm.createPacketConstructor(PacketType.Play.Server.PLAYER_INFO, PlayerInfoAction.ADD_PLAYER, (Player) entity).createPacket(PlayerInfoAction.ADD_PLAYER, (Player) entity);
 			}
 			else if (entity instanceof ExperienceOrb) {
 				packet1 = pm.createPacketConstructor(PacketType.Play.Server.SPAWN_ENTITY_EXPERIENCE_ORB, (ExperienceOrb) entity).createPacket(entity);
 			}
-			else if (entity instanceof LightningStrike) {
-				packet1 = pm.createPacketConstructor(PacketType.Play.Server.SPAWN_ENTITY_WEATHER, (LightningStrike) entity).createPacket(entity);
-			}
-			else if (entity instanceof Painting) {
-				packet1 = pm.createPacketConstructor(PacketType.Play.Server.SPAWN_ENTITY_PAINTING, (Painting) entity).createPacket(entity);
-			}
 			else {
 				packet1 = pm.createPacketConstructor(PacketType.Play.Server.SPAWN_ENTITY, entity).createPacket(entity);
 			}
-			PacketContainer packet2 = pm.createPacket(PacketType.Play.Server.ENTITY_METADATA);
-			packet2.getIntegers().write(0, entity.getEntityId());
-			packet2.getWatchableCollectionModifier().write(0, WrappedDataWatcher.getEntityWatcher(entity).getWatchableObjects());
-			if (packet1 != null) {
-				pm.broadcastServerPacket(packet1, entity, sendToEntity);
+			PacketContainer packet3 = pm.createPacket(PacketType.Play.Server.ENTITY_METADATA);
+			packet3.getIntegers().write(0, entity.getEntityId());
+			packet3.getWatchableCollectionModifier().write(0, WrappedDataWatcher.getEntityWatcher(entity).getWatchableObjects());
+			if (packet2 != null) {
+				pm.broadcastServerPacket(packet2, entity, sendToEntity);
 			}
-			pm.broadcastServerPacket(packet2, entity, sendToEntity);
+			pm.broadcastServerPacket(packet1, entity, sendToEntity);
+			pm.broadcastServerPacket(packet3, entity, sendToEntity);
 		}
 	}
 	

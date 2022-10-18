@@ -428,6 +428,7 @@ public final class PowerUser implements Comparable<PowerUser> {
 	
 	@SuppressWarnings("unchecked")
 	public <O> O getOption(PowerOption<O> option) {
+		assert option != null;
 		Power power = option.getPower();
 		return options.containsKey(option) ? (O) options.get(option) : (O) power.getOption(option);
 	}

@@ -64,6 +64,7 @@ public final class Adaptability extends Power {
 		projectileTypes = option("damage-types.projectile", List.of("PROJECTILE"), "Damage causes which should attribute to projectile resistance.");
 		shadowTypes = option("damage-types.shadow", List.of("DRAGON_BREATH"), "Damage causes which should attribute to shadow resistance.");
 		steps = option("adapt-increment-steps", 10, "Number of increments it takes to reach maximum adapt from initial.");
+		waterTypes = option("damage-types.water", List.of(), "Damage causes which should attribute to water resistance.");
 		nowAdapting = locale("message.now-adapting", ChatColor.YELLOW + "Now adapting to [type] damage.");
 		preventArmor = locale("message.prevents-armor", ChatColor.RED + "Your power prevents you from wearing armor.");
 		resistIncrease = locale("message.resistance-increase", ChatColor.YELLOW + "Resistance to [type] increased to [amount]%.");
