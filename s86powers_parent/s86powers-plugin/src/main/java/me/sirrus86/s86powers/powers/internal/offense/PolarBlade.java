@@ -74,7 +74,7 @@ public final class PolarBlade extends Power {
 			if (slow > 0) {
 				slow --;
 				meta.getPersistentDataContainer().set(pBladeEffectAmps, PersistentDataType.INTEGER, slow);
-				String effectText = effectDesc.replace("[type]", "Slowness")
+				String effectText = effectDesc.replace("[effect]", "Slowness")
 						.replace("[power]", PowerTools.getRomanNumeral(slow))
 						.replace("[time]", PowerTime.asClock(PowerTime.toMillis(3, 0), false, false, true, true, false));
 				meta.setLore(List.of(effectText));
