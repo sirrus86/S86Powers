@@ -63,7 +63,7 @@ public class NMSLibrary extends me.sirrus86.s86powers.tools.nms.NMSLibrary {
 	@Override
 	public int generateEntityID() {
 		try {
-			Field field = Entity.class.getDeclaredField("b");
+			Field field = Entity.class.getDeclaredField("c");
 			field.setAccessible(true);
 			AtomicInteger id = (AtomicInteger) field.get(null);
 			return id.incrementAndGet();
