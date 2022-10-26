@@ -101,7 +101,14 @@ public final class Lumberjack extends Power {
 										&& plantable.contains(log.getRelative(BlockFace.DOWN).getType())
 										&& user.getOption(replant)
 										&& species != null) {
-									log.setType(getSapling(species));
+									runTask(new Runnable() {
+
+										@Override
+										public void run() {
+											log.setType(getSapling(species));
+										}
+										
+									});
 								}
 							}
 						}
