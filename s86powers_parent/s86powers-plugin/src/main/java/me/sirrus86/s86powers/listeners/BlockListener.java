@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import me.sirrus86.s86powers.S86Powers;
 import me.sirrus86.s86powers.config.ConfigOption;
@@ -37,7 +38,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 public class BlockListener implements Listener {
 
 	private Map<Block, PowerFire> bList = new HashMap<>();
-	private Map<Entity, PowerFire> burnList = new HashMap<>();
+	private Map<Entity, PowerFire> burnList = new ConcurrentHashMap<>();
 	private Set<Explosive> eList = new HashSet<>();
 	
 	private final Fire fireData = (Fire) Material.FIRE.createBlockData();
