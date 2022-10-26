@@ -1,7 +1,6 @@
 package me.sirrus86.s86powers.powers.internal.passive;
 
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import org.bukkit.Material;
@@ -10,7 +9,6 @@ import org.bukkit.potion.PotionEffectType;
 
 import me.sirrus86.s86powers.powers.Power;
 import me.sirrus86.s86powers.powers.PowerManifest;
-import me.sirrus86.s86powers.powers.PowerOption;
 import me.sirrus86.s86powers.powers.PowerType;
 import me.sirrus86.s86powers.users.PowerUser;
 
@@ -19,7 +17,7 @@ import me.sirrus86.s86powers.users.PowerUser;
 public final class Haste extends Power {
 
 	private Set<PowerUser> hasEffects;
-	private PowerOption<List<PotionEffect>> effects;
+//	private PowerOption<List<PotionEffect>> effects;
 	
 	@Override
 	protected void onEnable() {
@@ -30,7 +28,7 @@ public final class Haste extends Power {
 	protected void onEnable(PowerUser user) {
 		if (user.allowPower(this)
 				&& !hasEffects.contains(user)) {
-			user.addPotionEffects(user.getOption(effects));
+			user.addPotionEffect(new PotionEffect(PotionEffectType.FAST_DIGGING, Integer.MAX_VALUE, 3, false, false, true));
 			hasEffects.add(user);
 		}
 	}
@@ -38,14 +36,14 @@ public final class Haste extends Power {
 	@Override
 	protected void onDisable(PowerUser user) {
 		if (hasEffects.contains(user)) {
-			user.removePotionEffects(user.getOption(effects));
+			user.removePotionEffect(PotionEffectType.FAST_DIGGING);
 			hasEffects.remove(user);
 		}
 	}
 
 	@Override
 	protected void config() {
-		effects = option("effects", List.of(new PotionEffect(PotionEffectType.FAST_DIGGING, Integer.MAX_VALUE, 3)), "Effects to be given to users.");
+//		effects = option("effects", List.of(new PotionEffect(PotionEffectType.FAST_DIGGING, Integer.MAX_VALUE, 3, false, false, true)), "Effects to be given to users.");
 	}
 
 }

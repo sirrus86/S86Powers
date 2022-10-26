@@ -25,7 +25,7 @@ public final class AcidBlood extends Power {
 	private PowerOption<Double> absorb;
 	private PowerOption<List<String>> absorbTypes;
 	private PowerOption<Boolean> afflict;
-	private PowerOption<List<PotionEffect>> effects;
+//	private PowerOption<List<PotionEffect>> effects;
 	
 	@Override
 	protected void config() {
@@ -33,7 +33,7 @@ public final class AcidBlood extends Power {
 		absorbTypes = option("absorb.types", List.of("POISON"), "Damage types to absorb.");
 		afflict = option("afflict-attackers", true, "Whether to afflict attackers with status effects.");
 		cooldown = option("cooldown", PowerTime.toMillis(0), "Period of time before an attacker can be afflicted again.");
-		effects = option("afflict-effects", List.of(new PotionEffect(PotionEffectType.POISON, (int) PowerTime.toMillis(5, 0), 1)), "Effects to afflict on attackers.");
+//		effects = option("afflict-effects", List.of(new PotionEffect(PotionEffectType.POISON, (int) PowerTime.toMillis(5, 0), 1, false, true, true)), "Effects to afflict on attackers.");
 	}
 	
 	@EventHandler(ignoreCancelled = true)
@@ -41,20 +41,26 @@ public final class AcidBlood extends Power {
 		if (event.getEntity() instanceof Player) {
 			PowerUser user = getUser((Player) event.getEntity());
 			if (user.allowPower(this)) {
-//				if (event.getCause() == DamageCause.POISON) {
 				if (user.getOption(absorbTypes).contains(event.getCause().name())) {
 					double abs = event.getDamage() * (user.getOption(absorb) / 100.0D);
 					user.heal(abs);
 					event.setCancelled(true);
 				}
-				else if (event instanceof EntityDamageByEntityEvent) {
-					if (((EntityDamageByEntityEvent) event).getDamager() instanceof LivingEntity
-							&& user.getOption(afflict) && user.getCooldown(this) <= 0) {
-						LivingEntity target = (LivingEntity) ((EntityDamageByEntityEvent) event).getDamager();
-						target.addPotionEffects(user.getOption(effects));
-						user.setCooldown(this, user.getOption(cooldown));
-					}
-				}
+			}
+		}
+	}
+	
+	@EventHandler(ignoreCancelled = true)
+	private void onDmg(EntityDamageByEntityEvent event) {
+		if (event.getEntity() instanceof Player) {
+			PowerUser user = getUser((Player) event.getEntity());
+			if (user.allowPower(this)
+					&& user.getOption(afflict)
+					&& user.getCooldown(this) <= 0L
+					&& event.getDamager() instanceof LivingEntity) {
+				LivingEntity target = (LivingEntity) event.getDamager();
+				target.addPotionEffect(new PotionEffect(PotionEffectType.POISON, (int) PowerTime.toTicks(5, 0), 1, false, true, true));
+				user.setCooldown(this, user.getOption(cooldown));
 			}
 		}
 	}

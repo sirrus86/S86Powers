@@ -1,7 +1,6 @@
 package me.sirrus86.s86powers.powers.internal.defense;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.bukkit.ChatColor;
@@ -34,7 +33,7 @@ public final class Bulwark extends Power {
 	private Map<PowerUser, Long> parryWindow;
 	
 	private PowerOption<Boolean> doEffects;
-	private PowerOption<List<PotionEffect>> effects;
+//	private PowerOption<List<PotionEffect>> effects;
 	private PowerOption<Double> knockback;
 	private PowerOption<Long> parryTime;
 
@@ -49,7 +48,7 @@ public final class Bulwark extends Power {
 	protected void config() {
 		cooldown = option("cooldown", PowerTime.toMillis(3, 0), "Amount of time after a successful parry before an attack can be parried again.");
 		doEffects = option("effects.enable", true, "Whether to afflict the parried entity with status effects.");
-		effects = option("effects", List.of(new PotionEffect(PotionEffectType.SLOW_DIGGING, (int) PowerTime.toMillis(5, 0), 0)), "Effects to afflict parried entities.");
+//		effects = option("effects", List.of(new PotionEffect(PotionEffectType.SLOW_DIGGING, (int) PowerTime.toMillis(5, 0), 0, false, false, true)), "Effects to afflict parried entities.");
 		item = option("item", new ItemStack(Material.SHIELD), "Item used for blocking.", true);
 		knockback = option("knockback", 1.3D, "Velocity modifier for knockback when an attack is parried.");
 		parryTime = option("parry-window", PowerTime.toMillis(1, 0), "Maximum amount of time after blocking to successfully parry an attack.");
@@ -89,7 +88,7 @@ public final class Bulwark extends Power {
 					}
 					user.sendMessage(didParry.replace("[name]", PowerTools.getFriendlyName(target) + ChatColor.GREEN));
 					if (user.getOption(doEffects)) {
-						target.addPotionEffects(user.getOption(effects));
+						target.addPotionEffect(new PotionEffect(PotionEffectType.SLOW_DIGGING, (int) PowerTime.toTicks(5, 0), 0, false, false, true));
 					}
 				}
 				else if (event.getDamager() instanceof Arrow

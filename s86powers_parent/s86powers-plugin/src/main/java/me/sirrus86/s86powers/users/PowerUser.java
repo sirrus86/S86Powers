@@ -149,7 +149,7 @@ public final class PowerUser implements Comparable<PowerUser> {
 	 */
 	public boolean addPotionEffect(PotionEffect effect) {
 		if (isOnline()) {
-			return getPlayer().addPotionEffect(new PotionEffect(effect.getType(), effect.getDuration(), effect.getAmplifier(), false, false, false));
+			return getPlayer().addPotionEffect(effect);
 		}
 		return false;
 	}
@@ -176,6 +176,8 @@ public final class PowerUser implements Comparable<PowerUser> {
 		if (power != null
 				&& !powers.containsKey(power)) {
 			powers.put(power, enable);
+			power.addUser(this);
+			power.enable(this);
 		}
 	}
 	
