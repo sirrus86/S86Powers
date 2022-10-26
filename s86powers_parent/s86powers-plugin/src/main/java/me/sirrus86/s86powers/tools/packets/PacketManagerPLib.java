@@ -27,6 +27,7 @@ import org.bukkit.entity.Item;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Painting;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.EntityEquipment;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
@@ -43,16 +44,20 @@ import com.comphenix.protocol.events.PacketEvent;
 import com.comphenix.protocol.utility.MinecraftReflection;
 import com.comphenix.protocol.wrappers.BlockPosition;
 import com.comphenix.protocol.wrappers.ChunkCoordIntPair;
+import com.comphenix.protocol.wrappers.EnumWrappers;
 import com.comphenix.protocol.wrappers.MultiBlockChangeInfo;
+import com.comphenix.protocol.wrappers.Pair;
+import com.comphenix.protocol.wrappers.PlayerInfoData;
 import com.comphenix.protocol.wrappers.WrappedBlockData;
 import com.comphenix.protocol.wrappers.WrappedChatComponent;
 import com.comphenix.protocol.wrappers.WrappedDataWatcher;
 import com.comphenix.protocol.wrappers.EnumWrappers.ChatType;
 import com.comphenix.protocol.wrappers.EnumWrappers.ItemSlot;
+import com.comphenix.protocol.wrappers.EnumWrappers.NativeGameMode;
 import com.comphenix.protocol.wrappers.EnumWrappers.PlayerDigType;
 import com.comphenix.protocol.wrappers.EnumWrappers.PlayerInfoAction;
 import com.comphenix.protocol.wrappers.WrappedDataWatcher.Registry;
-
+import com.comphenix.protocol.wrappers.WrappedGameProfile;
 import com.google.common.collect.Lists;
 
 import me.sirrus86.s86powers.config.ConfigOption;
@@ -262,22 +267,41 @@ public final class PacketManagerPLib extends PacketManager {
 			entityPacket.getIntegers().write(1, velocity.getBlockX());
 			entityPacket.getIntegers().write(2, velocity.getBlockY());
 			entityPacket.getIntegers().write(3, velocity.getBlockZ());
-			entityPacket.getIntegers().write(4, (int) (loc.getYaw() * 256.0F / 360.0F));
-			entityPacket.getIntegers().write(5, (int) (loc.getPitch() * 256.0F / 360.0F));
-			entityPacket.getModifier().write(10, nms.getNMSEntityType(type));
-			if (data != null
-					&& data instanceof Integer) {
-				entityPacket.getIntegers().write(6, (int) data);
+			if (MCVersion.isLessThan(MCVersion.v1_19)) {
+				entityPacket.getIntegers().write(4, (int) (loc.getYaw() * 256.0F / 360.0F));
+				entityPacket.getIntegers().write(5, (int) (loc.getPitch() * 256.0F / 360.0F));
+				if (data != null
+						&& data instanceof Integer) {
+					entityPacket.getIntegers().write(6, (int) data);
+				}
 			}
+			else {
+				entityPacket.getBytes().write(0, (byte) (loc.getYaw() * 256.0F / 360.0F));
+				entityPacket.getBytes().write(1, (byte) (loc.getPitch() * 256.0F / 360.0F));
+				entityPacket.getBytes().write(2, (byte) (loc.getYaw() * 256.0F / 360.0F));
+				if (data != null
+						&& data instanceof Integer) {
+					entityPacket.getIntegers().write(4, (int) data);
+				}
+			}
+			entityPacket.getEntityTypeModifier().write(0, type);
 		}
 		Entity entity = Bukkit.getEntity(uuid);
 		if (entityPacket != null) {
 			if (viewer != null) {
 				sendServerPacket(viewer, entityPacket);
 			}
-			else if (entity != null) {
+			if (entity != null) {
 				if (entity instanceof Player) {
-					PacketContainer infoPacket = pm.createPacketConstructor(PacketType.Play.Server.PLAYER_INFO, PlayerInfoAction.ADD_PLAYER, (Player) entity).createPacket(PlayerInfoAction.ADD_PLAYER, (Player) entity);
+					Player player = (Player) entity;
+					PacketContainer infoPacket = pm.createPacket(PacketType.Play.Server.PLAYER_INFO);
+					infoPacket.getPlayerInfoAction().write(0, PlayerInfoAction.ADD_PLAYER);
+					List<PlayerInfoData> pInfo = new ArrayList<>();
+					WrappedGameProfile profile = WrappedGameProfile.fromPlayer(player).withId(Integer.toString(id));
+					NativeGameMode mode = NativeGameMode.fromBukkit(player.getGameMode());
+					WrappedChatComponent name = WrappedChatComponent.fromText(player.getDisplayName());
+					pInfo.add(new PlayerInfoData(profile, 0, mode, name));
+					infoPacket.getPlayerInfoDataLists().write(0, pInfo);
 					pm.broadcastServerPacket(infoPacket, entity, false);
 				}
 				pm.broadcastServerPacket(entityPacket, entity, false);
@@ -301,12 +325,7 @@ public final class PacketManagerPLib extends PacketManager {
 	@Override
 	public void addDisguise(Entity entity, ItemStack item) {
 		WrappedDataWatcher watcher = new WrappedDataWatcher();
-		if (MCVersion.isLessThan(MCVersion.v1_14)) {
-			watcher.setObject(6, Registry.getItemStackSerializer(false), item, true);
-		}
-		else {
-			watcher.setObject(7, Registry.getItemStackSerializer(false), item, true);
-		}
+		watcher.setObject(MCMetadata.EntityMeta.THROWABLE_ITEM.getIndex(), Registry.getItemStackSerializer(false), item, true);
 		createEntityPacket(entity, EntityType.SNOWBALL, watcher, (int) 1);
 	}
 
@@ -488,7 +507,7 @@ public final class PacketManagerPLib extends PacketManager {
 							y = cBlocks[i].getY() & 0xF,
 							z = cBlocks[i].getZ() & 0xF;
 					locs[i] = (short) (x << 8 | z << 4 | y << 0);
-					bDatas[i] = WrappedBlockData.createData(material);
+					bDatas[i] = WrappedBlockData.createData(data);
 				}
 				packet.getShortArrays().write(0, locs);
 				packet.getBlockDataArrays().write(0, bDatas);
@@ -580,12 +599,30 @@ public final class PacketManagerPLib extends PacketManager {
 	
 	private Set<PacketContainer> createEquipmentPackets(int id, LivingEntity entity) {
 		Set<PacketContainer> packets = new HashSet<>();
-		for (EquipmentSlot slot : EquipmentSlot.values()) {
-			PacketContainer packet = pm.createPacket(PacketType.Play.Server.ENTITY_EQUIPMENT);
-			packet.getIntegers().write(0, id);
-			packet.getItemSlots().write(0, getItemSlot(slot));
-			packet.getItemModifier().write(0, PowerTools.getEquipment(entity, slot));
-			packets.add(packet);
+		if (MCVersion.isLessThan(MCVersion.v1_16_1)) {
+			for (EquipmentSlot slot : EquipmentSlot.values()) {
+				PacketContainer packet = pm.createPacket(PacketType.Play.Server.ENTITY_EQUIPMENT, true);
+				packet.getIntegers().write(0, id);
+				packet.getItemSlots().write(0, getItemSlot(slot));
+				packet.getItemModifier().write(0, PowerTools.getEquipment(entity, slot));
+				packets.add(packet);
+			}
+		}
+		else {
+			EntityEquipment equip = entity.getEquipment();
+			if (equip != null) {
+				PacketContainer packet = pm.createPacket(PacketType.Play.Server.ENTITY_EQUIPMENT, true);
+				packet.getIntegers().write(0, id);
+				List<Pair<EnumWrappers.ItemSlot, ItemStack>> slotList = new ArrayList<>();
+		        slotList.add(new Pair<>(EnumWrappers.ItemSlot.CHEST, equip.getChestplate()));
+		        slotList.add(new Pair<>(EnumWrappers.ItemSlot.FEET, equip.getBoots()));
+		        slotList.add(new Pair<>(EnumWrappers.ItemSlot.HEAD, equip.getHelmet()));
+		        slotList.add(new Pair<>(EnumWrappers.ItemSlot.LEGS, equip.getLeggings()));
+		        slotList.add(new Pair<>(EnumWrappers.ItemSlot.MAINHAND, equip.getItemInMainHand()));
+		        slotList.add(new Pair<>(EnumWrappers.ItemSlot.OFFHAND, equip.getItemInOffHand()));
+		        packet.getSlotStackPairLists().write(0, slotList);
+				packets = Set.of(packet);
+			}
 		}
 		return packets;
 	}
@@ -747,9 +784,16 @@ public final class PacketManagerPLib extends PacketManager {
 
 	@Override
 	public void showActionBarMessage(Player player, String message) {
-		PacketContainer packet = pm.createPacket(PacketType.Play.Server.CHAT);
-		packet.getChatComponents().write(0, WrappedChatComponent.fromText(message));
-		packet.getChatTypes().write(0, ChatType.GAME_INFO);
+		PacketContainer packet;
+		if (MCVersion.isLessThan(MCVersion.v1_17)) {
+			packet = pm.createPacket(PacketType.Play.Server.CHAT);
+			packet.getChatComponents().write(0, WrappedChatComponent.fromText(message));
+			packet.getChatTypes().write(0, ChatType.GAME_INFO);
+		}
+		else {
+			packet = pm.createPacket(PacketType.Play.Server.SET_ACTION_BAR_TEXT);
+			packet.getChatComponents().write(0, WrappedChatComponent.fromText(message));
+		}
 		sendServerPacket(player, packet);
 	}
 
@@ -819,7 +863,15 @@ public final class PacketManagerPLib extends PacketManager {
 			PacketContainer packet1 = null, packet2 = null;
 			if (entity instanceof Player) {
 				packet1 = pm.createPacketConstructor(PacketType.Play.Server.NAMED_ENTITY_SPAWN, (Player) entity).createPacket(entity);
-				packet2 = pm.createPacketConstructor(PacketType.Play.Server.PLAYER_INFO, PlayerInfoAction.ADD_PLAYER, (Player) entity).createPacket(PlayerInfoAction.ADD_PLAYER, (Player) entity);
+				Player player = (Player) entity;
+				packet2 = pm.createPacket(PacketType.Play.Server.PLAYER_INFO);
+				packet2.getPlayerInfoAction().write(0, PlayerInfoAction.ADD_PLAYER);
+				List<PlayerInfoData> pInfo = new ArrayList<>();
+				WrappedGameProfile profile = WrappedGameProfile.fromPlayer(player).withId(Integer.toString(entity.getEntityId()));
+				NativeGameMode mode = NativeGameMode.fromBukkit(player.getGameMode());
+				WrappedChatComponent name = WrappedChatComponent.fromText(player.getDisplayName());
+				pInfo.add(new PlayerInfoData(profile, 0, mode, name));
+				packet2.getPlayerInfoDataLists().write(0, pInfo);
 			}
 			else if (entity instanceof ExperienceOrb) {
 				packet1 = pm.createPacketConstructor(PacketType.Play.Server.SPAWN_ENTITY_EXPERIENCE_ORB, (ExperienceOrb) entity).createPacket(entity);

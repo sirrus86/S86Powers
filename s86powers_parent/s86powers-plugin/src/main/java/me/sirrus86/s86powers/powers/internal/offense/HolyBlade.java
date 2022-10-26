@@ -106,7 +106,7 @@ public final class HolyBlade extends Power {
 				for (LivingEntity entity : PowerTools.getNearbyEntities(LivingEntity.class, selected, 1.5D, user.getPlayer())) {
 					if (user.getOption(killUndead)
 							&& (entity instanceof Skeleton || entity instanceof Zombie)) {
-						user.causeDamage(getInstance(), entity, DamageCause.MAGIC, entity.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue());
+						user.causeDamage(getInstance(), entity, DamageCause.MAGIC, entity.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue() * 2.0D);
 					}
 					else {
 						user.causeDamage(getInstance(), entity, DamageCause.MAGIC, user.getOption(dmg));

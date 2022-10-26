@@ -42,10 +42,8 @@ import org.bukkit.entity.Steerable;
 import org.bukkit.entity.Strider;
 import org.bukkit.entity.Tameable;
 import org.bukkit.entity.Wolf;
-import org.bukkit.entity.Zombie;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
-import org.bukkit.event.entity.EntityPickupItemEvent;
 import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -94,19 +92,14 @@ public final class MobCatcher extends Power {
 			pandaMainGene = createNamespacedKey("panda-main-gene"),
 			parrotVariant = createNamespacedKey("parrot-variant"),
 			phantomSize = createNamespacedKey("phantom-size"),
-//			pigSaddle = createNamespacedKey("pig-saddle"),
 			rabbitType = createNamespacedKey("rabbit-type"),
-//			sheepColor = createNamespacedKey("sheep-color"),
 			sheepSheared = createNamespacedKey("sheep-sheared"),
-//			shulkerColor = createNamespacedKey("shulker-color"),
 			slimeSize = createNamespacedKey("slime-size"),
-			steerableSaddle = createNamespacedKey("steerable-saddle"),
-			zombieBaby = createNamespacedKey("zombie-baby");
+			steerableSaddle = createNamespacedKey("steerable-saddle");
 	
 	private Set<EntityType> allowCapture;
 	private Map<Snowball, ItemStack> eggs;
 	private Map<Snowball, PowerUser> eggOwners;
-	private Map<Item, PowerUser> eggsOnGround;
 	
 	private String cantCapTamed;
 	private PowerOption<Boolean> captureTamed;
@@ -117,7 +110,6 @@ public final class MobCatcher extends Power {
 		allowCapture = EnumSet.noneOf(EntityType.class);
 		eggOwners = new HashMap<>();
 		eggs = new HashMap<>();
-		eggsOnGround = new HashMap<>();
 	}
 
 	@Override
@@ -135,7 +127,6 @@ public final class MobCatcher extends Power {
 		supplies(new ItemStack(getRequiredItem().getType(), getRequiredItem().getMaxStackSize()));
 	}
 	
-	@SuppressWarnings("deprecation")
 	private ItemStack createEgg(LivingEntity entity) {
 		ItemStack egg = new ItemStack(getRequiredItem().getType(), 1);
 		ItemMeta meta = egg.hasItemMeta() ? getRequiredItem().getItemMeta() : entity.getServer().getItemFactory().getItemMeta(getRequiredItem().getType());
@@ -159,81 +150,92 @@ public final class MobCatcher extends Power {
 			case "AXOLOTL": {
 				stats.add("Type: " + WordUtils.capitalize(((Axolotl)entity).getVariant().toString().replace("_", " ").toLowerCase()));
 				iData.set(axolotlVariant, PersistentDataType.INTEGER, ((Axolotl)entity).getVariant().ordinal());
+				break;
 			}
 			case "BEE": {
 				iData.set(beeHasNectar, PersistentDataType.BYTE, ((Bee)entity).hasNectar() ? (byte) 1 : (byte) 0);
 				iData.set(beeHasStung, PersistentDataType.BYTE, ((Bee)entity).hasStung() ? (byte) 1 : (byte) 0);
+				break;
 			}
 			case "CAT": {
 				stats.add("Type: " + WordUtils.capitalize(((Cat)entity).getCatType().toString().replace("_", " ").toLowerCase()));
 				iData.set(catType, PersistentDataType.STRING, ((Cat)entity).getCatType().toString());
 				iData.set(collarColor, PersistentDataType.STRING, ((Cat)entity).getCollarColor().toString());
+				break;
 			}
 			case "CREEPER": {
 				if (((Creeper)entity).isPowered()) {
 					stats.add("Powered");
 				}
 				iData.set(creeperPowered, PersistentDataType.BYTE, ((Creeper)entity).isPowered() ? (byte) 1 : (byte) 0);
+				break;
 			}
 			case "FOX": {
 				stats.add("Type: " + WordUtils.capitalize(((Fox)entity).getFoxType().toString().replace("_", " ").toLowerCase()));
 				iData.set(foxType, PersistentDataType.STRING, ((Fox)entity).getFoxType().toString());
+				break;
 			}
 			case "GOAT": {
 				iData.set(goatScreaming, PersistentDataType.BYTE, ((Goat)entity).isScreaming() ? (byte) 1 : (byte) 0);
+				break;
 			}
 			case "MAGMA_CUBE": case "SLIME": {
 				stats.add("Size: " + ((Slime)entity).getSize());
 				iData.set(slimeSize, PersistentDataType.INTEGER, ((Slime)entity).getSize());
+				break;
 			}
 			case "MUSHROOM_COW": {
 				stats.add("Color: " + WordUtils.capitalize(((MushroomCow)entity).getVariant().toString().replace("_", " ").toLowerCase()));
 				iData.set(foxType, PersistentDataType.STRING, ((MushroomCow)entity).getVariant().toString());
+				break;
 			}
 			case "PANDA": {
 				iData.set(pandaHiddenGene, PersistentDataType.STRING, ((Panda)entity).getHiddenGene().toString());
 				iData.set(pandaMainGene, PersistentDataType.STRING, ((Panda)entity).getMainGene().toString());
+				break;
 			}
 			case "PARROT": {
 				stats.add("Color: " + WordUtils.capitalize(((Parrot)entity).getVariant().toString().replace("_", " ").toLowerCase()));
 				iData.set(parrotVariant, PersistentDataType.STRING, ((Parrot)entity).getVariant().toString());
+				break;
 			}
 			case "PHANTOM": {
 				iData.set(phantomSize, PersistentDataType.INTEGER, ((Phantom)entity).getSize());
+				break;
 			}
 			case "PIG": {
 				if (((Pig)entity).hasSaddle()) {
 					stats.add("Saddled");
 				}
 				iData.set(steerableSaddle, PersistentDataType.BYTE, ((Pig)entity).hasSaddle() ? (byte) 1 : (byte) 0);
-			}
-			case "PIGZOMBIE": case "ZOMBIE": {
-				if (((Zombie)entity).isBaby()) { //Deprecated 1.16
-					stats.add("Juvenile");
-				}
-				iData.set(zombieBaby, PersistentDataType.BYTE, ((Zombie)entity).isBaby() ? (byte) 1 : (byte) 0); //Deprecated 1.16
+				break;
 			}
 			case "RABBIT": {
 				stats.add("Type: " + WordUtils.capitalize(((Rabbit)entity).getRabbitType().toString().replace("_", " ").toLowerCase()));
 				iData.set(rabbitType, PersistentDataType.STRING, ((Rabbit)entity).getRabbitType().toString());
+				break;
 			}
 			case "SHEEP": {
 				stats.add("Color: " + WordUtils.capitalize(((Sheep)entity).getColor().toString().replace("_", " ").toLowerCase()));
 				iData.set(colorableColor, PersistentDataType.STRING, ((Sheep)entity).getColor().toString());
 				iData.set(sheepSheared, PersistentDataType.BYTE, ((Sheep)entity).isSheared() ? (byte) 1 : (byte) 0);
+				break;
 			}
 			case "SHULKER": {
 				stats.add("Color: " + WordUtils.capitalize(((Shulker)entity).getColor().toString().replace("_", " ").toLowerCase()));
 				iData.set(colorableColor, PersistentDataType.STRING, ((Shulker)entity).getColor().toString());
+				break;
 			}
 			case "STRIDER": {
 				if (((Strider)entity).hasSaddle()) {
 					stats.add("Saddled");
 				}
 				iData.set(steerableSaddle, PersistentDataType.BYTE, ((Strider)entity).hasSaddle() ? (byte) 1 : (byte) 0);
+				break;
 			}
 			case "WOLF": {
 				iData.set(collarColor, PersistentDataType.STRING, ((Wolf)entity).getCollarColor().toString());
+				break;
 			}
 		}
 		meta.setDisplayName(WordUtils.capitalize(entity.getType().name().replaceAll("_", " ").toLowerCase()));
@@ -247,7 +249,6 @@ public final class MobCatcher extends Power {
 	}
 	
 	// TODO
-	@SuppressWarnings("deprecation")
 	private LivingEntity createEntity(ItemStack egg, Location loc) {
 		ItemMeta meta = egg.getItemMeta();
 		PersistentDataContainer iData = meta.getPersistentDataContainer();
@@ -304,9 +305,6 @@ public final class MobCatcher extends Power {
 		if (entity instanceof Wolf) {
 			((Wolf)entity).setCollarColor(DyeColor.valueOf(iData.get(collarColor, PersistentDataType.STRING)));
 		}
-		if (entity instanceof Zombie) {
-			((Zombie)entity).setBaby(iData.get(zombieBaby, PersistentDataType.BYTE) == 1); //Deprecated 1.16
-		}
 		entity.setHealth(meta.getPersistentDataContainer().get(entityHealth, PersistentDataType.DOUBLE));
 		return entity;
 	}
@@ -334,14 +332,19 @@ public final class MobCatcher extends Power {
 									(((Tameable)entity).getOwner() == user.getPlayer() || ((Tameable)entity).getOwner() == null))) {
 						ItemStack newSpawnEgg = createEgg(entity);
 						Item droppedEgg = entity.getWorld().dropItemNaturally(entity.getLocation(), newSpawnEgg);
+						droppedEgg.setOwner(user.getUUID());
 						entity.playEffect(EntityEffect.ENTITY_POOF);
 						entity.remove();
 						if (!user.getPlayer().getInventory().addItem(newSpawnEgg).containsValue(newSpawnEgg)) {
-							PowerTools.fakeCollect(user.getPlayer(), droppedEgg);
-							droppedEgg.remove();
-						}
-						else {
-							eggsOnGround.put(droppedEgg, user);
+							runTask(new Runnable() {
+
+								@Override
+								public void run() {
+									PowerTools.fakeCollect(user.getPlayer(), droppedEgg);
+									droppedEgg.remove();
+								}
+								
+							});
 						}
 						eggs.remove(egg);
 					}
@@ -354,19 +357,6 @@ public final class MobCatcher extends Power {
 				}
 			}
 			event.setCancelled(true);
-		}
-	}
-	
-	@EventHandler (ignoreCancelled = true)
-	private void onPickup(EntityPickupItemEvent event) {
-		if (eggsOnGround.containsKey(event.getItem())) {
-			if (event.getEntity() instanceof Player) {
-				PowerUser user = getUser((Player) event.getEntity());
-				event.setCancelled(eggsOnGround.get(event.getItem()) != user);
-			}
-			else {
-				event.setCancelled(true);
-			}
 		}
 	}
 	
@@ -403,16 +393,22 @@ public final class MobCatcher extends Power {
 				if (eggOwners.containsKey(egg)) {
 					Item droppedEgg = egg.getWorld().dropItemNaturally(egg.getLocation(), getRequiredItem());
 					PowerUser user = eggOwners.get(egg);
+					droppedEgg.setOwner(user.getUUID());
 					if (!user.getPlayer().getInventory().addItem(getRequiredItem()).containsValue(getRequiredItem())) {
-						PowerTools.fakeCollect(user.getPlayer(), droppedEgg);
-						droppedEgg.remove();
-					}
-					else {
-						eggsOnGround.put(droppedEgg, user);
+						runTask(new Runnable() {
+
+							@Override
+							public void run() {
+								PowerTools.fakeCollect(user.getPlayer(), droppedEgg);
+								droppedEgg.remove();
+							}
+							
+						});
 					}
 				}
 			}
-			else {
+			else if (event.getHitEntity() == null
+					|| !capturable.contains(event.getHitEntity().getType())) {
 				egg.getWorld().dropItemNaturally(egg.getLocation(), spawnEgg);
 			}
 		}

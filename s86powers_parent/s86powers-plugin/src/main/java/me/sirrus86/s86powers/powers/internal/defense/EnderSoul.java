@@ -1,7 +1,5 @@
 package me.sirrus86.s86powers.powers.internal.defense;
 
-import java.util.List;
-
 import org.bukkit.Material;
 import org.bukkit.entity.EnderPearl;
 import org.bukkit.entity.Player;
@@ -30,7 +28,7 @@ import me.sirrus86.s86powers.utils.PowerTime;
 public final class EnderSoul extends Power {
 
 	private PowerOption<Boolean> doEffects, immunePearl, modVel, refundPearl;
-	private PowerOption<List<PotionEffect>> effects;
+//	private PowerOption<List<PotionEffect>> effects;
 	@SuppressWarnings("unused")
 	private boolean velAndRefund, velOrRefund;
 	private PowerOption<Double> velMod;
@@ -38,7 +36,7 @@ public final class EnderSoul extends Power {
 	@Override
 	protected void config() {
 		doEffects = option("effects.enable", true, "Whether effects should be applied to user after teleporting.");
-		effects = option("effects", List.of(new PotionEffect(PotionEffectType.SLOW_FALLING, (int) PowerTime.toMillis(1, 0), 0)), "Effects to apply to users after teleporting.");
+//		effects = option("effects", List.of(new PotionEffect(PotionEffectType.SLOW_FALLING, (int) PowerTime.toMillis(1, 0), 2, false, false, false)), "Effects to apply to users after teleporting.");
 		immunePearl = option("pearl-damage-immunity", true, "Whether users should be immune to ender pearl damage.");
 		modVel = option("modify-pearl-velocity", true, "Whether ender pearl velocity should be modified. If false, pearls are thrown normally.");
 		refundPearl = option("refund-pearl", true, "Whether ender pearls should be refunded immediately after use.");
@@ -65,7 +63,7 @@ public final class EnderSoul extends Power {
 		if (user.getOption(doEffects)
 				&& user.allowPower(this)
 				&& event.getCause() == TeleportCause.ENDER_PEARL) {
-			user.getPlayer().addPotionEffects(user.getOption(effects));
+			user.getPlayer().addPotionEffect(new PotionEffect(PotionEffectType.SLOW_FALLING, (int) PowerTime.toTicks(1, 0), 2, false, false, false));
 		}
 	}
 

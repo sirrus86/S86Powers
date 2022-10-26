@@ -86,7 +86,7 @@ public final class Phasewalk extends Power {
 				}
 				if (user.getPlayer().getInventory().containsAtLeast(getRequiredItem(), 1)) {
 					user.getPlayer().getInventory().removeItem(new ItemStack[] {getRequiredItem()});
-					user.getPlayer().getWorld().spawnParticle(Particle.ITEM_CRACK, user.getPlayer().getEyeLocation().add(user.getPlayer().getLocation().getDirection()), 1, item);
+					user.getPlayer().getWorld().spawnParticle(Particle.ITEM_CRACK, user.getPlayer().getEyeLocation().add(user.getPlayer().getLocation().getDirection()), 1, user.getOption(item));
 					tasks.put(user, getInstance().runTaskLater(phasewalk(user), PowerTime.toTicks(user.getOption(destabFreq))).getTaskId());
 				}
 				else {

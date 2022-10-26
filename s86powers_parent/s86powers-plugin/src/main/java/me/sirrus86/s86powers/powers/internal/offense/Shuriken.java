@@ -97,7 +97,7 @@ public final class Shuriken extends Power {
 				Snowball shuriken = user.getPlayer().launchProjectile(Snowball.class);
 				shuriken.setVelocity(user.getPlayer().getEyeLocation().getDirection().clone().normalize().multiply(3));
 				shurikens.put(shuriken, user);
-				PowerTools.addDisguise(shuriken, getRequiredItem());
+				PowerTools.addDisguise(shuriken, user.getOption(item));
 			}
 		}
 	}
@@ -106,11 +106,12 @@ public final class Shuriken extends Power {
 	private void onHit(ProjectileHitEvent event) {
 		if (shurikens.containsKey(event.getEntity())) {
 			Snowball shuriken = (Snowball) event.getEntity();
-			if (shurikens.get(shuriken).getOption(drop)) {
-				shuriken.getWorld().dropItemNaturally(shuriken.getLocation(), getRequiredItem());
+			if (event.getHitEntity() == null
+					&& shurikens.get(shuriken).getOption(drop)) {
+				shuriken.getWorld().dropItemNaturally(shuriken.getLocation(), shurikens.get(shuriken).getOption(item));
+				shurikens.remove(shuriken);
+				shuriken.remove();
 			}
-			shurikens.remove(shuriken);
-			shuriken.remove();
 		}
 	}
 

@@ -1,6 +1,6 @@
 package me.sirrus86.s86powers.tools;
 
-import java.util.ArrayList;
+//import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -35,7 +35,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.NamespacedKey;
+//import org.bukkit.NamespacedKey;
 import org.bukkit.Particle;
 import org.bukkit.Particle.DustOptions;
 import org.bukkit.block.Block;
@@ -56,9 +56,9 @@ import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.PotionMeta;
-import org.bukkit.persistence.PersistentDataContainer;
-import org.bukkit.persistence.PersistentDataHolder;
-import org.bukkit.plugin.java.JavaPlugin;
+//import org.bukkit.persistence.PersistentDataContainer;
+//import org.bukkit.persistence.PersistentDataHolder;
+//import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.potion.PotionData;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
@@ -74,7 +74,7 @@ import com.google.common.collect.Sets;
 public final class PowerTools {
 	
 	private final static Map<UUID, UUID> tamed = new HashMap<>();
-	private final static List<NamespacedKey> nKeys = new ArrayList<>();
+//	private final static List<NamespacedKey> nKeys = new ArrayList<>();
 	
 	private final static Map<Double, Set<Vector>> auraCoords = new HashMap<>();
 	private final static Map<Integer, Set<Vector>> fibCoords = new HashMap<>();
@@ -505,16 +505,16 @@ public final class PowerTools {
 		return WordUtils.capitalize(meta.hasLocalizedName() ? meta.getLocalizedName() : item.getType().toString().replace('_', ' ').toLowerCase());
 	}
 	
-	private static NamespacedKey getNamespacedKey(String key) {
-		for (NamespacedKey nKey : nKeys) {
-			if (nKey.getKey().equalsIgnoreCase(key)) {
-				return nKey;
-			}
-		}
-		NamespacedKey newKey = new NamespacedKey(JavaPlugin.getPlugin(S86Powers.class), key);
-		nKeys.add(newKey);
-		return newKey;
-	}
+//	private static NamespacedKey getNamespacedKey(String key) {
+//		for (NamespacedKey nKey : nKeys) {
+//			if (nKey.getKey().equalsIgnoreCase(key)) {
+//				return nKey;
+//			}
+//		}
+//		NamespacedKey newKey = new NamespacedKey(JavaPlugin.getPlugin(S86Powers.class), key);
+//		nKeys.add(newKey);
+//		return newKey;
+//	}
 
 	public static Set<Block> getNearbyBlocks(Block block, BlockFace... faces) {
 		Set<Block> blocks = new HashSet<Block>();
@@ -856,10 +856,10 @@ public final class PowerTools {
 						|| isShovel(item));
 	}
 	
-	public static void modifyEntity(PersistentDataHolder holder, Entity entity) {
-		PersistentDataContainer container = holder.getPersistentDataContainer();
-		// TODO
-	}
+//	public static void modifyEntity(PersistentDataHolder holder, Entity entity) {
+//		PersistentDataContainer container = holder.getPersistentDataContainer();
+//		// TODO
+//	}
 	
 	public static void playParticleEffect(Location loc, Particle particle) {
 		playParticleEffect(loc, particle, random.nextInt(6));
@@ -1021,10 +1021,10 @@ public final class PowerTools {
 	 * @param holder
 	 * @param entity
 	 */
-	public static void storeEntity(PersistentDataHolder holder, Entity entity) {
-		PersistentDataContainer container = holder.getPersistentDataContainer();
-		// TODO
-	}
+//	public static void storeEntity(PersistentDataHolder holder, Entity entity) {
+//		PersistentDataContainer container = holder.getPersistentDataContainer();
+//		// TODO
+//	}
 	
 	public static void takeControl(Player player, Creature creature) {
 		creature.addPassenger(player);
