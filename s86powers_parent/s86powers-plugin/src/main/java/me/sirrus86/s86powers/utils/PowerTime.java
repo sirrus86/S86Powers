@@ -58,6 +58,9 @@ public class PowerTime {
 			remain = time;
 			tmp = tmp + "." + (remain > 99L ? "" : "0") + (remain > 9L ? "" : "0") + remain;
 		}
+		if (tmp.endsWith(":")) {
+			tmp = tmp.substring(0, tmp.lastIndexOf(":"));
+		}
 		return tmp;
 	}
 	
