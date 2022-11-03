@@ -27,7 +27,7 @@ public class VersionTools extends me.sirrus86.s86powers.tools.version.VersionToo
 	@Override
 	public EntityType resolveEntityType(String name) {
 		switch(name) {
-			case "PIGLIN": case "PIGZOMBIE": return EntityType.PIGLIN;
+			case "PIGZOMBIE": return EntityType.ZOMBIFIED_PIGLIN;
 		}
 		return null;
 	}
