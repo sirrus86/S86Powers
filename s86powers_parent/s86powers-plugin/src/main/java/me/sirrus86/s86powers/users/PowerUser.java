@@ -211,6 +211,7 @@ public final class PowerUser implements Comparable<PowerUser> {
 		}
 		else if (this.getPlayer() != null
 				&& this.getPlayer().isOnline()
+				&& this.hasEnablePermission()
 				&& this.hasPowersEnabled()
 				&& !this.isNeutralized()) {
 			return (this.hasPower(power) && this.hasPowerEnabled(power))
@@ -543,10 +544,8 @@ public final class PowerUser implements Comparable<PowerUser> {
 	}
 	
 	boolean hasEnablePermission() {
-		if (isOnline()) {
-			return isAdmin() ? ConfigOption.Admin.BYPASS_PERMISSION : getPlayer().hasPermission(S86Permission.ENABLE);
-		}
-		return false;
+		return (isAdmin() && ConfigOption.Admin.BYPASS_PERMISSION)
+				|| (getPlayer() != null && getPlayer().hasPermission(S86Permission.ENABLE));
 	}
 	
 	public boolean hasPower(Power power) {
