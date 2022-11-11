@@ -1,6 +1,5 @@
 package me.sirrus86.s86powers.tools;
 
-//import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -35,7 +34,6 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
-//import org.bukkit.NamespacedKey;
 import org.bukkit.Particle;
 import org.bukkit.Particle.DustOptions;
 import org.bukkit.block.Block;
@@ -56,9 +54,6 @@ import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.PotionMeta;
-//import org.bukkit.persistence.PersistentDataContainer;
-//import org.bukkit.persistence.PersistentDataHolder;
-//import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.potion.PotionData;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
@@ -74,7 +69,6 @@ import com.google.common.collect.Sets;
 public final class PowerTools {
 	
 	private final static Map<UUID, UUID> tamed = new HashMap<>();
-//	private final static List<NamespacedKey> nKeys = new ArrayList<>();
 	
 	private final static Map<Double, Set<Vector>> auraCoords = new HashMap<>();
 	private final static Map<Integer, Set<Vector>> fibCoords = new HashMap<>();
