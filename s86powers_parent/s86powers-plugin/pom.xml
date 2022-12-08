@@ -138,6 +138,13 @@
 			<scope>compile</scope>
 			<optional>true</optional>
 		</dependency>
+		<dependency>
+			<groupId>me.sirrus86</groupId>
+			<artifactId>s86powers-v1_19_3</artifactId>
+			<version>v1_19_3</version>
+			<scope>compile</scope>
+			<optional>true</optional>
+		</dependency>
 	</dependencies>
 
 	<build>

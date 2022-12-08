@@ -319,7 +319,7 @@ public class MCMetadata {
 					return this.v1_17;
 				case v1_18: case v1_18_1: case v1_18_2:
 					return this.v1_18;
-				case v1_19: case v1_19_1: case v1_19_2: default:
+				case v1_19: case v1_19_1: case v1_19_2: case v1_19_3: default:
 					return this.v1_19;
 			}
 		}
