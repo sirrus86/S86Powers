@@ -58,13 +58,15 @@ public abstract class Power implements Comparable<Power>, Listener {
 	@Deprecated
 	protected boolean incomplete = false;
 	private final PowerManifest manifest = getClass().getAnnotation(PowerManifest.class);
-	private final S86Powers plugin;
+	private final static S86Powers plugin = JavaPlugin.getPlugin(S86Powers.class);
 	private String description, name, tag = getClass().getSimpleName();
 	
 	/**
 	 * Dedicated instance of {@link java.util.Random} used to create random values where needed.
 	 */
 	protected static final Random random = new Random();
+	
+	protected static final NamespacedKey collectorKey = new NamespacedKey(plugin, "powercollector.power-key");
 
 	protected PowerOption<Long> cooldown;
 	protected PowerOption<ItemStack> consumable, item;
@@ -103,7 +105,6 @@ public abstract class Power implements Comparable<Power>, Listener {
 	protected abstract void config();
 
 	public Power() {
-		plugin = JavaPlugin.getPlugin(S86Powers.class);
 		plugin.getServer().getPluginManager().registerEvents(this, plugin);
 		File locFolder = new File(plugin.getPowerDirectory(), "localization");
 		if (!locFolder.exists()) {
@@ -209,7 +210,7 @@ public abstract class Power implements Comparable<Power>, Listener {
 	 * @return The created {@link NamespacedKey}
 	 */
 	protected NamespacedKey createNamespacedKey(String key) {
-		return new NamespacedKey(plugin, tag.toLowerCase() + "." + key);
+		return new NamespacedKey(plugin, tag.toLowerCase() + "." + key.toLowerCase());
 	}
 	
 	public void disable() {
@@ -350,6 +351,10 @@ public abstract class Power implements Comparable<Power>, Listener {
 	
 	public Map<PowerOption<?>, Object> getOptions() {
 		return options;
+	}
+	
+	public static NamespacedKey getCollectorKey() {
+		return collectorKey;
 	}
 	
 	public ItemStack getRequiredItem() {

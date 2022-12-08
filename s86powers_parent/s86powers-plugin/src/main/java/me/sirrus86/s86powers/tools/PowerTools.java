@@ -54,6 +54,7 @@ import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.PotionMeta;
+import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.potion.PotionData;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
@@ -282,6 +283,18 @@ public final class PowerTools {
 			pm.hide(crystal);
 			crystal.setBeamTarget(to);
 		}
+	}
+	
+	public static ItemStack createPowerBook(Power power) {
+		ItemStack stack = new ItemStack(Material.ENCHANTED_BOOK, 1);
+		ItemMeta meta = stack.hasItemMeta() ? stack.getItemMeta() : Bukkit.getItemFactory().getItemMeta(Material.ENCHANTED_BOOK);
+		meta.setDisplayName(ChatColor.RESET.toString() + power.getType().getColor() + power.getName());
+		meta.getPersistentDataContainer().set(Power.getCollectorKey(), PersistentDataType.STRING, power.getClass().getSimpleName());
+		String powerDesc = PowerTools.getFilteredText(power, power.getDescription());
+		List<String> lore = PowerTools.wordSplit(ChatColor.RESET + ChatColor.GRAY.toString(), powerDesc, 30);
+		meta.setLore(lore);
+		stack.setItemMeta(meta);
+		return stack;
 	}
 	
 	/**

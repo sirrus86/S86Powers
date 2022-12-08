@@ -10,6 +10,7 @@ import me.sirrus86.s86powers.powers.PowerType;
 import me.sirrus86.s86powers.tools.PowerTools;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -33,6 +34,9 @@ public class ComSelf extends ComAbstract {
 				}
 				else if (args[0].equalsIgnoreCase("clear")) {
 					comSelfClear(args.length > 1 ? args[1].toUpperCase() : null);
+				}
+				else if (args[0].equalsIgnoreCase("give")) {
+					comSelfGive(args.length > 1 ? config.getPower(args[1]) : null);
 				}
 				else if (args[0].equalsIgnoreCase("info")) {
 					comSelfInfo();
@@ -135,6 +139,25 @@ public class ComSelf extends ComAbstract {
 			}
 			else {
 				sender.sendMessage(INFO + LocaleString.SELF_REMOVE_NO_POWERS);
+			}
+		}
+		else {
+			sender.sendMessage(ERROR + LocaleString.NO_PERMISSION);
+		}
+	}
+	
+	private void comSelfGive(Power power) {
+		if (sender.hasPermission(S86Permission.SELF_GIVE)) {
+			if (power != null) {
+				ItemStack book = PowerTools.createPowerBook(power);
+				Collection<ItemStack> items = sUser.getPlayer().getInventory().addItem(book).values();
+				for (ItemStack item : items) {
+					sUser.getPlayer().getWorld().dropItem(sUser.getPlayer().getLocation(), item);
+				}
+				sender.sendMessage(LocaleString.SELF_RECEIVED_POWER_BOOK.build(power));
+			}
+			else {
+				sender.sendMessage(ERROR + LocaleString.UNKNOWN_POWER);
 			}
 		}
 		else {

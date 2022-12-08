@@ -26,11 +26,11 @@ import me.sirrus86.s86powers.users.PowerUser;
 
 public final class PowerTabCompleter implements TabCompleter {
 
-	private static final List<String> BASE = Lists.newArrayList("add", "clear", "config", "group", "help", "info", "option", "player", "power", "remove", "stats", "supply", "toggle"),
+	private static final List<String> BASE = Lists.newArrayList("add", "clear", "config", "give", "group", "help", "info", "option", "player", "power", "remove", "stats", "supply", "toggle"),
 			CONFIG = Lists.newArrayList("info", "list", "reload", "save", "set"),
 			GROUP = Lists.newArrayList("add", "assign", "create", "delete", "info", "kick", "remove"),
 			POWER = Lists.newArrayList("block", "disable", "enable", "info", "kill", "lock", "option", "reload", "save", "stats", "supply", "unblock", "unlock"),
-			PLAYER = Lists.newArrayList("add", "clear", "info", "option", "remove", "stats", "supply", "toggle"),
+			PLAYER = Lists.newArrayList("add", "clear", "give", "info", "option", "remove", "stats", "supply", "toggle"),
 			REGION = Lists.newArrayList("create", "delete", "info", "resize", "toggle");
 	
 	private static final List<String> empty = new ArrayList<>();
@@ -96,10 +96,15 @@ public final class PowerTabCompleter implements TabCompleter {
 									&& args.length <= 4) {
 								return StringUtil.copyPartialMatches(args[3], getPowerList(false), new ArrayList<>());
 							}
-							if (args[2].equalsIgnoreCase("clear")
+							else if (args[2].equalsIgnoreCase("clear")
 									&& sender.hasPermission(S86Permission.PLAYER_CLEAR)
 									&& args.length <= 4) {
 								return StringUtil.copyPartialMatches(args[3], Lists.newArrayList("DEFENSE", "OFFENSE", "PASSIVE"), new ArrayList<>());
+							}
+							else if (args[2].equalsIgnoreCase("give")
+									&& sender.hasPermission(S86Permission.PLAYER_GIVE)
+									&& args.length <= 4) {
+								return StringUtil.copyPartialMatches(args[3], getPowerList(false), new ArrayList<>());
 							}
 							else if ((args[2].equalsIgnoreCase("option") && sender.hasPermission(S86Permission.PLAYER_OPTION))
 									|| (args[2].equalsIgnoreCase("remove") && sender.hasPermission(S86Permission.PLAYER_REMOVE))
@@ -191,6 +196,11 @@ public final class PowerTabCompleter implements TabCompleter {
 						&& sender.hasPermission(S86Permission.SELF_CLEAR)
 						&& args.length <= 2) {
 					return StringUtil.copyPartialMatches(args[1], Lists.newArrayList("DEFENSE", "OFFENSE", "PASSIVE"), new ArrayList<>());
+				}
+				else if (args[0].equalsIgnoreCase("give")
+						&& sender.hasPermission(S86Permission.SELF_GIVE)
+						&& args.length <= 2) {
+					return StringUtil.copyPartialMatches(args[1], getPowerList(false), new ArrayList<>());
 				}
 				else if ((args[0].equalsIgnoreCase("option") && sender.hasPermission(S86Permission.SELF_OPTION))
 						|| (args[0].equalsIgnoreCase("remove") && sender.hasPermission(S86Permission.SELF_REMOVE))

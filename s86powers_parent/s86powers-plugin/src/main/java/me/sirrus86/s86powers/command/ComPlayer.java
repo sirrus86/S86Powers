@@ -11,6 +11,7 @@ import me.sirrus86.s86powers.tools.PowerTools;
 import me.sirrus86.s86powers.users.PowerUser;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -46,6 +47,9 @@ public class ComPlayer extends ComAbstract {
 					}
 					else if (args[2].equalsIgnoreCase("clear")) {
 						comUserClear(user, args.length > 3 ? args[3].toUpperCase() : null);
+					}
+					else if (args[2].equalsIgnoreCase("give")) {
+						comUserGive(user, args.length > 3 ? config.getPower(args[3]) : null);
 					}
 					else if (args[2].equalsIgnoreCase("option")) {
 						comUserOption(user, args.length > 3 ? config.getPower(args[3]) : null,
@@ -145,6 +149,31 @@ public class ComPlayer extends ComAbstract {
 			for (Power power : powers) {
 				user.removePower(power);
 				sender.sendMessage(SUCCESS + LocaleString.PLAYER_REMOVE_POWER_SUCCESS.build(user, power));
+			}
+		}
+		else {
+			sender.sendMessage(ERROR + LocaleString.NO_PERMISSION);
+		}
+	}
+	
+	private void comUserGive(PowerUser user, Power power) {
+		if (sender.hasPermission(S86Permission.PLAYER_CLEAR)) {
+			if (user.isOnline()) {
+				if (power != null) {
+					ItemStack book = PowerTools.createPowerBook(power);
+					Collection<ItemStack> items = user.getPlayer().getInventory().addItem(book).values();
+					for (ItemStack item : items) {
+						user.getPlayer().getWorld().dropItem(user.getPlayer().getLocation(), item);
+					}
+					sender.sendMessage(SUCCESS + LocaleString.PLAYER_GAVE_POWER_BOOK.build(user, power));
+					user.getPlayer().sendMessage(LocaleString.SELF_RECEIVED_POWER_BOOK.build(power));
+				}
+				else {
+					sender.sendMessage(ERROR + LocaleString.UNKNOWN_POWER);
+				}
+			}
+			else {
+				sender.sendMessage(ERROR + LocaleString.PLAYER_NOT_ONLINE.build(user));
 			}
 		}
 		else {

@@ -7,14 +7,13 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang.WordUtils;
+
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.Color;
 import org.bukkit.FireworkEffect;
 import org.bukkit.FireworkEffect.Type;
 import org.bukkit.GameMode;
 import org.bukkit.Material;
-import org.bukkit.NamespacedKey;
 import org.bukkit.block.Chest;
 import org.bukkit.entity.Firework;
 import org.bukkit.event.EventHandler;
@@ -48,8 +47,6 @@ import me.sirrus86.s86powers.users.PowerUser;
 	description = "Power books have a chance to drop from mobs, as well as a chance to appear in treasure chests in the world. Power books can be read to learn new powers.")
 public final class PowerCollector extends Power {
 	
-	private final NamespacedKey powerKey = createNamespacedKey("power-key");
-	
 	private PowerOption<Boolean> enforceCap;
 	private Firework firework = null;
 	private Map<LootTables, PowerOption<Double>> lootChance;
@@ -79,18 +76,6 @@ public final class PowerCollector extends Power {
 		}
 		enforceCap = option("enforce-cap", false, "Whether to prevent power books from dropping if too many players have the power assigned.");
 		powerCap = option("power-cap", 20, "Maximum number of players that have power assigned before books stop dropping for that power.");
-	}
-	
-	private ItemStack createPowerBook(Power power) {
-		ItemStack stack = new ItemStack(Material.ENCHANTED_BOOK, 1);
-		ItemMeta meta = stack.hasItemMeta() ? stack.getItemMeta() : Bukkit.getItemFactory().getItemMeta(Material.ENCHANTED_BOOK);
-		meta.setDisplayName(ChatColor.RESET.toString() + power.getType().getColor() + power.getName());
-		meta.getPersistentDataContainer().set(powerKey, PersistentDataType.STRING, power.getClass().getSimpleName());
-		String powerDesc = PowerTools.getFilteredText(power, power.getDescription());
-		List<String> lore = PowerTools.wordSplit(ChatColor.RESET + ChatColor.GRAY.toString(), powerDesc, 30);
-		meta.setLore(lore);
-		stack.setItemMeta(meta);
-		return stack;
 	}
 	
 	private boolean canAddPower(PowerUser user, Power power) {
@@ -153,7 +138,7 @@ public final class PowerCollector extends Power {
 				Power power = powerWeight.get(0);
 				if (!getOption(enforceCap)
 						|| power.getUsers().size() < getOption(powerCap)) {
-					event.getDrops().add(createPowerBook(power));
+					event.getDrops().add(PowerTools.createPowerBook(power));
 				}
 			}
 		}
@@ -161,73 +146,72 @@ public final class PowerCollector extends Power {
 	
 	@EventHandler
 	private void onInteract(PlayerInteractEvent event) {
+		PowerUser user = getUser(event.getPlayer());
 		if (ConfigOption.Plugin.USE_LOOT_TABLES
-				&& event.getPlayer().getGameMode() != GameMode.SPECTATOR) {
-			PowerUser user = getUser(event.getPlayer());
-			if (event.getAction() == Action.RIGHT_CLICK_BLOCK
-					&& event.getClickedBlock() != null
-					&& (event.getClickedBlock().getType() == Material.CHEST
-						|| event.getClickedBlock().getType() == Material.TRAPPED_CHEST)) {
-				Chest chest = (Chest) event.getClickedBlock().getState();
-				if (chest.getLootTable() != null
-						&& getLootTables(chest.getLootTable()) != null
-						&& lootChance.containsKey(getLootTables(chest.getLootTable()))
-						&& random.nextDouble() < getOption(lootChance.get(getLootTables(chest.getLootTable()))) / 100.0D) {
-					Collections.shuffle(powerWeight);
-					Power power = powerWeight.get(0);
-					if (!getOption(enforceCap)
-							|| power.getUsers().size() < getOption(powerCap)) {
-						Inventory chestInv = chest.getBlockInventory();
-						boolean deposited = false;
-						for (int i = 0; i < chestInv.getSize(); i ++) {
-							int j = random.nextInt(chestInv.getSize());
-							if (chestInv.getItem(j) == null) {
-								chestInv.setItem(j, createPowerBook(power));
-								deposited = true;
-								break;
-							}
+				&& event.getPlayer().getGameMode() != GameMode.SPECTATOR
+				&& event.getAction() == Action.RIGHT_CLICK_BLOCK
+				&& event.getClickedBlock() != null
+				&& (event.getClickedBlock().getType() == Material.CHEST
+					|| event.getClickedBlock().getType() == Material.TRAPPED_CHEST)) {
+			Chest chest = (Chest) event.getClickedBlock().getState();
+			if (chest.getLootTable() != null
+					&& getLootTables(chest.getLootTable()) != null
+					&& lootChance.containsKey(getLootTables(chest.getLootTable()))
+					&& random.nextDouble() < getOption(lootChance.get(getLootTables(chest.getLootTable()))) / 100.0D) {
+				Collections.shuffle(powerWeight);
+				Power power = powerWeight.get(0);
+				if (!getOption(enforceCap)
+						|| power.getUsers().size() < getOption(powerCap)) {
+					Inventory chestInv = chest.getBlockInventory();
+					boolean deposited = false;
+					for (int i = 0; i < chestInv.getSize(); i ++) {
+						int j = random.nextInt(chestInv.getSize());
+						if (chestInv.getItem(j) == null) {
+							chestInv.setItem(j, PowerTools.createPowerBook(power));
+							deposited = true;
+							break;
 						}
-						if (!deposited
-								&& chestInv.firstEmpty() != -1) {
-							chestInv.setItem(chestInv.firstEmpty(), createPowerBook(power));
-						}
+					}
+					if (!deposited
+							&& chestInv.firstEmpty() != -1) {
+						chestInv.setItem(chestInv.firstEmpty(), PowerTools.createPowerBook(power));
 					}
 				}
 			}
-			else if (event.getAction().name().startsWith("RIGHT")
-					&& event.hasItem()
-					&& event.getItem().getType() == Material.ENCHANTED_BOOK
-					&& event.getItem().hasItemMeta()) {
-				ItemStack stack = event.getItem();
-				ItemMeta meta = stack.getItemMeta();
-				if (meta.getPersistentDataContainer().has(powerKey, PersistentDataType.STRING)) {
-					String pName = meta.getPersistentDataContainer().get(powerKey, PersistentDataType.STRING);
-					Power power = S86Powers.getConfigManager().getPower(pName);
-					if (power != null) {
-						if (user.hasPower(power)) {
-							user.sendMessage(LocaleString.SELF_ALREADY_HAS_POWER.build(power));
-						}
-						else if (canAddPower(user, power)) {
-							firework = user.getPlayer().getWorld().spawn(user.getPlayer().getEyeLocation(), Firework.class);
-							FireworkMeta fMeta = firework.getFireworkMeta();
-							fMeta.clearEffects();
-							fMeta.addEffect(FireworkEffect.builder()
-									.with(Type.BURST)
-									.withColor(power.getType() == PowerType.DEFENSE ? Color.BLUE : (power.getType() == PowerType.OFFENSE ? Color.RED : Color.YELLOW))
-									.withFlicker()
-									.build());
-							firework.setFireworkMeta(fMeta);
-							firework.detonate();
-							stack.setAmount(stack.getAmount() - 1);
-							user.addPower(power, true);
-							user.sendMessage(LocaleString.SELF_ADD_POWER_SUCCESS.build(power));
-						}
-						else if (user.getAssignedPowers().size() >= ConfigOption.Users.POWER_CAP_TOTAL) {
-							user.sendMessage(LocaleString.SELF_TOO_MANY_POWERS.toString());
-						}
-						else if (user.getAssignedPowersByType(power.getType()).size() >= ConfigOption.Users.POWER_CAP_PER_TYPE) {
-							user.sendMessage(LocaleString.SELF_TOO_MANY_POWERS_TYPE.build(power.getType()));
-						}
+		}
+		else if (event.getAction().name().startsWith("RIGHT")
+				&& event.hasItem()
+				&& event.getItem().getType() == Material.ENCHANTED_BOOK
+				&& event.getItem().hasItemMeta()) {
+			ItemStack stack = event.getItem();
+			ItemMeta meta = stack.getItemMeta();
+			if (meta.getPersistentDataContainer().has(collectorKey, PersistentDataType.STRING)) {
+				String pName = meta.getPersistentDataContainer().get(collectorKey, PersistentDataType.STRING);
+				Power power = S86Powers.getConfigManager().getPower(pName);
+				if (power != null) {
+					if (user.hasPower(power)) {
+						user.sendMessage(LocaleString.SELF_ALREADY_HAS_POWER.build(power));
+					}
+					else if (canAddPower(user, power)) {
+						firework = user.getPlayer().getWorld().spawn(user.getPlayer().getEyeLocation(), Firework.class);
+						FireworkMeta fMeta = firework.getFireworkMeta();
+						fMeta.clearEffects();
+						fMeta.addEffect(FireworkEffect.builder()
+								.with(Type.BURST)
+								.withColor(power.getType() == PowerType.DEFENSE ? Color.BLUE : (power.getType() == PowerType.OFFENSE ? Color.RED : Color.YELLOW))
+								.withFlicker()
+								.build());
+						firework.setFireworkMeta(fMeta);
+						firework.detonate();
+						stack.setAmount(stack.getAmount() - 1);
+						user.addPower(power, true);
+						user.sendMessage(LocaleString.SELF_ADD_POWER_SUCCESS.build(power));
+					}
+					else if (user.getAssignedPowers().size() >= ConfigOption.Users.POWER_CAP_TOTAL) {
+						user.sendMessage(LocaleString.SELF_TOO_MANY_POWERS.toString());
+					}
+					else if (user.getAssignedPowersByType(power.getType()).size() >= ConfigOption.Users.POWER_CAP_PER_TYPE) {
+						user.sendMessage(LocaleString.SELF_TOO_MANY_POWERS_TYPE.build(power.getType()));
 					}
 				}
 			}
