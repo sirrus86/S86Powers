@@ -42,22 +42,13 @@ import com.comphenix.protocol.events.PacketAdapter;
 import com.comphenix.protocol.events.PacketContainer;
 import com.comphenix.protocol.events.PacketEvent;
 import com.comphenix.protocol.utility.MinecraftReflection;
-import com.comphenix.protocol.wrappers.BlockPosition;
-import com.comphenix.protocol.wrappers.ChunkCoordIntPair;
-import com.comphenix.protocol.wrappers.EnumWrappers;
-import com.comphenix.protocol.wrappers.MultiBlockChangeInfo;
-import com.comphenix.protocol.wrappers.Pair;
-import com.comphenix.protocol.wrappers.PlayerInfoData;
-import com.comphenix.protocol.wrappers.WrappedBlockData;
-import com.comphenix.protocol.wrappers.WrappedChatComponent;
-import com.comphenix.protocol.wrappers.WrappedDataWatcher;
+import com.comphenix.protocol.wrappers.*;
 import com.comphenix.protocol.wrappers.EnumWrappers.ChatType;
 import com.comphenix.protocol.wrappers.EnumWrappers.ItemSlot;
 import com.comphenix.protocol.wrappers.EnumWrappers.NativeGameMode;
 import com.comphenix.protocol.wrappers.EnumWrappers.PlayerDigType;
 import com.comphenix.protocol.wrappers.EnumWrappers.PlayerInfoAction;
 import com.comphenix.protocol.wrappers.WrappedDataWatcher.Registry;
-import com.comphenix.protocol.wrappers.WrappedGameProfile;
 import com.google.common.collect.Lists;
 
 import me.sirrus86.s86powers.config.ConfigOption;
@@ -150,12 +141,10 @@ public final class PacketManagerPLib extends PacketManager {
 										health = health + ChatColor.GRAY + "\u2665";
 									}
 								}
-								PacketContainer packet = pm.createPacket(PacketType.Play.Server.ENTITY_METADATA, true);
 								WrappedDataWatcher watcher = WrappedDataWatcher.getEntityWatcher(entity);
 								watcher.setObject(MCMetadata.EntityMeta.ENTITY_CUSTOM_NAME.getIndex(), Registry.getChatComponentSerializer(true), Optional.of(WrappedChatComponent.fromText(health).getHandle()));
 								watcher.setObject(MCMetadata.EntityMeta.ENTITY_IS_CUSTOM_NAME_VISIBLE.getIndex(), Registry.get(Boolean.class), (Object) true);
-								packet.getIntegers().write(0, entity.getEntityId());
-								packet.getWatchableCollectionModifier().write(0, watcher.getWatchableObjects());
+								PacketContainer packet = createEntityMetadataPacket(entity.getEntityId(), watcher);
 								event.setPacket(packet);
 							}
 						}
@@ -309,9 +298,7 @@ public final class PacketManagerPLib extends PacketManager {
 			disguises.put(uuid, entityPacket);
 		}
 		if (watcher != null) {
-			metaPacket = pm.createPacket(PacketType.Play.Server.ENTITY_METADATA, true);
-			metaPacket.getIntegers().write(0, id);
-			metaPacket.getWatchableCollectionModifier().write(0, watcher.getWatchableObjects());
+			metaPacket = createEntityMetadataPacket(id, watcher);
 			if (viewer != null) {
 				sendServerPacket(viewer, metaPacket);
 			}
@@ -414,11 +401,9 @@ public final class PacketManagerPLib extends PacketManager {
 
 	@Override
 	public void addSpectralEntity(Player viewer, Entity entity, ChatColor color) {
-		PacketContainer packet = pm.createPacket(PacketType.Play.Server.ENTITY_METADATA, true);
 		WrappedDataWatcher watcher = WrappedDataWatcher.getEntityWatcher(entity).deepClone();
 		watcher.setObject(MCMetadata.EntityMeta.ENTITY_STATE.getIndex(), Registry.get(Byte.class), (byte) (watcher.getByte(0) + 0x40));
-		packet.getIntegers().write(0, entity.getEntityId());
-		packet.getWatchableCollectionModifier().write(0, watcher.getWatchableObjects());
+		PacketContainer packet = createEntityMetadataPacket(entity.getEntityId(), watcher);
 		sendServerPacket(viewer, packet);
 		PacketContainer teamPacket = pm.createPacket(PacketType.Play.Server.SCOREBOARD_TEAM, true);
 		teamPacket.getStrings().write(0, viewer.getEntityId() + "." + entity.getEntityId());
@@ -626,6 +611,27 @@ public final class PacketManagerPLib extends PacketManager {
 		}
 		return packets;
 	}
+
+    private PacketContainer createEntityMetadataPacket(int id, WrappedDataWatcher watcher) {
+        PacketContainer packet = pm.createPacket(PacketType.Play.Server.ENTITY_METADATA, true);
+        packet.getIntegers().write(0, id);
+        if (MCVersion.isLessThan(MCVersion.v1_19_3)) {
+            packet.getWatchableCollectionModifier().write(0, watcher.getWatchableObjects());
+        }
+        else {
+            List<WrappedDataValue> wrappedDataValueList = new ArrayList<>();
+            for (WrappedWatchableObject entry : watcher.getWatchableObjects()) {
+                if (entry == null) {
+                    continue;
+                }
+                WrappedDataWatcher.WrappedDataWatcherObject watcherObject = entry.getWatcherObject();
+                wrappedDataValueList.add(new WrappedDataValue(watcherObject.getIndex(), watcherObject.getSerializer(),
+                        entry.getRawValue()));
+            }
+            packet.getDataValueCollectionModifier().write(0, wrappedDataValueList);
+        }
+        return packet;
+    }
 	
 	private WrappedDataWatcher createWrappedDataWatcher(Entity entity, Map<Integer, Object> map) {
 		WrappedDataWatcher watcher = entity != null ? WrappedDataWatcher.getEntityWatcher(entity) : new WrappedDataWatcher();
@@ -752,9 +758,7 @@ public final class PacketManagerPLib extends PacketManager {
 
 	@Override
 	public void removeSpectralEntity(Player viewer, Entity entity) {
-		PacketContainer packet = pm.createPacket(PacketType.Play.Server.ENTITY_METADATA);
-		packet.getIntegers().write(0, entity.getEntityId());
-		packet.getWatchableCollectionModifier().write(0, WrappedDataWatcher.getEntityWatcher(entity).getWatchableObjects());
+		PacketContainer packet = createEntityMetadataPacket(entity.getEntityId(), WrappedDataWatcher.getEntityWatcher(entity));
 		sendServerPacket(viewer, packet);
 	}
 	
@@ -823,7 +827,6 @@ public final class PacketManagerPLib extends PacketManager {
 
 	@Override
 	public void showHearts(LivingEntity entity, Player player) {
-		PacketContainer packet = pm.createPacket(PacketType.Play.Server.ENTITY_METADATA, true);
 		WrappedDataWatcher watcher = WrappedDataWatcher.getEntityWatcher(entity);
 		double i = ((LivingEntity) entity).getHealth() / 2,
 				j = ((LivingEntity) entity).getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue() / 2;
@@ -839,8 +842,7 @@ public final class PacketManagerPLib extends PacketManager {
 		}
 		watcher.setObject(MCMetadata.EntityMeta.ENTITY_CUSTOM_NAME.getIndex(), Registry.getChatComponentSerializer(true), Optional.of(WrappedChatComponent.fromText(health).getHandle()));
 		watcher.setObject(MCMetadata.EntityMeta.ENTITY_IS_CUSTOM_NAME_VISIBLE.getIndex(), Registry.get(Boolean.class), (Object) true);
-		packet.getIntegers().write(0, entity.getEntityId());
-		packet.getWatchableCollectionModifier().write(0, watcher.getWatchableObjects());
+		PacketContainer packet = createEntityMetadataPacket(entity.getEntityId(), watcher);
 		sendServerPacket(player, packet);
 	}
 
@@ -879,9 +881,7 @@ public final class PacketManagerPLib extends PacketManager {
 			else {
 				packet1 = pm.createPacketConstructor(PacketType.Play.Server.SPAWN_ENTITY, entity).createPacket(entity);
 			}
-			PacketContainer packet3 = pm.createPacket(PacketType.Play.Server.ENTITY_METADATA);
-			packet3.getIntegers().write(0, entity.getEntityId());
-			packet3.getWatchableCollectionModifier().write(0, WrappedDataWatcher.getEntityWatcher(entity).getWatchableObjects());
+			PacketContainer packet3 = createEntityMetadataPacket(entity.getEntityId(), WrappedDataWatcher.getEntityWatcher(entity));
 			if (packet2 != null) {
 				pm.broadcastServerPacket(packet2, entity, sendToEntity);
 			}
