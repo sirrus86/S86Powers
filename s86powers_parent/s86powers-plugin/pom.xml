@@ -9,7 +9,7 @@
 		<version>parent</version>
 	</parent>
 	<artifactId>s86powers-plugin</artifactId>
-	<version>5.2.9</version>
+	<version>5.2.10</version>
 	<name>Plugin</name>
 
 	<dependencies>
@@ -33,20 +33,20 @@
 			<scope>compile</scope>
 			<optional>true</optional>
 		</dependency>
-		<dependency>
-			<groupId>me.sirrus86</groupId>
-			<artifactId>s86powers-v1_13_R1</artifactId>
-			<version>v1_13_R1</version>
-			<scope>compile</scope>
-			<optional>true</optional>
-		</dependency>
-		<dependency>
-			<groupId>me.sirrus86</groupId>
-			<artifactId>s86powers-v1_13_R2</artifactId>
-			<version>v1_13_R2</version>
-			<scope>compile</scope>
-			<optional>true</optional>
-		</dependency>
+<!--		<dependency>-->
+<!--			<groupId>me.sirrus86</groupId>-->
+<!--			<artifactId>s86powers-v1_13_R1</artifactId>-->
+<!--			<version>v1_13_R1</version>-->
+<!--			<scope>compile</scope>-->
+<!--			<optional>true</optional>-->
+<!--		</dependency>-->
+<!--		<dependency>-->
+<!--			<groupId>me.sirrus86</groupId>-->
+<!--			<artifactId>s86powers-v1_13_R2</artifactId>-->
+<!--			<version>v1_13_R2</version>-->
+<!--			<scope>compile</scope>-->
+<!--			<optional>true</optional>-->
+<!--		</dependency>-->
 		<dependency>
 			<groupId>me.sirrus86</groupId>
 			<artifactId>s86powers-v1_14_R1</artifactId>
