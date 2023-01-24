@@ -4,6 +4,7 @@ import org.bukkit.Effect;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.attribute.Attribute;
+import org.bukkit.attribute.AttributeInstance;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Skeleton;
 import org.bukkit.entity.Zombie;
@@ -32,7 +33,8 @@ public final class HolyBlade extends Power {
 	private PowerOption<Double> dmg;
 	private PowerOption<Integer> range;
 	private PowerOption<Boolean> breakNonSolid, killUndead, swordWear;
-	@SuppressWarnings("unused")
+
+	@SuppressWarnings({"unused", "FieldCanBeLocal"})
 	private boolean wMany;
 	
 	@Override
@@ -60,7 +62,7 @@ public final class HolyBlade extends Power {
 				&& ((user.getOption(wSword) && event.getItem() != null && PowerTools.isSword(event.getItem()))
 						|| (event.getItem() != null && event.getItem().getType() == getRequiredItem().getType()))) {
 			if (user.getCooldown(this) <= 0L) {
-				if ((!event.getItem().hasItemMeta()
+				if ((event.getItem().getItemMeta() == null
 						|| !event.getItem().getItemMeta().isUnbreakable())
 							&& user.getOption(swordWear)
 							&& PowerTools.hasDurability(event.getItem())
@@ -80,7 +82,7 @@ public final class HolyBlade extends Power {
 		
 		private final Vector dir;
 		private final int length;
-		private Location selected;
+		private final Location selected;
 		private int stage = 0;
 		private final PowerUser user;
 		
@@ -94,6 +96,7 @@ public final class HolyBlade extends Power {
 		
 		private void tick() {
 			if (stage < length
+					&& selected.getWorld() != null
 					&& (selected.getBlock().isEmpty()
 							|| (!selected.getBlock().getType().isSolid() && user.getOption(breakNonSolid)))) {
 				if (!selected.getBlock().isEmpty()) {
@@ -104,22 +107,21 @@ public final class HolyBlade extends Power {
 					}
 				}
 				for (LivingEntity entity : PowerTools.getNearbyEntities(LivingEntity.class, selected, 1.5D, user.getPlayer())) {
+					AttributeInstance health = entity.getAttribute(Attribute.GENERIC_MAX_HEALTH);
 					if (user.getOption(killUndead)
-							&& (entity instanceof Skeleton || entity instanceof Zombie)) {
-						user.causeDamage(getInstance(), entity, DamageCause.MAGIC, entity.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue() * 2.0D);
+							&& (entity instanceof Skeleton || entity instanceof Zombie)
+							&& health != null) {
+						user.causeDamage(getInstance(), entity, DamageCause.MAGIC, health.getValue() * 2.0D);
 					}
 					else {
 						user.causeDamage(getInstance(), entity, DamageCause.MAGIC, user.getOption(dmg));
 					}
 				}
-				runTaskLater(new Runnable() {
-					@Override
-					public void run() {
-						selected.getWorld().playEffect(selected, Effect.STEP_SOUND, Material.getMaterial(user.getOption(beamBlock)));
-						selected.add(dir);
-						stage ++;
-						tick();
-					}
+				runTaskLater(() -> {
+					selected.getWorld().playEffect(selected, Effect.STEP_SOUND, Material.getMaterial(user.getOption(beamBlock)));
+					selected.add(dir);
+					stage ++;
+					tick();
 				}, 1L);
 			}
 		}

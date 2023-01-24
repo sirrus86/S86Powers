@@ -85,7 +85,7 @@ public final class Phasewalk extends Power {
 					destabilizing.add(user);
 				}
 				if (user.getPlayer().getInventory().containsAtLeast(getRequiredItem(), 1)) {
-					user.getPlayer().getInventory().removeItem(new ItemStack[] {getRequiredItem()});
+					user.getPlayer().getInventory().removeItem(getRequiredItem());
 					user.getPlayer().getWorld().spawnParticle(Particle.ITEM_CRACK, user.getPlayer().getEyeLocation().add(user.getPlayer().getLocation().getDirection()), 1, user.getOption(item));
 					tasks.put(user, getInstance().runTaskLater(phasewalk(user), PowerTime.toTicks(user.getOption(destabFreq))).getTaskId());
 				}
@@ -114,6 +114,8 @@ public final class Phasewalk extends Power {
 		PowerUser user = getUser(event.getPlayer());
 		if (user.allowPower(this)
 				&& tasks.containsKey(user)
+				&& event.getTo() != null
+				&& event.getFrom().getWorld() == event.getTo().getWorld()
 				&& event.getFrom().distanceSquared(event.getTo()) > 0.0D) {
 			Location oldLoc = user.getPlayer().getLocation().clone();
 			Vector vec = event.getTo().toVector().subtract(event.getFrom().toVector()).multiply(3);
@@ -132,7 +134,9 @@ public final class Phasewalk extends Power {
 				}
 			}
 			Location newLoc = new Location(oldLoc.getWorld(), oldLoc.getX() + vec.getX() * 2, oldLoc.getY() + vec.getY() * 2, oldLoc.getZ() + vec.getZ() * 2, oldLoc.getYaw(), oldLoc.getPitch());
-			newLoc.getWorld().spawnParticle(Particle.CRIT_MAGIC, newLoc, 5);
+			if (newLoc.getWorld() != null) {
+				newLoc.getWorld().spawnParticle(Particle.CRIT_MAGIC, newLoc, 5);
+			}
 			user.getPlayer().playSound(newLoc, Sound.ENTITY_ENDERMAN_TELEPORT, 1.0F, 1.0F);
 			user.getPlayer().teleport(newLoc);
 		}

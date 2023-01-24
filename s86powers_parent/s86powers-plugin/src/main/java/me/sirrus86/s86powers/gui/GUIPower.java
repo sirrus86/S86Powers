@@ -17,14 +17,14 @@ import me.sirrus86.s86powers.tools.PowerTools;
 
 public final class GUIPower extends GUIAbstract {
 	
-	private static Map<Power, List<GUIOptionList>> powerOptionList = new HashMap<>();
+	private static final Map<Power, List<GUIOptionList>> powerOptionList = new HashMap<>();
 	
 	static List<GUIPowerList> POWER_LIST_GUI = new ArrayList<>();
 	
-	final static ItemStack INFO = createItem(Material.FILLED_MAP, LocaleString.INFO.toString(), PowerTools.wordSplit(ChatColor.RESET.toString() + ChatColor.GRAY.toString(), LocaleString.POWER_INFO_HELP.toString(), 30)),
-			OPTIONS = createItem(Material.FILLED_MAP, LocaleString.OPTIONS.toString(), PowerTools.wordSplit(ChatColor.RESET.toString() + ChatColor.GRAY.toString(), LocaleString.POWER_OPTION_HELP.toString(), 30)),
-			ENABLE = createItem(Material.REDSTONE_TORCH, LocaleString.ENABLE.toString(), PowerTools.wordSplit(ChatColor.RESET.toString() + ChatColor.GRAY.toString(), LocaleString.POWER_ENABLE_HELP.toString(), 30)),
-			DISABLE = createItem(Material.BARRIER, LocaleString.DISABLE.toString(), PowerTools.wordSplit(ChatColor.RESET.toString() + ChatColor.GRAY.toString(), LocaleString.POWER_DISABLE_HELP.toString(), 30));
+	final static ItemStack INFO = createItem(Material.FILLED_MAP, LocaleString.INFO.toString(), PowerTools.wordSplit(ChatColor.RESET + ChatColor.GRAY.toString(), LocaleString.POWER_INFO_HELP.toString(), 30)),
+			OPTIONS = createItem(Material.FILLED_MAP, LocaleString.OPTIONS.toString(), PowerTools.wordSplit(ChatColor.RESET + ChatColor.GRAY.toString(), LocaleString.POWER_OPTION_HELP.toString(), 30)),
+			ENABLE = createItem(Material.REDSTONE_TORCH, LocaleString.ENABLE.toString(), PowerTools.wordSplit(ChatColor.RESET + ChatColor.GRAY.toString(), LocaleString.POWER_ENABLE_HELP.toString(), 30)),
+			DISABLE = createItem(Material.BARRIER, LocaleString.DISABLE.toString(), PowerTools.wordSplit(ChatColor.RESET + ChatColor.GRAY.toString(), LocaleString.POWER_DISABLE_HELP.toString(), 30));
 
 	public GUIPower() {
 		super(2, LocaleString.POWER.toString());
@@ -70,9 +70,7 @@ public final class GUIPower extends GUIAbstract {
 			player.closeInventory();
 			player.performCommand("powers power " + power.getTag() + " disable");
 		});
-		setItem(12, BACK, player -> {
-			openLast(player);
-		});
+		setItem(12, BACK, this::openLast);
 	}
 
 }

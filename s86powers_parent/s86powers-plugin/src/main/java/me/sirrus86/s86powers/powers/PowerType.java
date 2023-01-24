@@ -23,7 +23,7 @@ public enum PowerType {
 	
 	private final ChatColor color;
 	
-	private PowerType(ChatColor color) {
+	PowerType(ChatColor color) {
 		this.color = color;
 	}
 	

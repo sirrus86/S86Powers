@@ -1,20 +1,12 @@
 package me.sirrus86.s86powers.powers.internal.utility;
 
-import java.util.ArrayList;
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
-import org.bukkit.Bukkit;
-import org.bukkit.Color;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.Particle;
+import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.Sign;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -50,15 +42,17 @@ public class NeutralizerBeacon extends Power {
 	
 	@Override
 	protected void onEnable() {
-		beacons = new HashMap<Block, Beacon>();
+		beacons = new HashMap<>();
 	}
 	
 	@Override
 	protected void onDisable() {
-		getConfig().createSection("beacons");
+		ConfigurationSection beaconsSection = getConfig().getConfigurationSection("beacons");
+		if (beaconsSection == null) {
+			beaconsSection = getConfig().createSection("beacons");
+		}
 		for (Block block : beacons.keySet()) {
-			getConfig().getConfigurationSection("beacons")
-				.set(block.getWorld().getName() + "," + block.getX() + "," + block.getY() + "," + block.getZ(), true);
+			beaconsSection.set(block.getWorld().getName() + "," + block.getX() + "," + block.getY() + "," + block.getZ(), true);
 		}
 		saveConfig();
 	}
@@ -74,10 +68,15 @@ public class NeutralizerBeacon extends Power {
 	}
 	
 	private void loadBeacons() {
-		if (getConfig().contains("beacons")) {
-			for (String bLoc : getConfig().getConfigurationSection("beacons").getKeys(false)) {
-				String[] coords = bLoc.split(",");
-				Block lapis = Bukkit.getWorld(coords[0]).getBlockAt(Integer.parseInt(coords[1]), Integer.parseInt(coords[2]), Integer.parseInt(coords[3]));
+		ConfigurationSection beaconsSection = getConfig().getConfigurationSection("beacons");
+		if (beaconsSection == null) {
+			beaconsSection = getConfig().createSection("beacons");
+		}
+		for (String bLoc : beaconsSection.getKeys(false)) {
+			String[] coords = bLoc.split(",");
+			World world = Bukkit.getWorld(coords[0]);
+			if (world != null) {
+				Block lapis = world.getBlockAt(Integer.parseInt(coords[1]), Integer.parseInt(coords[2]), Integer.parseInt(coords[3]));
 				Beacon beacon = new Beacon(lapis);
 				beacons.put(lapis, beacon);
 				beacon.update();
@@ -160,10 +159,12 @@ public class NeutralizerBeacon extends Power {
 	private void onInteract(PlayerInteractEvent event) {
 		if (event.hasBlock()) {
 			Block block = event.getClickedBlock();
-			for (BlockFace face : adjacent) {
-				Block nearby = block.getRelative(face);
-				if (nearby.getType() == Material.LAPIS_BLOCK) {
-					runTask(checkForBeacon(nearby));
+			if (block != null) {
+				for (BlockFace face : adjacent) {
+					Block nearby = block.getRelative(face);
+					if (nearby.getType() == Material.LAPIS_BLOCK) {
+						runTask(checkForBeacon(nearby));
+					}
 				}
 			}
 		}
@@ -186,7 +187,7 @@ public class NeutralizerBeacon extends Power {
 		
 		private Set<Vector> auraCoords;
 		private int auraTask = -1, auraBlink = 0;
-		private List<String> excluded = new ArrayList<>();
+		private final List<String> excluded = new ArrayList<>();
 		private final Block lapis;
 		private double range;
 		
@@ -195,14 +196,15 @@ public class NeutralizerBeacon extends Power {
 			registerEvents(this);
 		}
 		
-		private Runnable aura = new BukkitRunnable() {
+		private final Runnable aura = new BukkitRunnable() {
 			
 			@Override
 			public void run() {
 				Location loc = lapis.getLocation().clone().add(0.5D, 0.5D, 0.5D);
 				for (Vector vec : auraCoords) {
 					auraBlink ++;
-					if (auraBlink > getOption(auraFreq)) {
+					if (auraBlink > getOption(auraFreq)
+							&& loc.getWorld() != null) {
 						loc.add(vec);
 						loc.getWorld().spawnParticle(Particle.REDSTONE, loc, 1, new Particle.DustOptions(Color.BLUE, 0.75F));
 						loc.subtract(vec);
@@ -219,7 +221,8 @@ public class NeutralizerBeacon extends Power {
 		
 		@EventHandler(ignoreCancelled = true)
 		private void onMove(PlayerMoveEvent event) {
-			if (event.getTo().getWorld() == event.getFrom().getWorld()
+			if (event.getTo() != null
+					&& event.getTo().getWorld() == event.getFrom().getWorld()
 					&& event.getTo().distanceSquared(event.getFrom()) > 0.0D) {
 				PowerUser user = getUser(event.getPlayer());
 				if (event.getTo().getWorld() != this.lapis.getWorld()) {
@@ -279,11 +282,8 @@ public class NeutralizerBeacon extends Power {
 			excluded.clear();
 			if (getInstance().getOption(canExclude)) {
 				for (BlockFace face : adjacent) {
-					if (lapis.getRelative(face).getState() instanceof Sign) {
-						Sign sign = (Sign) lapis.getRelative(face).getState();
-						for (String line : sign.getLines()) {
-							excluded.add(line);
-						}
+					if (lapis.getRelative(face).getState() instanceof Sign sign) {
+						Collections.addAll(excluded, sign.getLines());
 					}
 				}
 			}

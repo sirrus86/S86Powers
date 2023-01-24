@@ -5,14 +5,11 @@ import java.util.List;
 import java.util.Set;
 
 import org.bukkit.Material;
-import org.bukkit.TreeSpecies;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.inventory.ItemStack;
-
-import com.google.common.collect.Sets;
 
 import me.sirrus86.s86powers.powers.Power;
 import me.sirrus86.s86powers.powers.PowerManifest;
@@ -27,7 +24,7 @@ import me.sirrus86.s86powers.users.PowerUser;
 public final class Lumberjack extends Power {
 
 	private List<Block> blocks;
-	private final Set<Material> plantable = Sets.newHashSet(Material.DIRT, Material.GRASS);
+	private final Set<Material> plantable = Set.of(Material.DIRT, Material.GRASS);
 	private PowerOption<Boolean> doLeaves, doThreshold, replant, reqAxe;
 	private PowerOption<Integer> threshold;
 	
@@ -45,77 +42,82 @@ public final class Lumberjack extends Power {
 		threshold = option("threshold", 30, "Maximum number of blocks that can be broken at one time. 'apply-threshold' must be true for this to apply.");
 		supplies(new ItemStack(Material.IRON_AXE));
 	}
-
-	private Material getSapling(TreeSpecies species) {
-		switch (species) {
-			case ACACIA: return Material.ACACIA_SAPLING;
-			case BIRCH: return Material.BIRCH_SAPLING;
-			case DARK_OAK: return Material.DARK_OAK_SAPLING;
-			case GENERIC: return Material.OAK_SAPLING;
-			case JUNGLE: return Material.JUNGLE_SAPLING;
-			case REDWOOD: return Material.SPRUCE_SAPLING;
-		}
-		return Material.OAK_SAPLING;
-	}
-	
-	private TreeSpecies getTreeSpecies(Material material) {
-		for (TreeSpecies species : TreeSpecies.values()) {
-			String speciesStr = species.toString();
-			if (speciesStr.equalsIgnoreCase("GENERIC")) {
-				speciesStr = "OAK";
-			}
-			else if (speciesStr.equalsIgnoreCase("REDWOOD")) {
-				speciesStr = "SPRUCE";
-			}
-			if (material.toString().startsWith(speciesStr)) {
-				return species;
-			}
-		}
-		return null;
-	}
 	
 	@EventHandler(ignoreCancelled = true)
 	private void onChop(BlockBreakEvent event) {
-		if (event.getPlayer() != null) {
-			PowerUser user = getUser(event.getPlayer());
-			if (user.allowPower(this)
-					&& (PowerTools.isAxe(user.getPlayer().getInventory().getItemInMainHand()) || !user.getOption(reqAxe))
-					&& event.getBlock().getType().toString().contains("LOG")) {
-				Block block = event.getBlock();
-				blocks.add(block);
-				TreeSpecies species = getTreeSpecies(block.getType());
-				while(blocks.size() > 0) {
-					for (int i = 0; i < blocks.size(); i ++) {
-						Block log = blocks.get(i);
-						if ((log.getType().toString().contains("LOG") || (log.getType().toString().contains("LEAVES") && user.getOption(doLeaves)))
-								&& getTreeSpecies(log.getType()) == species) {
-							log.breakNaturally();
-							for (BlockFace face : BlockFace.values()) {
-								if (log.getRelative(face).getType().toString().contains("LOG")
-										|| (log.getRelative(face).getType().toString().contains("LEAVES") && user.getOption(doLeaves))) {
-									if (!user.getOption(doThreshold) || blocks.size() < user.getOption(threshold)) {
-										blocks.add(log.getRelative(face));
-									}
-								}
-								else if (face == BlockFace.DOWN
-										&& plantable.contains(log.getRelative(BlockFace.DOWN).getType())
-										&& user.getOption(replant)
-										&& species != null) {
-									runTask(new Runnable() {
-
-										@Override
-										public void run() {
-											log.setType(getSapling(species));
-										}
-										
-									});
+		PowerUser user = getUser(event.getPlayer());
+		if (user.allowPower(this)
+				&& (PowerTools.isAxe(user.getPlayer().getInventory().getItemInMainHand()) || !user.getOption(reqAxe))
+				&& event.getBlock().getType().toString().contains("LOG")) {
+			Block block = event.getBlock();
+			blocks.add(block);
+			TreeSpecies species = TreeSpecies.getByMaterial(block.getType());
+			while(blocks.size() > 0) {
+				for (int i = 0; i < blocks.size(); i ++) {
+					Block log = blocks.get(i);
+					if ((log.getType().toString().contains("LOG") || (log.getType().toString().contains("LEAVES") && user.getOption(doLeaves)))
+							&& TreeSpecies.getByMaterial(log.getType()) == species) {
+						log.breakNaturally();
+						for (BlockFace face : BlockFace.values()) {
+							if (log.getRelative(face).getType().toString().contains("LOG")
+									|| (log.getRelative(face).getType().toString().contains("LEAVES") && user.getOption(doLeaves))) {
+								if (!user.getOption(doThreshold) || blocks.size() < user.getOption(threshold)) {
+									blocks.add(log.getRelative(face));
 								}
 							}
+							else if (face == BlockFace.DOWN
+									&& plantable.contains(log.getRelative(BlockFace.DOWN).getType())
+									&& user.getOption(replant)
+									&& species != null) {
+								runTask(() -> log.setType(species.getSapling()));
+							}
 						}
-						blocks.remove(log);
 					}
+					blocks.remove(log);
 				}
 			}
+		}
+	}
+
+	private enum TreeSpecies {
+		ACACIA(Material.ACACIA_LOG, Material.ACACIA_LEAVES, Material.ACACIA_SAPLING),
+		BIRCH(Material.BIRCH_LOG, Material.BIRCH_LEAVES, Material.BIRCH_SAPLING),
+		DARK_OAK(Material.DARK_OAK_LOG, Material.DARK_OAK_LEAVES, Material.DARK_OAK_SAPLING),
+		OAK(Material.OAK_LOG, Material.OAK_LEAVES, Material.OAK_SAPLING),
+		JUNGLE(Material.JUNGLE_LOG, Material.JUNGLE_LEAVES, Material.JUNGLE_SAPLING),
+		MANGROVE(Material.MANGROVE_LOG, Material.MANGROVE_LEAVES, Material.MANGROVE_PROPAGULE),
+		SPRUCE(Material.SPRUCE_LOG, Material.SPRUCE_LEAVES, Material.SPRUCE_SAPLING);
+
+		private final Material leaves;
+		private final Material log;
+		private final Material sapling;
+
+		TreeSpecies(Material log, Material leaves, Material sapling) {
+			this.leaves = leaves;
+			this.log = log;
+			this.sapling = sapling;
+		}
+
+		public static TreeSpecies getByMaterial(Material material) {
+			for (TreeSpecies species : values()) {
+				if (material == species.getLog()
+						|| material == species.getLeaves()) {
+					return species;
+				}
+			}
+			return null;
+		}
+
+		public Material getLeaves() {
+			return leaves;
+		}
+
+		public Material getLog() {
+			return log;
+		}
+
+		public Material getSapling() {
+			return sapling;
 		}
 	}
 

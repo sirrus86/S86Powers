@@ -3,14 +3,7 @@ package me.sirrus86.s86powers.config;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 import org.bukkit.OfflinePlayer;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -38,12 +31,13 @@ public class ConfigManager {
 	private final Set<Power> powers = new HashSet<>();
 	private final Map<UUID, PowerUser> users = new HashMap<>();
 	private final YamlConfiguration rgnConfig, plgConfig, pwrConfig;
-	private final File rgnFile, plgFile, pwrFile;
+	private final File plgFile;
+	private final File pwrFile;
 	private final S86Powers plugin;
 	
 	public ConfigManager(S86Powers plugin) {
 		this.plugin = plugin;
-		rgnFile = new File(plugin.getDataFolder(), "regions.yml");
+		File rgnFile = new File(plugin.getDataFolder(), "regions.yml");
 		plgFile = new File(plugin.getDataFolder(), "config.yml");
 		pwrFile = new File(plugin.getDataFolder(), "powers.yml");
 		createFiles(rgnFile, plgFile, pwrFile);
@@ -53,8 +47,8 @@ public class ConfigManager {
 		ConfigurationSerialization.registerClass(NeutralRegion.class);
 	}
 	
-	public boolean addGroup(PowerGroup group) {
-		return groups.add(group);
+	public void addGroup(PowerGroup group) {
+		groups.add(group);
 	}
 	
 	public boolean addPower(Power power) {
@@ -69,7 +63,8 @@ public class ConfigManager {
 		power.disable();
 		return blocked.add(power.getClass().getSimpleName());
 	}
-	
+
+	@SuppressWarnings("ResultOfMethodCallIgnored")
 	private void createFiles(File... files) {
 		for (File file : files) {
 			if (!file.exists()) {
@@ -129,7 +124,7 @@ public class ConfigManager {
 	}
 	
 	public Set<Power> getPowersByType(PowerType type) {
-		Set<Power> tmp = new HashSet<Power>();
+		Set<Power> tmp = new HashSet<>();
 		for (Power power : powers) {
 			if (power.getType() == type) {
 				tmp.add(power);
@@ -181,7 +176,7 @@ public class ConfigManager {
 	}
 	
 	private UUID getUUID(String name) throws Exception {
-		return new UUIDFetcher(Arrays.asList(name)).call().get(name);
+		return new UUIDFetcher(Collections.singletonList(name)).call().get(name);
 	}
 	
 	public boolean hasGroup(String name) {
@@ -193,10 +188,6 @@ public class ConfigManager {
 		return false;
 	}
 	
-	public boolean hasUser(PowerUser user) {
-		return users.containsValue(user);
-	}
-	
 	public boolean hasUser(UUID uuid) {
 		return users.containsKey(uuid);
 	}
@@ -206,12 +197,15 @@ public class ConfigManager {
 	}
 	
 	public void loadGroups() {
-		for (String file : plugin.getGroupDirectory().list()) {
-			if (file.endsWith(".yml")) {
-				String gName = file.substring(0, file.indexOf(".yml"));
-				PowerGroup group = hasGroup(gName) ? getGroup(gName) : new PowerGroup(gName);
-				group.load();
-				groups.add(group);
+		String[] fileList = plugin.getGroupDirectory().list();
+		if (fileList != null) {
+			for (String file : fileList) {
+				if (file.endsWith(".yml")) {
+					String gName = file.substring(0, file.indexOf(".yml"));
+					PowerGroup group = hasGroup(gName) ? getGroup(gName) : new PowerGroup(gName);
+					group.load();
+					groups.add(group);
+				}
 			}
 		}
 	}
@@ -251,7 +245,7 @@ public class ConfigManager {
 	
 	public void loadUsers() {
 		for (OfflinePlayer player : plugin.getServer().getOfflinePlayers()) {
-			PowerUser user = null;
+			PowerUser user;
 			if (!users.containsKey(player.getUniqueId())) {
 				user = new PowerUser(player.getUniqueId());
 				users.put(player.getUniqueId(), user);
@@ -263,13 +257,13 @@ public class ConfigManager {
 		}
 	}
 	
-	public boolean removeGroup(PowerGroup group) {
+	public void removeGroup(PowerGroup group) {
 		group.disband();
-		return groups.remove(group);
+		groups.remove(group);
 	}
 	
-	public boolean removePower(Power power) {
-		return powers.remove(power);
+	public void removePower(Power power) {
+		powers.remove(power);
 	}
 	
 	public void removeRegion(NeutralRegion region) {

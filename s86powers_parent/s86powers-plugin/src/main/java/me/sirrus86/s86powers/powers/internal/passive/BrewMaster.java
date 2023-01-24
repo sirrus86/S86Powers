@@ -35,21 +35,24 @@ public class BrewMaster extends Power {
 	private void onDrink(PlayerItemConsumeEvent event) {
 		PowerUser user = getUser(event.getPlayer());
 		if (user.allowPower(this)
-				&& event.getItem() != null
 				&& potMats.contains(event.getItem().getType())) {
 			PotionMeta meta = (PotionMeta) event.getItem().getItemMeta();
-			PotionEffect newEffect = PowerTools.getPotionEffect(meta.getBasePotionData());
-			PotionEffect effect = user.getPlayer().getPotionEffect(newEffect.getType());
-			if (effect != null) {
-				PotionEffect addEffect = new PotionEffect(effect.getType(), effect.getDuration() + newEffect.getDuration(), Integer.max(effect.getAmplifier(), newEffect.getAmplifier()));
-				runTask(new BukkitRunnable() {
+			if (meta != null) {
+				PotionEffect newEffect = PowerTools.getPotionEffect(meta.getBasePotionData());
+				if (newEffect != null) {
+					PotionEffect effect = user.getPlayer().getPotionEffect(newEffect.getType());
+					if (effect != null) {
+						PotionEffect addEffect = new PotionEffect(effect.getType(), effect.getDuration() + newEffect.getDuration(), Integer.max(effect.getAmplifier(), newEffect.getAmplifier()));
+						runTask(new BukkitRunnable() {
 
-					@Override
-					public void run() {
-						user.getPlayer().addPotionEffect(addEffect);
+							@Override
+							public void run() {
+								user.getPlayer().addPotionEffect(addEffect);
+							}
+
+						});
 					}
-					
-				});
+				}
 			}
 		}
 	}

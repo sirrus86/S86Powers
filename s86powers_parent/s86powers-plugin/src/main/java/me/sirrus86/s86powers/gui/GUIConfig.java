@@ -16,9 +16,9 @@ public final class GUIConfig extends GUIAbstract {
 
 	static List<GUIConfigList> CONFIG_LIST_GUI = new ArrayList<>();
 	
-	final static ItemStack LIST = createItem(Material.FILLED_MAP, LocaleString.LIST.toString(), PowerTools.wordSplit(ChatColor.RESET.toString() + ChatColor.GRAY.toString(), LocaleString.CONFIG_LIST_HELP.toString(), 30)),
-			RELOAD = createItem(Material.BOOK, LocaleString.RELOAD.toString(), PowerTools.wordSplit(ChatColor.RESET.toString() + ChatColor.GRAY.toString(), LocaleString.CONFIG_RELOAD_HELP.toString(), 30)),
-			SAVE = createItem(Material.WRITABLE_BOOK, LocaleString.SAVE.toString(), PowerTools.wordSplit(ChatColor.RESET.toString() + ChatColor.GRAY.toString(), LocaleString.CONFIG_SAVE_HELP.toString(), 30));
+	final static ItemStack LIST = createItem(Material.FILLED_MAP, LocaleString.LIST.toString(), PowerTools.wordSplit(ChatColor.RESET + ChatColor.GRAY.toString(), LocaleString.CONFIG_LIST_HELP.toString(), 30)),
+			RELOAD = createItem(Material.BOOK, LocaleString.RELOAD.toString(), PowerTools.wordSplit(ChatColor.RESET + ChatColor.GRAY.toString(), LocaleString.CONFIG_RELOAD_HELP.toString(), 30)),
+			SAVE = createItem(Material.WRITABLE_BOOK, LocaleString.SAVE.toString(), PowerTools.wordSplit(ChatColor.RESET + ChatColor.GRAY.toString(), LocaleString.CONFIG_SAVE_HELP.toString(), 30));
 	
 	public GUIConfig() {
 		super(2, LocaleString.CONFIG.toString());
@@ -45,9 +45,7 @@ public final class GUIConfig extends GUIAbstract {
 			player.closeInventory();
 			player.performCommand("powers config save");
 		});
-		setItem(12, BACK, player -> {
-			openLast(player);
-		});
+		setItem(12, BACK, this::openLast);
 	}
 
 }

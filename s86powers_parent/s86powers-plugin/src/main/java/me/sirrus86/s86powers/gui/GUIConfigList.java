@@ -25,22 +25,16 @@ public class GUIConfigList extends GUIAbstractList<String> {
 				String configOption = list.get(i);
 				String configDesc = LocaleString.getString(configOption.substring(configOption.indexOf(".") + 1).toUpperCase().replaceAll("-", "_") + "_CONFIG");
 				String configValue = S86Powers.getConfigManager().getConfigValue(configOption).toString();
-				List<String> lore = PowerTools.wordSplit(ChatColor.RESET.toString() + ChatColor.GRAY.toString(), configDesc, 30);
+				List<String> lore = PowerTools.wordSplit(ChatColor.RESET + ChatColor.GRAY.toString(), configDesc, 30);
 				lore.add(ChatColor.RESET + LocaleString.VALUE.toString() + ": " + ChatColor.GRAY + configValue);
 				setItem(i - index, new ItemStack(Material.PAPER), configOption, lore, null);
 			}
-			setItem(48, BACK, player -> {
-				openLast(player);
-			});
+			setItem(48, BACK, this::openLast);
 			if (page > 1) {
-				setItem(49, PAGE1, player -> {
-					openGUI(player, GUIConfig.CONFIG_LIST_GUI.get(page - 2));
-				});
+				setItem(49, PAGE1, player -> openGUI(player, GUIConfig.CONFIG_LIST_GUI.get(page - 2)));
 			}
 			if (page < GUIConfig.CONFIG_LIST_GUI.size()) {
-				setItem(50, PAGE2, player -> {
-					openGUI(player, GUIConfig.CONFIG_LIST_GUI.get(page));
-				});
+				setItem(50, PAGE2, player -> openGUI(player, GUIConfig.CONFIG_LIST_GUI.get(page)));
 			}
 		}
 	}

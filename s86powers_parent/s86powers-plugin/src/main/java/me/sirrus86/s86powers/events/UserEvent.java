@@ -6,6 +6,7 @@ import me.sirrus86.s86powers.users.PowerUser;
 import org.bukkit.Bukkit;
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
+import org.jetbrains.annotations.NotNull;
 
 public class UserEvent extends Event {
 
@@ -18,10 +19,11 @@ public class UserEvent extends Event {
 	}
 	
 	@Override
-	public HandlerList getHandlers() {
+	public @NotNull HandlerList getHandlers() {
 		return handlers;
 	}
-	
+
+	@SuppressWarnings("unused")
 	public static HandlerList getHandlerList() {
 		return handlers;
 	}

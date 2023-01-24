@@ -13,6 +13,7 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World.Environment;
 import org.bukkit.attribute.Attribute;
+import org.bukkit.attribute.AttributeInstance;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.data.Orientable;
@@ -84,7 +85,7 @@ public final class Summoner extends Power {
 	
 	private SummonType getSummonType(Location loc, BlockFace face) {
 		Location testLoc = loc.add(face.getModX(), 1, face.getModZ());
-		List<SummonType> tmp = new ArrayList<SummonType>();
+		List<SummonType> tmp = new ArrayList<>();
 		for (SummonType type : SummonType.values()) {
 			if (type == SummonType.BLAZE
 					|| type == SummonType.PIG_JOCKEY
@@ -180,7 +181,10 @@ public final class Summoner extends Power {
 						if (minions.containsKey(user)
 								&& !minions.get(user).isDead()) {
 							LivingEntity minion = minions.get(user);
-							minion.damage(minion.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue());
+							AttributeInstance health = minion.getAttribute(Attribute.GENERIC_MAX_HEALTH);
+							if (health != null) {
+								minion.damage(health.getValue());
+							}
 							minions.remove(user);
 						}
 						int height = type == SummonType.PIG_JOCKEY ? 3 : 4;
@@ -188,8 +192,8 @@ public final class Summoner extends Power {
 						int maxX = Math.abs(type == SummonType.PIG_JOCKEY ? dir.getModZ() : dir.getModZ() * 2);
 						int minZ = -Math.abs(type == SummonType.GHAST ? dir.getModX() * 2 : dir.getModX());
 						int maxZ = Math.abs(type == SummonType.PIG_JOCKEY ? dir.getModX() : dir.getModX() * 2);
-						List<Block> frame = new ArrayList<Block>(),
-								portal = new ArrayList<Block>();
+						List<Block> frame = new ArrayList<>(),
+								portal = new ArrayList<>();
 						for (int x = minX; x <= maxX; x ++) {
 							for (int y = 0; y <= height; y ++) {
 								for (int z = minZ; z <= maxZ; z ++) {
@@ -225,92 +229,66 @@ public final class Summoner extends Power {
 		
 		private final Collection<Block> frame, portal;
 		private final BlockFace face;
-		private final Location loc;
-		private final PowerUser owner;
-		private final SummonType type;
-		
+
 		public SummonPortal(PowerUser owner, Location loc, Collection<Block> frame, Collection<Block> portal, BlockFace face, SummonType type) {
 			this.face = face;
 			this.frame = frame;
-			this.loc = loc;
-			this.owner = owner;
 			this.portal = portal;
-			this.type = type;
 			renderPortal();
+			Runnable delayedSpawn = () -> {
+				Location spawn = loc.add(face.getModX(), 1, face.getModZ());
+				LivingEntity minion = null;
+				if (spawn.getWorld() != null) {
+					switch (type) {
+						case BLAZE -> minion = spawn.getWorld().spawn(spawn, Blaze.class);
+						case GHAST -> minion = spawn.getWorld().spawn(spawn, Ghast.class);
+						case PIG_JOCKEY -> {
+							minion = spawn.getWorld().spawn(spawn, PigZombie.class);
+							Chicken ch = spawn.getWorld().spawn(spawn, Chicken.class);
+							((PigZombie) minion).setBaby();
+							ch.addPassenger(minion);
+						}
+						case PIG_ZOMBIE -> minion = spawn.getWorld().spawn(spawn, PigZombie.class);
+						case WITHER_SKELETON -> minion = spawn.getWorld().spawn(spawn, WitherSkeleton.class);
+					}
+					if (minion != null) {
+						if (minion instanceof Creature) {
+							PowerTools.setTamed((Creature) minion, owner);
+						}
+						minions.put(owner, minion);
+					}
+				}
+			};
 			runTaskLater(delayedSpawn, 20L);
+			BukkitRunnable breakPortal = new BukkitRunnable() {
+				@Override
+				public void run() {
+					for (Block block : frame) {
+						block.getWorld().playEffect(block.getLocation(), Effect.STEP_SOUND, Material.OBSIDIAN);
+					}
+					for (Block block : portal) {
+						block.getWorld().playEffect(block.getLocation(), Effect.STEP_SOUND, Material.NETHER_PORTAL);
+					}
+					PowerTools.blockUpdate(frame);
+					PowerTools.blockUpdate(portal);
+				}
+			};
 			runTaskLater(breakPortal, 40L);
 		}
 		
 		private void renderPortal() {
-			runTask(new BukkitRunnable() {
-				@Override
-				public void run() {
-					PowerTools.blockDisguise(frame, Material.OBSIDIAN, Material.OBSIDIAN.createBlockData());
-					portalData.setAxis(PowerTools.getAxis(face));
-					PowerTools.blockDisguise(portal, Material.NETHER_PORTAL, portalData);
-				}
+			runTask(() -> {
+				PowerTools.blockDisguise(frame, Material.OBSIDIAN, Material.OBSIDIAN.createBlockData());
+				portalData.setAxis(PowerTools.getAxis(face));
+				PowerTools.blockDisguise(portal, Material.NETHER_PORTAL, portalData);
 			});
 		}
-		
-		private BukkitRunnable breakPortal = new BukkitRunnable() {
-			@Override
-			public void run() {
-				for (Block block : frame) {
-					block.getWorld().playEffect(block.getLocation(), Effect.STEP_SOUND, Material.OBSIDIAN);
-				}
-				for (Block block : portal) {
-					block.getWorld().playEffect(block.getLocation(), Effect.STEP_SOUND, Material.NETHER_PORTAL);
-				}
-				PowerTools.blockUpdate(frame);
-				PowerTools.blockUpdate(portal);
-			}
-		};
-		
-		private BukkitRunnable delayedSpawn = new BukkitRunnable() {
-			@Override
-			public void run() {
-				Location spawn = loc.add(face.getModX(), 1, face.getModZ());
-				LivingEntity minion = null;
-				switch(type) {
-					case BLAZE: {
-						minion = spawn.getWorld().spawn(spawn, Blaze.class);
-						break;
-					}
-					case GHAST: {
-						minion = spawn.getWorld().spawn(spawn, Ghast.class);
-						break;
-					}
-					case PIG_JOCKEY: {
-						minion = spawn.getWorld().spawn(spawn, PigZombie.class);
-						Chicken ch = spawn.getWorld().spawn(spawn, Chicken.class);
-						((PigZombie) minion).setBaby();
-						ch.addPassenger(minion);
-						break;
-					}
-					case PIG_ZOMBIE: {
-						minion = spawn.getWorld().spawn(spawn, PigZombie.class);
-						break;
-					}
-					case WITHER_SKELETON: {
-						minion = spawn.getWorld().spawn(spawn, WitherSkeleton.class);
-						break;
-					}
-				}
-				if (minion != null) {
-					if (minion instanceof Creature) {
-						PowerTools.setTamed((Creature) minion, owner);
-					}
-					minions.put(owner, minion);
-				}
-			}
-			
-		};
-		
+
 	}
 	
 	private enum SummonType {
 		
-		BLAZE, GHAST, PIG_JOCKEY, PIG_ZOMBIE, WITHER_SKELETON;
+		BLAZE, GHAST, PIG_JOCKEY, PIG_ZOMBIE, WITHER_SKELETON
 	}
 
 }

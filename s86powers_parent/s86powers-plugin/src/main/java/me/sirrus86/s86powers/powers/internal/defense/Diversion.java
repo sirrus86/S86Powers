@@ -7,6 +7,7 @@ import java.util.Set;
 
 import org.bukkit.Material;
 import org.bukkit.attribute.Attribute;
+import org.bukkit.attribute.AttributeInstance;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Mob;
@@ -28,7 +29,7 @@ import me.sirrus86.s86powers.tools.PowerTools;
 import me.sirrus86.s86powers.users.PowerUser;
 import me.sirrus86.s86powers.utils.PowerTime;
 
-@PowerManifest(name = "Diversion", type = PowerType.DEFENSE, author = "sirrus86", concept = "blacknova777", icon = Material.ARMOR_STAND, usesPackets = true, incomplete = true,
+@PowerManifest(name = "Diversion", type = PowerType.DEFENSE, author = "sirrus86", concept = "blacknova777", icon = Material.ARMOR_STAND, usesPackets = true,
 	description = "Upon taking damage from another entity, become invisible while summoning an exact copy of yourself as a diversion to attack the damager."
 			+ " Remain invisible until the diversion dies or despawns [diversion-lifespan] later. [cooldown] cooldown.")
 public final class Diversion extends Power {
@@ -106,29 +107,23 @@ public final class Diversion extends Power {
 	
 	private class Decoy implements Listener {
 		
-		private PowerUser owner;
-		private int timer;
-		private Vindicator zombie;
+		private final PowerUser owner;
+		private final int timer;
+		private final Vindicator zombie;
 		
 		public Decoy(PowerUser owner, Vindicator zombie) {
 			this.owner = owner;
 			this.zombie = zombie;
 			registerEvents(this);
-			timer = runTaskLater(new BukkitRunnable() {
-
-				@Override
-				public void run() {
-					kill();
-				}
-				
-			}, PowerTime.toTicks(owner.getOption(lifespan))).getTaskId();
+			timer = runTaskLater(this::kill, PowerTime.toTicks(owner.getOption(lifespan))).getTaskId();
 		}
 		
 		public void kill() {
 			if (zombie != null
 					&& zombie.isValid()
 					&& !zombie.isDead()) {
-				zombie.damage(zombie.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue());
+				AttributeInstance health = zombie.getAttribute(Attribute.GENERIC_MAX_HEALTH);
+				zombie.damage(health != null ? health.getValue() : 0);
 			}
 			if (this.owner != null
 					&& PowerTools.isGhost(this.owner.getPlayer())) {

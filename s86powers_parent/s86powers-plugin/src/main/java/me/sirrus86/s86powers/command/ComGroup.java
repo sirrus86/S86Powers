@@ -137,8 +137,7 @@ public final class ComGroup extends ComAbstract {
 			if (page != null) {
 				try {
 					i = Integer.parseInt(page);
-				} catch (NumberFormatException e) {
-					i = 1;
+				} catch (NumberFormatException ignored) {
 				}
 			}
 			PageMaker pm = new PageMaker(HELP + ChatColor.GREEN + LocaleString.GROUP, HelpTopic.showHelp(sender, "GROUP"), i);
@@ -186,7 +185,7 @@ public final class ComGroup extends ComAbstract {
 			if (page != null) {
 				try {
 					i = Integer.parseInt(page);
-				} catch (Exception e) {
+				} catch (Exception ignored) {
 				}
 			}
 			PageMaker pm = new PageMaker(LIST + ChatColor.GREEN + LocaleString.GROUPS, getGroups() + ".", i);

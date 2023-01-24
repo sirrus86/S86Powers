@@ -102,10 +102,11 @@ public final class WebWall extends Power {
 	
 	private class Wall implements Listener {
 		
-		private Set<Block> blocks = new HashSet<>();
+		private final Set<Block> blocks = new HashSet<>();
 		private final Block core;
 		List<BlockFace> faces = Lists.newArrayList(directions);
-		private int growTask, lifeTask;
+		private int growTask;
+		private final int lifeTask;
 		private final PowerUser owner;
 		
 		public Wall(PowerUser owner, Block core, BlockFace facing) {
@@ -117,17 +118,10 @@ public final class WebWall extends Power {
 			core.setType(Material.COBWEB);
 			blocks.add(core);
 			growTask = getInstance().runTaskLater(growth, 1L).getTaskId();
-			lifeTask = getInstance().runTaskLater(new BukkitRunnable() {
-
-				@Override
-				public void run() {
-					terminate();
-				}
-				
-			}, PowerTime.toTicks(owner.getOption(wallDur))).getTaskId();
+			lifeTask = getInstance().runTaskLater(this::terminate, PowerTime.toTicks(owner.getOption(wallDur))).getTaskId();
 		}
 		
-		private Runnable growth = new BukkitRunnable() {
+		private final Runnable growth = new BukkitRunnable() {
 
 			int tries = 0;
 			

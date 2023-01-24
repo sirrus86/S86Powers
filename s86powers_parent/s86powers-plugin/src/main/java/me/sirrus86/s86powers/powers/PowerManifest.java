@@ -20,14 +20,14 @@ public @interface PowerManifest {
 	/**
 	 * The person or alias who coded this particular power.
 	 */
-	public String author();
+	String author();
 	
 	/**
 	 * The person or alias who came up with the idea for this power.
 	 * <p>
 	 * This may also be the author.
 	 */
-	public String concept();
+	String concept();
 	
 	/**
 	 * A decription of what this power does, how to use it, etc.
@@ -41,43 +41,43 @@ public @interface PowerManifest {
 	 * </ul>
 	 * All other field types are displayed as {@link Object#toString()}.
 	 */
-	public String description();
+	String description();
 	
 	/**
 	 * Whether this power is incomplete. Default configuration prevents the plugin from loading incomplete powers. This value is false unless set to true.
 	 * @return false unless otherwise assigned
 	 */
-	public boolean incomplete() default false;
+	boolean incomplete() default false;
 	
 	/**
 	 * Material used to depict this power's icon when the GUI is used.
 	 */
-	public Material icon();
+	Material icon();
 	
 	/**
 	 * The user-friendly name of this power. If the true name of your power should contain non-alphanumeric symbols or spaces, this is where you'd print the name.
 	 */
-	public String name();
+	String name();
 	
 	/**
 	 * Whether this power uses packets. If this power uses packets, it will only load if ProtocolLib is detected. This value is false unless set to true.
 	 * @return false unless otherwise assigned
 	 */
-	public boolean usesPackets() default false;
+	boolean usesPackets() default false;
 	
 	/**
 	 * The minimum required server software for this power to function properly. If not set, Bukkit or greater is required.
 	 */
-	public MCServer server() default MCServer.BUKKIT;
+	MCServer server() default MCServer.BUKKIT;
 	
 	/**
 	 * The {@link PowerType} of this power. This determines whether the power is considered offensive, defensive, passive, or utility.
 	 */
-	public PowerType type();
+	PowerType type();
 	
 	/**
 	 * The minimum required server version for this power to function properly. If not set, version 1.13 or greater is required.
 	 */
-	public MCVersion version() default MCVersion.v1_13;
+	MCVersion version() default MCVersion.v1_13;
 	
 }

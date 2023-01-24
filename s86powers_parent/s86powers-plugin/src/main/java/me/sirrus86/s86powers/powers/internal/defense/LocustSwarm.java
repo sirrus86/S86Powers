@@ -24,7 +24,6 @@ import org.bukkit.event.entity.EntityTargetEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.scheduler.BukkitRunnable;
 
 import me.sirrus86.s86powers.events.PowerUseEvent;
 import me.sirrus86.s86powers.powers.Power;
@@ -89,7 +88,7 @@ public final class LocustSwarm extends Power {
 				&& event.getBlock().getType().name().startsWith("INFESTED")) {
 			ItemStack item = user.getPlayer().getInventory().getItemInMainHand();
 			if (item.getType().name().contains("PICKAXE")
-					&& item.hasItemMeta()
+					&& item.getItemMeta() != null
 					&& item.getItemMeta().hasEnchant(Enchantment.SILK_TOUCH)) {
 				event.getBlock().getWorld().dropItemNaturally(event.getBlock().getLocation(),
 						new ItemStack(event.getBlock().getType(), 1));
@@ -162,7 +161,7 @@ public final class LocustSwarm extends Power {
 	
 	private class Swarm implements Listener {
 		
-		private Map<Silverfish, Material> sList = new HashMap<>();
+		private final Map<Silverfish, Material> sList = new HashMap<>();
 		
 		private int kTask = -1;
 		private final PowerUser owner;
@@ -171,8 +170,7 @@ public final class LocustSwarm extends Power {
 			this.owner = owner;
 			for (Silverfish fish : sfish.keySet()) {
 				PowerTools.setTamed(fish, this.owner);
-				Set<LivingEntity> targetList = new HashSet<>();
-				targetList.addAll(sList.keySet());
+				Set<LivingEntity> targetList = new HashSet<>(sList.keySet());
 				targetList.add(owner.getPlayer());
 				fish.setTarget(PowerTools.getRandomEntity(fish, 10.0D, targetList));
 				sList.putAll(sfish);
@@ -187,15 +185,15 @@ public final class LocustSwarm extends Power {
 				for (Block block : PowerTools.getNearbyBlocks(loc, i)) {
 					if (sList.size() < owner.getOption(summonMax)
 							&& owner.getOption(spawnBlocks).contains(block.getType().name())
-							&& (!owner.getOption(infestOnly) || block.getType().name().startsWith("INFESTED"))) {
+							&& (!owner.getOption(infestOnly) || block.getType().name().startsWith("INFESTED"))
+					&& loc.getWorld() != null) {
 						Material mat = block.getState().getType();
 						loc.getWorld().playEffect(block.getLocation(), Effect.STEP_SOUND, block.getType());
 						block.setType(Material.AIR);
 						Silverfish sfish = loc.getWorld().spawn(block.getLocation(), Silverfish.class);
 						sList.put(sfish, mat);
 						PowerTools.setTamed(sfish, this.owner);
-						Set<LivingEntity> targetList = new HashSet<>();
-						targetList.addAll(sList.keySet());
+						Set<LivingEntity> targetList = new HashSet<>(sList.keySet());
 						targetList.add(owner.getPlayer());
 						sfish.setTarget(PowerTools.getRandomEntity(sfish, 10.0D, targetList));
 						owner.increaseStat(summonCount, 1);
@@ -225,20 +223,14 @@ public final class LocustSwarm extends Power {
 		}
 		
 		private void prepareKillOff() {
-			kTask = runTaskLater(new BukkitRunnable() {
-				@Override
-				public void run() {
-					killOff();
-				}
-			}, PowerTime.toTicks(owner.getOption(lifespan))).getTaskId();
+			kTask = runTaskLater(this::killOff, PowerTime.toTicks(owner.getOption(lifespan))).getTaskId();
 		}
 		
 		@EventHandler (ignoreCancelled = true)
 		private void onSpawn(CreatureSpawnEvent event) {
-			if (!sList.containsKey(event.getEntity())
-					&& event.getEntity() instanceof Silverfish
+			if (event.getEntity() instanceof Silverfish sfish
+					&& !sList.containsKey((Silverfish) event.getEntity())
 					&& event.getSpawnReason() == SpawnReason.SILVERFISH_BLOCK) {
-				Silverfish sfish = (Silverfish) event.getEntity();
 				for (Silverfish fish : sList.keySet()) {
 					if (fish.isValid()
 							&& fish.getWorld().equals(sfish.getWorld())
@@ -254,7 +246,8 @@ public final class LocustSwarm extends Power {
 		
 		@EventHandler
 		private void onDeath(EntityDeathEvent event) {
-			if (sList.containsKey(event.getEntity())) {
+			if (event.getEntity() instanceof Silverfish
+					&& sList.containsKey((Silverfish) event.getEntity())) {
 				PowerTools.setTamed((Silverfish) event.getEntity(), null);
 			}
 		}
@@ -262,10 +255,10 @@ public final class LocustSwarm extends Power {
 		@EventHandler (ignoreCancelled = true)
 		private void onTarget(EntityTargetEvent event) {
 			if (event.getTarget() instanceof Player
-					&& this.sList.containsKey(event.getEntity())) {
+					&& event.getEntity() instanceof Silverfish
+					&& sList.containsKey((Silverfish) event.getEntity())) {
 				PowerUser target = getUser((Player) event.getTarget());
-				if (target == this.owner
-						|| sList.containsKey(event.getTarget())) {
+				if (target == owner) {
 					event.setCancelled(true);
 				}
 			}

@@ -65,8 +65,9 @@ public final class NeutralizerGrenade extends Power {
 	
 	@EventHandler
 	private void onHit(ProjectileHitEvent event) {
-		if (gList.containsKey(event.getEntity())) {
-			cancelTask(gList.get(event.getEntity()));
+		if (event.getEntity() instanceof Snowball snowball
+				&& gList.containsKey(snowball)) {
+			cancelTask(gList.get(snowball));
 			PowerTools.fakeExplosion(event.getEntity().getLocation(), 1);
 			for (Player player : PowerTools.getNearbyEntities(Player.class, event.getEntity().getLocation(), getOption(range))) {
 				PowerUser user = getUser(player);

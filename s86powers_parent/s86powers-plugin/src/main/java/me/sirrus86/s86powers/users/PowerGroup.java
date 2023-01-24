@@ -3,8 +3,6 @@ package me.sirrus86.s86powers.users;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -24,8 +22,8 @@ import com.google.common.collect.Lists;
 
 public class PowerGroup implements Comparable<PowerGroup> {
 
-	private Set<PowerUser> members = new HashSet<>();
-	private Set<Power> powers = new HashSet<>();
+	private final Set<PowerUser> members = new HashSet<>();
+	private final Set<Power> powers = new HashSet<>();
 
 	private final File cFile;
 	private YamlConfiguration config;
@@ -54,23 +52,15 @@ public class PowerGroup implements Comparable<PowerGroup> {
 	}
 	
 	@Override
-	public int compareTo(PowerGroup g) {
-		String o1Str = getName(),
-				o2Str = g.getName();
-		List<String> tmp = Arrays.asList(o1Str, o2Str);
-		Collections.sort(tmp);
-		if (tmp.get(0).equalsIgnoreCase(getName())) {
-			return -1;
-		}
-		else {
-			return 1;
-		}
+	public int compareTo(PowerGroup group) {
+		return getName().compareTo(group.getName());
 	}
-	
+
+	@SuppressWarnings("ResultOfMethodCallIgnored")
 	public void disband() {
 		List<PowerUser> members = Lists.newArrayList(getMembers());
-		for (int i = 0; i < members.size(); i ++) {
-			members.get(i).removeGroup(this);
+		for (PowerUser member : members) {
+			member.removeGroup(this);
 		}
 		cFile.delete();
 	}
@@ -126,9 +116,6 @@ public class PowerGroup implements Comparable<PowerGroup> {
 			}
 		}
 		else {
-			if (ConfigOption.Plugin.SHOW_CONFIG_STATUS) {
-				plugin.getLogger().severe(LocaleString.LOAD_FAIL.build(cFile));
-			}
 			throw new NullPointerException();
 		}
 	}
@@ -191,9 +178,6 @@ public class PowerGroup implements Comparable<PowerGroup> {
 			}
 		}
 		else {
-			if (ConfigOption.Plugin.SHOW_CONFIG_STATUS) {
-				plugin.getLogger().severe(LocaleString.SAVE_FAIL.build(cFile));
-			}
 			throw new NullPointerException();
 		}
 	}

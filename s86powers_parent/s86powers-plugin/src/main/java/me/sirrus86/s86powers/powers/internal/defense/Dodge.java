@@ -38,9 +38,7 @@ public final class Dodge extends Power {
 	
 	@Override
 	protected void onDisable(PowerUser user) {
-		if (dodge.containsKey(user)) {
-			dodge.remove(user);
-		}
+		dodge.remove(user);
 	}
 
 	@Override

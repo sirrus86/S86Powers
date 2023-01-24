@@ -23,7 +23,6 @@ import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
-import org.bukkit.scheduler.BukkitRunnable;
 
 import me.sirrus86.s86powers.events.PowerUseOnEntityEvent;
 import me.sirrus86.s86powers.events.UserMaxedStatEvent;
@@ -122,7 +121,7 @@ public final class Arachnophile extends Power {
 		private final PowerUser owner;
 		private final Spider spider;
 		private int task = -1;
-		private List<Snowball> webs = new ArrayList<Snowball>();
+		private final List<Snowball> webs = new ArrayList<>();
 		
 		public TamedSpider(PowerUser owner, Spider spider) {
 			getInstance().registerEvents(this);
@@ -135,7 +134,7 @@ public final class Arachnophile extends Power {
 			}
 		}
 		
-		private Runnable shootWeb = new BukkitRunnable() {
+		private final Runnable shootWeb = new Runnable() {
 
 			@Override
 			public void run() {
@@ -146,7 +145,7 @@ public final class Arachnophile extends Power {
 				}
 				task = getInstance().runTaskLater(shootWeb, PowerTime.toTicks(owner.getOption(webCooldown))).getTaskId();
 			}
-			
+
 		};
 		
 		public void unTame() {
@@ -162,7 +161,8 @@ public final class Arachnophile extends Power {
 			if (event.getDamager() == this.spider) {
 				owner.increaseStat(spiderDmg, (int) event.getDamage());
 			}
-			else if (webs.contains(event.getEntity())) {
+			else if (event.getEntity() instanceof Snowball
+					&& webs.contains((Snowball) event.getEntity())) {
 				event.setCancelled(true);
 			}
 		}
@@ -176,13 +176,13 @@ public final class Arachnophile extends Power {
 		
 		@EventHandler
 		private void onHit(ProjectileHitEvent event) {
-			if (webs.contains(event.getEntity())) {
+			if (event.getEntity() instanceof Snowball
+					&& webs.contains((Snowball) event.getEntity())) {
 				if (event.getHitEntity() != null
-						&& event.getHitEntity() instanceof LivingEntity) {
-					LivingEntity entity = (LivingEntity) event.getHitEntity();
+						&& event.getHitEntity() instanceof LivingEntity entity) {
 					entity.addPotionEffects(owner.getOption(webEffects));
 				}
-				webs.remove(event.getEntity());
+				webs.remove((Snowball) event.getEntity());
 			}
 		}
 		

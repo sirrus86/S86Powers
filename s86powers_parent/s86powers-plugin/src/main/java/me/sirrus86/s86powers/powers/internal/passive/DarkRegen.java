@@ -8,6 +8,7 @@ import java.util.Set;
 import org.bukkit.Material;
 import org.bukkit.Particle;
 import org.bukkit.attribute.Attribute;
+import org.bukkit.attribute.AttributeInstance;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.entity.EntityRegainHealthEvent;
@@ -34,7 +35,8 @@ public final class DarkRegen extends Power {
 	
 	private PowerOption<Boolean> doNV, noRegen, regenFood, regenHP;
 	private PowerOption<Integer> maxLvl, minLvl;
-	@SuppressWarnings("unused")
+
+	@SuppressWarnings({"unused", "FieldCanBeLocal"})
 	private boolean regenAny, regenBoth;
 	
 	@Override
@@ -75,15 +77,18 @@ public final class DarkRegen extends Power {
 				if (user.allowPower(getInstance())
 						&& user.getPlayer().getEyeLocation().getBlock().getLightLevel() >= user.getOption(minLvl)
 						&& user.getPlayer().getEyeLocation().getBlock().getLightLevel() <= user.getOption(maxLvl)) {
-					if ((user.getPlayer().getHealth() < user.getPlayer().getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue() && user.getOption(regenHP))
+					AttributeInstance health = user.getPlayer().getAttribute(Attribute.GENERIC_MAX_HEALTH);
+					if (health != null) {
+						if ((user.getPlayer().getHealth() < health.getValue() && user.getOption(regenHP))
 							|| (user.getPlayer().getFoodLevel() < 20 && user.getOption(regenFood))) {
-						if (user.getOption(regenHP)) {
-							user.heal(1.0D);
+							if (user.getOption(regenHP)) {
+								user.heal(1.0D);
+							}
+							if (user.getOption(regenFood)) {
+								user.regenHunger(1);
+							}
+							PowerTools.playParticleEffect(user.getPlayer().getEyeLocation(), Particle.PORTAL, 10);
 						}
-						if (user.getOption(regenFood)) {
-							user.regenHunger(1);
-						}
-						PowerTools.playParticleEffect(user.getPlayer().getEyeLocation(), Particle.PORTAL, 10);
 					}
 					if (user.getOption(doNV)
 							&& !hasNV.contains(user)) {

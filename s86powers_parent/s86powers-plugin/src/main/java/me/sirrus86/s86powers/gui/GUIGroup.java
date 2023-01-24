@@ -18,19 +18,19 @@ import me.sirrus86.s86powers.users.PowerGroup;
 
 public class GUIGroup extends GUIAbstract {
 
-	private static Map<PowerGroup, List<GUIPlayerList>> groupAddPlayerList = new HashMap<>(),
-			groupRemovePlayerList = new HashMap<>();
-	private static Map<PowerGroup, List<GUIPowerList>> groupAddPowerList = new HashMap<>(),
-			groupRemovePowerList = new HashMap<>();
+	private static final Map<PowerGroup, List<GUIPlayerList>> groupAddPlayerList = new HashMap<>();
+	private static final Map<PowerGroup, List<GUIPlayerList>> groupRemovePlayerList = new HashMap<>();
+	private static final Map<PowerGroup, List<GUIPowerList>> groupAddPowerList = new HashMap<>();
+	private static final Map<PowerGroup, List<GUIPowerList>> groupRemovePowerList = new HashMap<>();
 	
 	static List<GUIGroupList> GROUP_LIST_GUI = new ArrayList<>();
 	
-	final static ItemStack ADD_PLAYER = createItem(Material.PLAYER_HEAD, LocaleString.ADD_PLAYER.toString(), PowerTools.wordSplit(ChatColor.RESET.toString() + ChatColor.GRAY.toString(), LocaleString.GROUP_ASSIGN_HELP.toString(), 30)),
-			ADD_POWER = createItem(Material.BLAZE_POWDER, LocaleString.ADD_POWER.toString(), PowerTools.wordSplit(ChatColor.RESET.toString() + ChatColor.GRAY.toString(), LocaleString.GROUP_ADD_HELP.toString(), 30)),
-			REMOVE_PLAYER = createItem(Material.PLAYER_HEAD, LocaleString.REMOVE_PLAYER.toString(), PowerTools.wordSplit(ChatColor.RESET.toString() + ChatColor.GRAY.toString(), LocaleString.GROUP_KICK_HELP.toString(), 30)),
-			REMOVE_POWER = createItem(Material.BLAZE_POWDER, LocaleString.REMOVE_POWER.toString(), PowerTools.wordSplit(ChatColor.RESET.toString() + ChatColor.GRAY.toString(), LocaleString.GROUP_REMOVE_HELP.toString(), 30)),
-			INFO = createItem(Material.FILLED_MAP, LocaleString.INFO.toString(), PowerTools.wordSplit(ChatColor.RESET.toString() + ChatColor.GRAY.toString(), LocaleString.GROUP_INFO_HELP.toString(), 30)),
-			DELETE = createItem(Material.BARRIER, LocaleString.DELETE.toString(), PowerTools.wordSplit(ChatColor.RESET.toString() + ChatColor.GRAY.toString(), LocaleString.GROUP_DELETE_HELP.toString(), 30));
+	final static ItemStack ADD_PLAYER = createItem(Material.PLAYER_HEAD, LocaleString.ADD_PLAYER.toString(), PowerTools.wordSplit(ChatColor.RESET + ChatColor.GRAY.toString(), LocaleString.GROUP_ASSIGN_HELP.toString(), 30)),
+			ADD_POWER = createItem(Material.BLAZE_POWDER, LocaleString.ADD_POWER.toString(), PowerTools.wordSplit(ChatColor.RESET + ChatColor.GRAY.toString(), LocaleString.GROUP_ADD_HELP.toString(), 30)),
+			REMOVE_PLAYER = createItem(Material.PLAYER_HEAD, LocaleString.REMOVE_PLAYER.toString(), PowerTools.wordSplit(ChatColor.RESET + ChatColor.GRAY.toString(), LocaleString.GROUP_KICK_HELP.toString(), 30)),
+			REMOVE_POWER = createItem(Material.BLAZE_POWDER, LocaleString.REMOVE_POWER.toString(), PowerTools.wordSplit(ChatColor.RESET + ChatColor.GRAY.toString(), LocaleString.GROUP_REMOVE_HELP.toString(), 30)),
+			INFO = createItem(Material.FILLED_MAP, LocaleString.INFO.toString(), PowerTools.wordSplit(ChatColor.RESET + ChatColor.GRAY.toString(), LocaleString.GROUP_INFO_HELP.toString(), 30)),
+			DELETE = createItem(Material.BARRIER, LocaleString.DELETE.toString(), PowerTools.wordSplit(ChatColor.RESET + ChatColor.GRAY.toString(), LocaleString.GROUP_DELETE_HELP.toString(), 30));
 	
 	public GUIGroup() {
 		super(2, LocaleString.GROUPS.toString());
@@ -114,9 +114,7 @@ public class GUIGroup extends GUIAbstract {
 			player.closeInventory();
 			player.performCommand("powers group " + group.getName() + " delete");
 		});
-		setItem(12, BACK, player -> {
-			openLast(player);
-		});
+		setItem(12, BACK, this::openLast);
 	}
 
 }

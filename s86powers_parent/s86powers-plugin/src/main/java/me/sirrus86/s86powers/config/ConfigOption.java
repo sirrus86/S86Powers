@@ -1,7 +1,5 @@
 package me.sirrus86.s86powers.config;
 
-import org.bukkit.ChatColor;
-
 import me.sirrus86.s86powers.S86Powers;
 import me.sirrus86.s86powers.utils.PowerTime;
 
@@ -24,10 +22,6 @@ public final class ConfigOption {
 		public static boolean AUTO_SAVE = S86Powers.getConfigManager().getConfig().getBoolean(PARENT + "auto-save", true);
 
 		public static long AUTO_SAVE_COOLDOWN = S86Powers.getConfigManager().getConfig().getLong(PARENT + "auto-save-cooldown", PowerTime.toMillis(5, 0));
-		
-		public static String COMMAND_DEFAULT_COLOR = S86Powers.getConfigManager().getConfig().getString(PARENT + "command-default-color", ChatColor.WHITE.toString());
-
-		public static String COMMAND_PREFIX_ERROR = S86Powers.getConfigManager().getConfig().getString(PARENT + "command-prefix-error", ChatColor.WHITE + "[" + ChatColor.RED + "ERROR" + ChatColor.WHITE + "] " + ChatColor.RESET);
 
 		public static boolean ENABLE_PERMISSION_ASSIGNMENTS = S86Powers.getConfigManager().getConfig().getBoolean(PARENT + "enable-permission-assignments", false);
 		

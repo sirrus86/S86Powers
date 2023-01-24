@@ -24,7 +24,8 @@ public class PowerExporter {
 			e.printStackTrace();
 		}
 	}
-	
+
+	@SuppressWarnings("ResultOfMethodCallIgnored")
 	public void export(JarFile file) {
 		Enumeration<JarEntry> entries = file.entries();
 		while (entries.hasMoreElements()) {

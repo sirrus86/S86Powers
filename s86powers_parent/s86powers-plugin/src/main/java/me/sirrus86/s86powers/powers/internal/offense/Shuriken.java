@@ -32,7 +32,8 @@ public final class Shuriken extends Power {
 	
 	private PowerOption<Double> damage;
 	private PowerOption<Boolean> drop, pArmor, pBlock;
-	@SuppressWarnings("unused")
+
+	@SuppressWarnings({"unused", "FieldCanBeLocal"})
 	private boolean pBoth, pEither;
 	
 	@Override
@@ -55,10 +56,12 @@ public final class Shuriken extends Power {
 	
 	private boolean hasArmor(LivingEntity entity) {
 		EntityEquipment inv = entity.getEquipment();
-		for (ItemStack item : inv.getArmorContents()) {
-			if (item != null
-					&& item.getType() != Material.AIR) {
-				return true;
+		if (inv != null) {
+			for (ItemStack item : inv.getArmorContents()) {
+				if (item != null
+						&& item.getType() != Material.AIR) {
+					return true;
+				}
 			}
 		}
 		return false;
@@ -66,11 +69,10 @@ public final class Shuriken extends Power {
 	
 	@EventHandler
 	private void onDmg(EntityDamageByEntityEvent event) {
-		if (shurikens.containsKey(event.getDamager())
-				&& event.getEntity() instanceof LivingEntity) {
-			Snowball shuriken = (Snowball) event.getDamager();
+		if (event.getDamager() instanceof Snowball shuriken
+				&& shurikens.containsKey(shuriken)
+				&& event.getEntity() instanceof LivingEntity target) {
 			PowerUser user = shurikens.get(shuriken);
-			LivingEntity target = (LivingEntity) event.getEntity();
 			if ((!user.getOption(pArmor) && hasArmor(target))
 					|| (!user.getOption(pBlock) && target instanceof Player && ((Player) target).isBlocking())) {
 				target.getWorld().playSound(shuriken.getLocation(), Sound.BLOCK_ANVIL_LAND, 1.0F, 1.0F);
@@ -104,8 +106,8 @@ public final class Shuriken extends Power {
 	
 	@EventHandler
 	private void onHit(ProjectileHitEvent event) {
-		if (shurikens.containsKey(event.getEntity())) {
-			Snowball shuriken = (Snowball) event.getEntity();
+		if (event.getEntity() instanceof Snowball shuriken
+				&& shurikens.containsKey(shuriken)) {
 			if (event.getHitEntity() == null
 					&& shurikens.get(shuriken).getOption(drop)) {
 				shuriken.getWorld().dropItemNaturally(shuriken.getLocation(), shurikens.get(shuriken).getOption(item));

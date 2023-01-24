@@ -150,6 +150,7 @@ public final class FireAura extends Power {
 	private boolean inRain(PowerUser user) {
 		Location loc = user.getPlayer().getEyeLocation();
 		return PowerTools.isOutside(loc)
+				&& loc.getWorld() != null
 				&& loc.getWorld().hasStorm();
 	}
 	
@@ -158,10 +159,10 @@ public final class FireAura extends Power {
 		if (user.getPlayer().getVehicle() == null) {
 			blocks.add(user.getPlayer().getLocation().getBlock());
 		}
-		for (int i = 0; i < blocks.size(); i ++) {
-			if (blocks.get(i).getType() == Material.WATER
-				|| (blocks.get(i).getBlockData() instanceof Waterlogged
-						&& ((Waterlogged) blocks.get(i).getBlockData()).isWaterlogged())) {
+		for (Block block : blocks) {
+			if (block.getType() == Material.WATER
+					|| (block.getBlockData() instanceof Waterlogged
+					&& ((Waterlogged) block.getBlockData()).isWaterlogged())) {
 				return true;
 			}
 		}
@@ -174,21 +175,20 @@ public final class FireAura extends Power {
 			PowerUser user = getUser((Player) event.getEntity());
 			if (user.allowPower(this)) {
 				switch (event.getCause()) {
-					case FIRE: case FIRE_TICK: case HOT_FLOOR: {
+					case FIRE, FIRE_TICK, HOT_FLOOR -> {
 						user.regenHunger((int) event.getDamage());
 						event.setCancelled(true);
-						break;
 					}
-					case LAVA: {
+					case LAVA -> {
 						user.heal(event.getDamage());
 						sparkDur.put(user, System.currentTimeMillis() + PowerTime.toMillis(3, 0));
 						if (!sparkTask.containsKey(user)) {
 							sparkTask(user);
 						}
 						event.setCancelled(true);
-						break;
 					}
-					default: break;
+					default -> {
+					}
 				}
 			}
 		}

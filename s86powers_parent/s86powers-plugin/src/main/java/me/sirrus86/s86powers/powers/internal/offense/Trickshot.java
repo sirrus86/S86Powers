@@ -179,8 +179,7 @@ public final class Trickshot extends Power {
 	
 	@EventHandler
 	private void onHit(ProjectileHitEvent event) {
-		if (event.getEntity() instanceof Arrow) {
-			Arrow arrow = (Arrow) event.getEntity();
+		if (event.getEntity() instanceof Arrow arrow) {
 			if (arrows.containsKey(arrow)) {
 				cancelTask(arrows.get(arrow));
 			}
@@ -195,15 +194,13 @@ public final class Trickshot extends Power {
 							&& user.hasStatMaxed(targetsHit)) {
 						float speed = (float) arrow.getVelocity().length();
 						if (speed > 2.0F) {
-							Predicate<Entity> pred = entity -> {
-								return entity instanceof LivingEntity
-										&& entity != arrow
-										&& entity != user.getPlayer()
-										&& (user.getOption(targetAnimals) || !(entity instanceof Animals))
-										&& (user.getOption(targetMonsters) || !(entity instanceof Monster))
-										&& (user.getOption(targetPlayers) || !(entity instanceof Player))
-										&& (user.getOption(targetVillagers) || !(entity instanceof AbstractVillager));
-							};
+							Predicate<Entity> pred = entity -> entity instanceof LivingEntity
+									&& entity != arrow
+									&& entity != user.getPlayer()
+									&& (user.getOption(targetAnimals) || !(entity instanceof Animals))
+									&& (user.getOption(targetMonsters) || !(entity instanceof Monster))
+									&& (user.getOption(targetPlayers) || !(entity instanceof Player))
+									&& (user.getOption(targetVillagers) || !(entity instanceof AbstractVillager));
 							LivingEntity target = null;
 							Vector direction = null;
 							double getMaxDist = user.getOption(maxDist);
@@ -219,8 +216,7 @@ public final class Trickshot extends Power {
 									}
 								}
 							}
-							if (target != null
-									&& direction != null) {
+							if (target != null) {
 								Projectile newArrow = arrow.getWorld().spawnArrow(arrow.getLocation(), direction, speed * 0.9F, 0.0F);
 								newArrow.setShooter(user.getPlayer());
 								arrow.remove();

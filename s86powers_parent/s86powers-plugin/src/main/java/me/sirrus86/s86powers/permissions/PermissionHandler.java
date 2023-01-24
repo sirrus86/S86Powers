@@ -16,7 +16,7 @@ public class PermissionHandler {
 					if (!plugin.getServer().getPluginManager().getPermissions().contains(perm)) {
 						plugin.getServer().getPluginManager().addPermission(perm);
 					}
-				} catch (Exception e) {}
+				} catch (Exception ignored) {}
 			}
 		}
 	}

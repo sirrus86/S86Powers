@@ -1,17 +1,13 @@
 package me.sirrus86.s86powers.powers;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-
-public class PowerOption<O> implements Comparable<PowerOption<?>> {
+public class PowerOption<T> implements Comparable<PowerOption<?>> {
 
 	private final String desc, path;
-	private final Object defValue;
+	private final T defValue;
 	private final boolean locked;
 	private final Power power;
 	
-	public PowerOption(Power power, String path, Object defValue, String desc, boolean locked) {
+	public PowerOption(Power power, String path, T defValue, String desc, boolean locked) {
 		this.defValue = defValue;
 		this.desc = desc;
 		this.locked = locked;
@@ -19,7 +15,7 @@ public class PowerOption<O> implements Comparable<PowerOption<?>> {
 		this.power = power;
 	}
 	
-	public final Object getDefaultValue() {
+	public final T getDefaultValue() {
 		return defValue;
 	}
 	
@@ -34,23 +30,15 @@ public class PowerOption<O> implements Comparable<PowerOption<?>> {
 	public final Power getPower() {
 		return power;
 	}
-	
+
+	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
 	public final boolean isLocked() {
 		return locked;
 	}
 
 	@Override
-	public int compareTo(PowerOption<?> o) {
-		String o1Str = getPath(),
-				o2Str = o.getPath();
-		List<String> tmp = Arrays.asList(o1Str, o2Str);
-		Collections.sort(tmp);
-		if (tmp.get(0).equalsIgnoreCase(getPath())) {
-			return -1;
-		}
-		else {
-			return 1;
-		}
+	public int compareTo(PowerOption<?> option) {
+		return getPath().compareTo(option.getPath());
 	}
 	
 }

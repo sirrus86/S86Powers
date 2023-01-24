@@ -1,9 +1,6 @@
 package me.sirrus86.s86powers.regions;
 
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -19,6 +16,7 @@ import org.bukkit.util.Vector;
 
 import me.sirrus86.s86powers.S86Powers;
 import me.sirrus86.s86powers.users.PowerUser;
+import org.jetbrains.annotations.NotNull;
 
 public class NeutralRegion implements Comparable<NeutralRegion>, ConfigurationSerializable, Listener {
 
@@ -34,7 +32,8 @@ public class NeutralRegion implements Comparable<NeutralRegion>, ConfigurationSe
 		this.world = world;
 		plugin.getServer().getPluginManager().registerEvents(this, plugin);
 	}
-	
+
+	@SuppressWarnings("unused")
 	public NeutralRegion(Map<String, Object> args) {
 		this.name = (String) args.get("name");
 		this.active = (boolean) args.get("neutral");
@@ -45,12 +44,8 @@ public class NeutralRegion implements Comparable<NeutralRegion>, ConfigurationSe
 	}
 
 	@Override
-	public int compareTo(NeutralRegion o) {
-		String o1Str = getName(),
-				o2Str = o.getName();
-		List<String> tmp = Arrays.asList(o1Str, o2Str);
-		Collections.sort(tmp);
-		return tmp.get(0).equalsIgnoreCase(getName()) ? -1 : 1;
+	public int compareTo(NeutralRegion region) {
+		return getName().compareTo(region.getName());
 	}
 	
 	public void deactivate() {
@@ -108,7 +103,7 @@ public class NeutralRegion implements Comparable<NeutralRegion>, ConfigurationSe
 	}
 
 	@Override
-	public Map<String, Object> serialize() {
+	public @NotNull Map<String, Object> serialize() {
 		Map<String, Object> map = new HashMap<>();
 		map.put("name", this.name);
 		map.put("neutral", active);

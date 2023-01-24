@@ -33,13 +33,12 @@ import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.scheduler.BukkitRunnable;
 
 public class BlockListener implements Listener {
 
-	private Map<Block, PowerFire> bList = new HashMap<>();
-	private Map<Entity, PowerFire> burnList = new ConcurrentHashMap<>();
-	private Set<Explosive> eList = new HashSet<>();
+	private final Map<Block, PowerFire> bList = new HashMap<>();
+	private final Map<Entity, PowerFire> burnList = new ConcurrentHashMap<>();
+	private final Set<Explosive> eList = new HashSet<>();
 	
 	private final Fire fireData = (Fire) Material.FIRE.createBlockData();
 	
@@ -48,26 +47,14 @@ public class BlockListener implements Listener {
 	public BlockListener(S86Powers plugin) {
 		this.plugin = plugin;
 		plugin.getServer().getPluginManager().registerEvents(this, plugin);
-		plugin.getServer().getScheduler().runTaskTimer(plugin, manage, 0L, 5L);
-	}
-	
-	private Runnable manage = new BukkitRunnable() {
-		@Override
-		public void run() {
+		Runnable manage = () -> {
 			for (Entity entity : burnList.keySet()) {
 				if (entity.getFireTicks() <= 0) {
 					burnList.remove(entity);
 				}
 			}
-		}
-	};
-	
-	public void addExplosive(Explosive exp) {
-		eList.add(exp);
-	}
-	
-	public void addIgnite(Entity entity, PowerFire fire) {
-		burnList.put(entity, fire);
+		};
+		plugin.getServer().getScheduler().runTaskTimer(plugin, manage, 0L, 5L);
 	}
 	
 	@EventHandler(ignoreCancelled = true)
@@ -136,25 +123,24 @@ public class BlockListener implements Listener {
 		if (burnList.containsKey(event.getEntity())
 				&& event.getCause().name().startsWith("FIRE")) {
 			PowerFire pFire = burnList.get(event.getEntity());
-			PowerDamageEvent pEvent = new PowerDamageEvent(pFire.getPower(), pFire.getUser(), event, Double.MAX_VALUE);
+			PowerDamageEvent pEvent = new PowerDamageEvent(pFire.power(), pFire.user(), event, Double.MAX_VALUE);
 			plugin.getServer().getPluginManager().callEvent(pEvent);
 		}
 	}
 	
 	@EventHandler
 	private void onDeath(EntityDeathEvent event) {
-		if (burnList.containsKey(event.getEntity())) {
-			burnList.remove(event.getEntity());
-		}
+		burnList.remove(event.getEntity());
 	}
 	
 	@EventHandler(ignoreCancelled = true)
 	private void onExplode(EntityExplodeEvent event) {
-		if (eList.contains(event.getEntity())) {
+		if (event.getEntity() instanceof Explosive
+				&& eList.contains((Explosive) event.getEntity())) {
 			if (ConfigOption.Powers.PREVENT_GRIEFING) {
 				event.blockList().clear();
 			}
-			eList.remove(event.getEntity());
+			eList.remove((Explosive) event.getEntity());
 		}
 	}
 	

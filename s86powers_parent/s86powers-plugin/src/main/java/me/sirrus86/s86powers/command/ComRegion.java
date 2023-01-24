@@ -44,7 +44,8 @@ public class ComRegion extends ComAbstract {
 						}
 						comRegionResize(region, dimensions);
 					}
-					else if (args[2].equalsIgnoreCase("toggle")) {
+					else if (args[2].equalsIgnoreCase("toggle")
+							&& region != null) {
 						comRegionToggle(region, args.length > 3 ? Boolean.parseBoolean(args[3]) : !region.isActive());
 					}
 				}
@@ -89,7 +90,7 @@ public class ComRegion extends ComAbstract {
 	
 	private void comRegionDelete(NeutralRegion region) {
 		if (sender.hasPermission(S86Permission.REGION_DELETE)) {
-			config.removeRegion(region);;
+			config.removeRegion(region);
 			sender.sendMessage(SUCCESS + LocaleString.REGION_DELETE_SUCCESS.build(region));
 		}
 		else {
@@ -103,8 +104,7 @@ public class ComRegion extends ComAbstract {
 			if (page != null) {
 				try {
 					i = Integer.parseInt(page);
-				} catch (NumberFormatException e) {
-					i = 1;
+				} catch (NumberFormatException ignored) {
 				}
 			}
 			PageMaker pm = new PageMaker(HELP + ChatColor.GREEN + LocaleString.REGION, HelpTopic.showHelp(sender, "REGION"), i);
@@ -134,7 +134,7 @@ public class ComRegion extends ComAbstract {
 			if (page != null) {
 				try {
 					i = Integer.parseInt(page);
-				} catch (Exception e) {
+				} catch (Exception ignored) {
 				}
 			}
 			PageMaker pm = new PageMaker(LIST + ChatColor.GREEN + LocaleString.REGIONS, getRegions() + ".", i);

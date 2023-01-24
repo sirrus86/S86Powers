@@ -42,6 +42,7 @@ public abstract class ComAbstract {
 	protected final CommandSender sender;
 	protected final PowerUser sUser;
 
+	@SuppressWarnings("unused")
 	protected ComAbstract(CommandSender sender, String... args) {
 		this.sender = sender;
 		sUser = sender instanceof Player ? S86Powers.getConfigManager().getUser(((Player) sender).getUniqueId()) : null;
@@ -72,7 +73,7 @@ public abstract class ComAbstract {
 		return null;
 	}
 	
-	private final PotionEffect createPotionEffect(String value) {
+	private PotionEffect createPotionEffect(String value) {
 		PotionEffect effect = null;
 		if (value != null) {
 			String[] values = value.split(",");
@@ -92,10 +93,8 @@ public abstract class ComAbstract {
 						}
 					}
 				}
-				try {
+				if (eType != null) {
 					effect = new PotionEffect(eType, eDur, eAmp, eAmbient, eParticles, eIcon);
-				} catch (Exception e) {
-					effect = null;
 				}
 			}
 		}
@@ -105,60 +104,56 @@ public abstract class ComAbstract {
 	protected final String getGroups() {
 		List<PowerGroup> groups = Lists.newArrayList(S86Powers.getConfigManager().getGroups());
 		Collections.sort(groups);
-		String tmp = "";
+		StringBuilder tmp = new StringBuilder();
 		for (int i = 0; i < groups.size(); i ++) {
 			PowerGroup group = groups.get(i);
-			tmp = tmp + ChatColor.GREEN + group.getName() + ChatColor.GRAY;
+			tmp.append(ChatColor.GREEN).append(group.getName()).append(ChatColor.GRAY);
 			if (i < groups.size() - 1) {
-				tmp = tmp + ", ";
+				tmp.append(", ");
 			}
 		}
-		return tmp == "" ? LocaleString.NONE.toString() : tmp;
+		return tmp.toString().equals("") ? LocaleString.NONE.toString() : tmp.toString();
 	}
 
 	protected final String getGroups(PowerUser user) {
-		String tmp = "";
+		StringBuilder tmp = new StringBuilder();
 		List<PowerGroup> pList = Lists.newArrayList(user.getGroups());
 		Collections.sort(pList);
 		for (int i = 0; i < pList.size(); i ++) {
 			PowerGroup group = pList.get(i);
-			tmp = tmp + ChatColor.RESET + group.getName() + ChatColor.RESET;
+			tmp.append(ChatColor.RESET).append(group.getName()).append(ChatColor.RESET);
 			if (!user.getAssignedGroups().contains(group)) {
-				tmp = tmp + "(" + ChatColor.GRAY + "P" + ChatColor.RESET + ")";
+				tmp.append("(").append(ChatColor.GRAY).append("P").append(ChatColor.RESET).append(")");
 			}
 			if (i < pList.size() - 1) {
-				tmp = tmp + ChatColor.GRAY + ", ";
+				tmp.append(ChatColor.GRAY).append(", ");
 			}
 		}
-		return tmp.equalsIgnoreCase("") ? LocaleString.NONE.toString() : tmp;
+		return tmp.toString().equalsIgnoreCase("") ? LocaleString.NONE.toString() : tmp.toString();
 	}
 
 	protected final String getOptions(Power power) {
 		List<PowerOption<?>> options = Lists.newArrayList(power.getOptions().keySet());
 		Collections.sort(options);
-		String tmp = "";
-		for (int i = 0; i < options.size(); i ++) {
-			PowerOption<?> option = options.get(i);
-			
-			String valueStr = power.getOption(option).toString();
+		StringBuilder tmp = new StringBuilder();
+		for (PowerOption<?> option : options) {
+			StringBuilder valueStr = new StringBuilder(power.getOption(option).toString());
 			if (power.getOption(option) instanceof ItemStack) {
-				valueStr = PowerTools.getItemName((ItemStack) power.getOption(option));
-			}
-			else if (power.getOption(option) instanceof List<?>) {
-				valueStr = LocaleString.LIST.toString() + " {";
-				List<?> optList = (List<?>) power.getOption(option);
-				for (int j = 0; j < optList.size(); j ++) {
-					valueStr += optList.get(j).toString() + (j < optList.size() ? ", " : "");
+				valueStr = new StringBuilder(PowerTools.getItemName((ItemStack) power.getOption(option)));
+			} else if (power.getOption(option) instanceof List<?> optList) {
+				valueStr = new StringBuilder(LocaleString.LIST + " {");
+				for (int j = 0; j < optList.size(); j++) {
+					valueStr.append(optList.get(j).toString()).append(j < optList.size() ? ", " : "");
 				}
-				valueStr += "}";
+				valueStr.append("}");
 			}
-			tmp = tmp + ChatColor.GREEN + option.getPath() + ChatColor.GRAY + ": " + ChatColor.WHITE + valueStr + "\n";
+			tmp.append(ChatColor.GREEN).append(option.getPath()).append(ChatColor.GRAY).append(": ").append(ChatColor.WHITE).append(valueStr).append("\n");
 		}
-		if (tmp.endsWith("\n")) {
-			tmp = tmp.substring(0, tmp.lastIndexOf("\n"));
+		if (tmp.toString().endsWith("\n")) {
+			tmp = new StringBuilder(tmp.substring(0, tmp.lastIndexOf("\n")));
 		}
-		tmp.split("\n");
-		return tmp == "" ? LocaleString.NONE.toString() : tmp;
+//		tmp.toString().split("\n");
+		return tmp.toString().equals("") ? LocaleString.NONE.toString() : tmp.toString();
 	}
 
 	protected final String getOptions(Power power, PowerUser user) {
@@ -169,28 +164,25 @@ public abstract class ComAbstract {
 			}
 		}
 		Collections.sort(options);
-		String tmp = "";
-		for (int i = 0; i < options.size(); i ++) {
-			PowerOption<?> option = options.get(i);
-			String valueStr = user.getOption(option).toString();
+		StringBuilder tmp = new StringBuilder();
+		for (PowerOption<?> option : options) {
+			StringBuilder valueStr = new StringBuilder(user.getOption(option).toString());
 			if (user.getOption(option) instanceof ItemStack) {
-				valueStr = PowerTools.getItemName((ItemStack) user.getOption(option));
-			}
-			else if (user.getOption(option) instanceof List<?>) {
-				valueStr = LocaleString.LIST.toString() + " {";
-				List<?> optList = (List<?>) user.getOption(option);
-				for (int j = 0; j < optList.size(); j ++) {
-					valueStr += optList.get(j).toString() + (j < optList.size() ? ", " : "");
+				valueStr = new StringBuilder(PowerTools.getItemName((ItemStack) user.getOption(option)));
+			} else if (user.getOption(option) instanceof List<?> optList) {
+				valueStr = new StringBuilder(LocaleString.LIST + " {");
+				for (int j = 0; j < optList.size(); j++) {
+					valueStr.append(optList.get(j).toString()).append(j < optList.size() ? ", " : "");
 				}
-				valueStr += "}";
+				valueStr.append("}");
 			}
-			tmp = tmp + ChatColor.GREEN + option.getPath() + ChatColor.GRAY + ": " + ChatColor.WHITE + valueStr + "\n";
+			tmp.append(ChatColor.GREEN).append(option.getPath()).append(ChatColor.GRAY).append(": ").append(ChatColor.WHITE).append(valueStr).append("\n");
 		}
-		if (tmp.endsWith("\n")) {
-			tmp = tmp.substring(0, tmp.lastIndexOf("\n"));
+		if (tmp.toString().endsWith("\n")) {
+			tmp = new StringBuilder(tmp.substring(0, tmp.lastIndexOf("\n")));
 		}
-		tmp.split("\n");
-		return tmp == "" ? LocaleString.NONE.toString() : tmp;
+//		tmp.toString().split("\n");
+		return tmp.toString().equals("") ? LocaleString.NONE.toString() : tmp.toString();
 	}
 
 	protected final String getPowerDesc(Power power) {
@@ -199,53 +191,53 @@ public abstract class ComAbstract {
 	}
 
 	protected final String getPowerList(Set<Power> list) {
-		String tmp = "(" + ChatColor.GRAY + list.size() + ChatColor.RESET + ") ";
+		StringBuilder tmp = new StringBuilder("(" + ChatColor.GRAY + list.size() + ChatColor.RESET + ") ");
 		List<Power> powers = Lists.newArrayList(list);
 		Collections.sort(powers);
 		for (int i = 0; i < powers.size(); i ++) {
 			Power power = powers.get(i);
-			tmp = tmp + power.getType().getColor() + power.getTag() + ChatColor.GRAY;
+			tmp.append(power.getType().getColor()).append(power.getTag()).append(ChatColor.GRAY);
 			if (i < powers.size() - 1) {
-				tmp = tmp + ", ";
+				tmp.append(", ");
 			}
 		}
-		return list.isEmpty() ? LocaleString.NONE.toString() : tmp;
+		return list.isEmpty() ? LocaleString.NONE.toString() : tmp.toString();
 	}
 
 	protected final String getPowers(PowerGroup group) {
-		String tmp = "";
+		StringBuilder tmp = new StringBuilder();
 		List<Power> pList = Lists.newArrayList(group.getPowers());
 		Collections.sort(pList);
 		for (int i = 0; i < pList.size(); i ++) {
 			Power power = pList.get(i);
-			tmp = tmp + power.getType().getColor() + power.getTag() + ChatColor.RESET;
+			tmp.append(power.getType().getColor()).append(power.getTag()).append(ChatColor.RESET);
 			if (i < pList.size() - 1) {
-				tmp = tmp + ChatColor.GRAY + ", ";
+				tmp.append(ChatColor.GRAY).append(", ");
 			}
 		}
-		return tmp.equalsIgnoreCase("") ? LocaleString.NONE.toString() : tmp;
+		return tmp.toString().equalsIgnoreCase("") ? LocaleString.NONE.toString() : tmp.toString();
 	}
 
 	protected final String getPowers(PowerUser user) {
-		String tmp = "";
+		StringBuilder tmp = new StringBuilder();
 		List<Power> pList = Lists.newArrayList(user.getPowers());
 		Collections.sort(pList);
 		for (int i = 0; i < pList.size(); i ++) {
 			Power power = pList.get(i);
-			tmp = tmp + power.getType().getColor() + power.getTag() + ChatColor.RESET;
+			tmp.append(power.getType().getColor()).append(power.getTag()).append(ChatColor.RESET);
 			if (!user.getAssignedPowers().contains(pList.get(i))) {
 				if (user.getGroupPowers().contains(pList.get(i))) {
-					tmp = tmp + "(" + ChatColor.GRAY + "G" + ChatColor.RESET + ")";
+					tmp.append("(").append(ChatColor.GRAY).append("G").append(ChatColor.RESET).append(")");
 				}
 				else if (user.getPermissiblePowers().contains(pList.get(i))) {
-					tmp = tmp + "(" + ChatColor.GRAY + "P" + ChatColor.RESET + ")";
+					tmp.append("(").append(ChatColor.GRAY).append("P").append(ChatColor.RESET).append(")");
 				}
 			}
 			if (i < pList.size() - 1) {
-				tmp = tmp + ChatColor.GRAY + ", ";
+				tmp.append(ChatColor.GRAY).append(", ");
 			}
 		}
-		return tmp.equalsIgnoreCase("") ? LocaleString.NONE.toString() : tmp;
+		return tmp.toString().equalsIgnoreCase("") ? LocaleString.NONE.toString() : tmp.toString();
 	}
 	
 	protected final Power getRandomPower(PowerGroup group) {
@@ -267,42 +259,41 @@ public abstract class ComAbstract {
 	protected final String getRegions() {
 		List<NeutralRegion> regions = Lists.newArrayList(S86Powers.getConfigManager().getRegions());
 		Collections.sort(regions);
-		String tmp = "";
+		StringBuilder tmp = new StringBuilder();
 		for (int i = 0; i < regions.size(); i ++) {
 			NeutralRegion region = regions.get(i);
-			tmp = tmp + ChatColor.GREEN + region.getName() + ChatColor.GRAY;
+			tmp.append(ChatColor.GREEN).append(region.getName()).append(ChatColor.GRAY);
 			if (i < regions.size() - 1) {
-				tmp = tmp + ", ";
+				tmp.append(", ");
 			}
 		}
-		return tmp == "" ? LocaleString.NONE.toString() : tmp;
+		return tmp.toString().equals("") ? LocaleString.NONE.toString() : tmp.toString();
 	}
 
 	protected final String getStats(Power power) {
 		List<PowerStat> stats = Lists.newArrayList(power.getStats().keySet());
 		Collections.sort(stats);
-		String tmp = "";
-		for (int i = 0; i < stats.size(); i ++) {
-			PowerStat stat = stats.get(i);
-			tmp = tmp + ChatColor.GREEN + stat.getPath() + ChatColor.GRAY + ": " + ChatColor.WHITE + power.getStatValue(stat) + "\n";
+		StringBuilder tmp = new StringBuilder();
+		for (PowerStat stat : stats) {
+			tmp.append(ChatColor.GREEN).append(stat.getPath()).append(ChatColor.GRAY).append(": ").append(ChatColor.WHITE).append(power.getStatValue(stat)).append("\n");
 		}
-		if (tmp.endsWith("\n")) {
-			tmp = tmp.substring(0, tmp.lastIndexOf("\n"));
+		if (tmp.toString().endsWith("\n")) {
+			tmp = new StringBuilder(tmp.substring(0, tmp.lastIndexOf("\n")));
 		}
-		tmp.split("\n");
-		return tmp == "" ? LocaleString.NONE.toString() : tmp;
+//		tmp.toString().split("\n");
+		return tmp.toString().equals("") ? LocaleString.NONE.toString() : tmp.toString();
 	}
 	
 	protected final String getSupplies(Power power) {
-		String tmp = "";
+		StringBuilder tmp = new StringBuilder();
 		for (int i = 0; i < power.getSupplies().size(); i ++) {
-			tmp = tmp + ChatColor.GREEN + i + ChatColor.RESET + ": " + ChatColor.GRAY + PowerTools.getItemName(power.getSupplies().get(i)) + " x" + power.getSupplies().get(i).getAmount() + "\n";
+			tmp.append(ChatColor.GREEN).append(i).append(ChatColor.RESET).append(": ").append(ChatColor.GRAY).append(PowerTools.getItemName(power.getSupplies().get(i))).append(" x").append(power.getSupplies().get(i).getAmount()).append("\n");
 		}
-		if (tmp.equalsIgnoreCase("")) {
+		if (tmp.toString().equalsIgnoreCase("")) {
 			return LocaleString.NONE.toString();
 		}
-		tmp.split("\n");
-		return tmp;
+//		tmp.toString().split("\n");
+		return tmp.toString();
 	}
 
 	protected final String getUserName(PowerUser user) {
@@ -319,43 +310,43 @@ public abstract class ComAbstract {
 	protected final String getUsers() {
 		List<PowerUser> users = Lists.newArrayList(S86Powers.getConfigManager().getUserList());
 		Collections.sort(users);
-		String tmp = "";
+		StringBuilder tmp = new StringBuilder();
 		for (int i = 0; i < users.size(); i ++) {
 			PowerUser user = users.get(i);
-			tmp = tmp + getUserName(user) + ChatColor.GRAY;
+			tmp.append(getUserName(user)).append(ChatColor.GRAY);
 			if (i < users.size() - 1) {
-				tmp = tmp + ", ";
+				tmp.append(", ");
 			}
 		}
-		return tmp == "" ? LocaleString.NONE.toString() : tmp;
+		return tmp.toString().equals("") ? LocaleString.NONE.toString() : tmp.toString();
 	}
 
 	protected final String getUsers(Power power) {
 		List<PowerUser> users = Lists.newArrayList(power.getUsers());
 		Collections.sort(users);
-		String tmp = "";
+		StringBuilder tmp = new StringBuilder();
 		for (int i = 0; i < users.size(); i ++) {
 			PowerUser user = users.get(i);
-			tmp = tmp + getUserName(user) + ChatColor.GRAY;
+			tmp.append(getUserName(user)).append(ChatColor.GRAY);
 			if (i < users.size() - 1) {
-				tmp = tmp + ", ";
+				tmp.append(", ");
 			}
 		}
-		return tmp == "" ? LocaleString.NONE.toString() : tmp;
+		return tmp.toString().equals("") ? LocaleString.NONE.toString() : tmp.toString();
 	}
 
 	protected final String getUsers(PowerGroup group) {
 		List<PowerUser> users = Lists.newArrayList(group.getMembers());
 		Collections.sort(users);
-		String tmp = "";
+		StringBuilder tmp = new StringBuilder();
 		for (int i = 0; i < users.size(); i ++) {
 			PowerUser user = users.get(i);
-			tmp = tmp + getUserName(user) + ChatColor.GRAY;
+			tmp.append(getUserName(user)).append(ChatColor.GRAY);
 			if (i < users.size() - 1) {
-				tmp = tmp + ", ";
+				tmp.append(", ");
 			}
 		}
-		return tmp == "" ? LocaleString.NONE.toString() : tmp;
+		return tmp.toString().equals("") ? LocaleString.NONE.toString() : tmp.toString();
 	}
 
 	protected final void killPower(Power power) {
@@ -365,25 +356,24 @@ public abstract class ComAbstract {
 			field.setAccessible(true);
 			try {
 				field.set(this, null);
-			} catch (Exception e) {
+			} catch (Exception ignored) {
 			}
 		}
 		System.gc();
 	}
 
 	protected final String optList() {
-		String tmp = "";
+		StringBuilder tmp = new StringBuilder();
 		List<String> options = Lists.newArrayList(S86Powers.getConfigManager().getConfigOptions().keySet());
 		Collections.sort(options);
-		for (int i = 0; i < options.size(); i ++) {
-			String option = options.get(i);
+		for (String option : options) {
 			Object value = S86Powers.getConfigManager().getConfigValue(option);
-			tmp = tmp + ChatColor.GREEN + option + ChatColor.RESET + ": " + value.toString() + "\n";
+			tmp.append(ChatColor.GREEN).append(option).append(ChatColor.RESET).append(": ").append(value.toString()).append("\n");
 		}
-		if (tmp.endsWith("\n")) {
-			tmp = tmp.substring(0, tmp.lastIndexOf("\n"));
+		if (tmp.toString().endsWith("\n")) {
+			tmp = new StringBuilder(tmp.substring(0, tmp.lastIndexOf("\n")));
 		}
-		return tmp;
+		return tmp.toString();
 	}
 
 	protected final void supply(PowerUser user, Power power) {
@@ -438,7 +428,7 @@ public abstract class ComAbstract {
 	
 	protected final int validate(PowerStat stat, String value) {
 		try {
-			return Integer.parseInt(value);
+			return Math.min(Integer.parseInt(value), stat.getDefaultValue());
 		} catch (NumberFormatException e) {
 			return 0;
 		}

@@ -39,14 +39,13 @@ public final class ComConfig extends ComAbstract {
 		}
 	}
 	
-	private final void comConfigHelp(String page) {
+	private void comConfigHelp(String page) {
 		if (sender.hasPermission(S86Permission.CONFIG_HELP)) {
 			int i = 1;
 			if (page != null) {
 				try {
 					i = Integer.parseInt(page);
-				} catch (NumberFormatException e) {
-					i = 1;
+				} catch (NumberFormatException ignored) {
 				}
 			}
 			PageMaker pm = new PageMaker(HELP + ChatColor.GREEN + LocaleString.CONFIG, HelpTopic.showHelp(sender, "CONFIG"), i);
@@ -57,7 +56,7 @@ public final class ComConfig extends ComAbstract {
 		}
 	}
 	
-	private final void comConfigInfo(String option) {
+	private void comConfigInfo(String option) {
 		if (sender.hasPermission(S86Permission.CONFIG_INFO)) {
 			if (option != null
 					&& config.getConfigOptions().containsKey(option)) {
@@ -81,14 +80,13 @@ public final class ComConfig extends ComAbstract {
 		}
 	}
 	
-	private final void comConfigList(String page) {
+	private void comConfigList(String page) {
 		if (sender.hasPermission(S86Permission.CONFIG_LIST)) {
 			int i = 1;
 			if (page != null) {
 				try {
 					i = Integer.parseInt(page);
-				} catch (NumberFormatException e) {
-					i = 1;
+				} catch (NumberFormatException ignored) {
 				}
 			}
 			PageMaker pm = new PageMaker(LIST + ChatColor.GREEN + "Config", optList(), i);
@@ -99,7 +97,7 @@ public final class ComConfig extends ComAbstract {
 		}
 	}
 	
-	private final void comConfigReload() {
+	private void comConfigReload() {
 		if (sender.hasPermission(S86Permission.CONFIG_RELOAD)) {
 			config.loadPluginConfig();
 			sender.sendMessage(SUCCESS + LocaleString.CONFIG_RELOADED);
@@ -109,7 +107,7 @@ public final class ComConfig extends ComAbstract {
 		}
 	}
 	
-	private final void comConfigSave() {
+	private void comConfigSave() {
 		if (sender.hasPermission(S86Permission.CONFIG_SAVE)) {
 			config.savePluginConfig();
 			sender.sendMessage(SUCCESS + LocaleString.CONFIG_SAVED);
@@ -119,13 +117,14 @@ public final class ComConfig extends ComAbstract {
 		}
 	}
 	
-	private final void comConfigSet(String option, Object value) {
+	private void comConfigSet(String option, Object value) {
 		if (sender.hasPermission(S86Permission.CONFIG_SET)) {
 			if (option != null
 					&& config.getConfigOptions().containsKey(option)) {
 				if (value != null) {
 					if (config.setConfigValue(option, value)) {
 						sender.sendMessage(SUCCESS + LocaleString.SET_OPTION_SUCCESS.build(option, value));
+						save = true;
 					}
 					else {
 						Object oldValue = config.getConfigValue(option);

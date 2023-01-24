@@ -1,7 +1,6 @@
 package me.sirrus86.s86powers.gui;
 
 import java.util.Collection;
-import java.util.List;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -25,13 +24,14 @@ public class GUIPlayerList extends GUIAbstractList<PowerUser> {
 	private void setItem(int slot, OfflinePlayer player, String name, GUIAction action) {
 		ItemStack item = new ItemStack(Material.PLAYER_HEAD);
 		ItemMeta meta = item.hasItemMeta() ? item.getItemMeta() : Bukkit.getServer().getItemFactory().getItemMeta(Material.PLAYER_HEAD);
-		meta.setDisplayName(ChatColor.RESET + name);
-		meta.addItemFlags(ItemFlag.values());
-		if (meta instanceof SkullMeta) {
-			SkullMeta skullMeta = (SkullMeta) meta;
-			skullMeta.setOwningPlayer(player);
+		if (meta != null) {
+			meta.setDisplayName(ChatColor.RESET + name);
+			meta.addItemFlags(ItemFlag.values());
+			if (meta instanceof SkullMeta skullMeta) {
+				skullMeta.setOwningPlayer(player);
+			}
+			item.setItemMeta(meta);
 		}
-		item.setItemMeta(meta);
 		guiInv.setItem(slot, item);
 		if (action != null) {
 			actions.put(slot, action);
@@ -63,18 +63,12 @@ public class GUIPlayerList extends GUIAbstractList<PowerUser> {
 					}
 				});
 			}
-			setItem(48, BACK, player -> {
-				openLast(player);
-			});
+			setItem(48, BACK, this::openLast);
 			if (page > 1) {
-				setItem(49, PAGE1, LocaleString.PAGE.toString() + " " + Integer.toString(page - 1), (List<String>) null, player -> {
-					openGUI(player, sourceList.get(page - 2));
-				});
+				setItem(49, PAGE1, LocaleString.PAGE + " " + (page - 1), null, player -> openGUI(player, sourceList.get(page - 2)));
 			}
 			if (page < sourceList.size()) {
-				setItem(50, PAGE2, LocaleString.PAGE.toString() + " " + Integer.toString(page + 1), (List<String>) null, player -> {
-					openGUI(player, sourceList.get(page));
-				});
+				setItem(50, PAGE2, LocaleString.PAGE + " " + (page + 1), null, player -> openGUI(player, sourceList.get(page)));
 			}
 		}
 	}

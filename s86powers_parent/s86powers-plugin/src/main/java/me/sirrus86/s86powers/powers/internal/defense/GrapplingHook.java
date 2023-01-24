@@ -32,7 +32,6 @@ import me.sirrus86.s86powers.utils.PowerTime;
 			+ " User has [fall-resist] of fall protection after use.[pull-hooked-entity] Can also be used to reel in entities.[/pull-hooked-entity]")
 public final class GrapplingHook extends Power {
 
-	private Map<PowerUser, Hook> hooks;
 	private Map<Hook, Integer> tasks;
 	
 	private PowerOption<List<String>> canPull, canRide, pulledTo;
@@ -43,7 +42,6 @@ public final class GrapplingHook extends Power {
 	
 	@Override
 	protected void onEnable() {
-		hooks = new HashMap<>();
 		tasks = new HashMap<>();
 	}
 
@@ -55,7 +53,7 @@ public final class GrapplingHook extends Power {
 				"SPIDER", "STRAY", "TURTLE", "VEX", "VILLAGER", "VINDICATOR", "WANDERING_TRADER", "WITCH", "WITHER_SKELETON", "WOLF", "ZOMBIE",
 				"ZOMBIE_VILLAGER", "ZOMBIFIED_PIGLIN"), "Entities that the user can pull to themselves."
 				+ " Refer to https://hub.spigotmc.org/javadocs/spigot/org/bukkit/entity/EntityType.html for a list of applicable values.");
-		canPull = option("can-ride", List.of("BOAT", "DONKEY", "ENDER_DRAGON", "GHAST", "HOGLIN", "HORSE", "LLAMA", "MINECART", "MULE", "PANDA",
+		canRide = option("can-ride", List.of("BOAT", "DONKEY", "ENDER_DRAGON", "GHAST", "HOGLIN", "HORSE", "LLAMA", "MINECART", "MULE", "PANDA",
 				"POLAR_BEAR", "RAVAGER", "SKELETON_HORSE", "STRIDER", "TRADER_LLAMA", "WITHER", "ZOGLIN", "ZOMBIE_HORSE"), "Entities that the user can ride. Entity must also be on the 'pulled-to' list."
 				+ " Refer to https://hub.spigotmc.org/javadocs/spigot/org/bukkit/entity/EntityType.html for a list of applicable values.");
 		cooldown = option("fall-resist", PowerTime.toMillis(3, 0), "How long after using power that the user is immune to fall damage.");
@@ -125,7 +123,6 @@ public final class GrapplingHook extends Power {
 				hook = new Hook(event.getHook().getLocation());
 				user.setCooldown(this, user.getOption(cooldown));
 			}
-			hooks.put(user, hook);
 			if (hook != null) {
 				user.increaseStat(travels, 1);
 				hook.reel(user);
@@ -135,10 +132,8 @@ public final class GrapplingHook extends Power {
 	
 	@EventHandler
 	private void onLaunch(ProjectileLaunchEvent event) {
-		if (event.getEntity() instanceof FishHook
-				&& event.getEntity().getShooter() != null
-				&& event.getEntity().getShooter() instanceof Player) {
-			FishHook hook = (FishHook) event.getEntity();
+		if (event.getEntity() instanceof FishHook hook
+				&& hook.getShooter() instanceof Player) {
 			PowerUser user = getUser((Player) hook.getShooter());
 			if (user.allowPower(this)) {
 				hook.setVelocity(hook.getVelocity().multiply(user.getOption(hookVel)));

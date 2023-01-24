@@ -13,7 +13,7 @@ public class PageMaker {
 	private ChatPage output;
 	
 	public PageMaker(final String header, String text, final int page) {
-		text.split("\n");
+//		text.split("\n");
 		output = ChatPaginator.paginate(text, page, Integer.MAX_VALUE, 7);
 		if (page > output.getTotalPages()) {
 			output = ChatPaginator.paginate(text, output.getTotalPages(), Integer.MAX_VALUE, 7);

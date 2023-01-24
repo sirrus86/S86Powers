@@ -33,24 +33,18 @@ public class GUIOptionList extends GUIAbstractList<PowerOption<?>> {
 					String optionName = option.getPath();
 					String optionDesc = option.getDescription();
 					String optionValue = ChatColor.RESET + LocaleString.VALUE.toString() + ": " + ChatColor.GRAY + power.getOption(option).toString();
-					List<String> lore = PowerTools.wordSplit(ChatColor.RESET.toString() + ChatColor.GRAY.toString(), optionDesc, 30);
+					List<String> lore = PowerTools.wordSplit(ChatColor.RESET + ChatColor.GRAY.toString(), optionDesc, 30);
 					lore.addAll(PowerTools.wordSplit(optionValue, 30));
 					optionItems.put(option, createItem(Material.PAPER, ChatColor.RESET + optionName, lore));
 				}
 				setItem(i - index, optionItems.get(option), null);
 			}
-			setItem(48, BACK, player -> {
-				openLast(player);
-			});
+			setItem(48, BACK, this::openLast);
 			if (page > 1) {
-				setItem(49, PAGE1, LocaleString.PAGE.toString() + " " + Integer.toString(page - 1), (List<String>) null, player -> {
-					openGUI(player, sourceList.get(page - 2));
-				});
+				setItem(49, PAGE1, LocaleString.PAGE + " " + (page - 1), null, player -> openGUI(player, sourceList.get(page - 2)));
 			}
 			if (page < sourceList.size()) {
-				setItem(50, PAGE2, LocaleString.PAGE.toString() + " " + Integer.toString(page + 1), (List<String>) null, player -> {
-					openGUI(player, sourceList.get(page));
-				});
+				setItem(50, PAGE2, LocaleString.PAGE + " " + (page + 1), null, player -> openGUI(player, sourceList.get(page)));
 			}
 		}
 	}

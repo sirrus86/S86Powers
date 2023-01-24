@@ -45,7 +45,6 @@ import org.bukkit.entity.EnderCrystal;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.EvokerFangs;
-import org.bukkit.entity.Fireball;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
@@ -53,7 +52,6 @@ import org.bukkit.entity.Projectile;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.inventory.meta.PotionMeta;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.potion.PotionData;
 import org.bukkit.potion.PotionEffect;
@@ -72,7 +70,6 @@ public final class PowerTools {
 	private final static Map<UUID, UUID> tamed = new HashMap<>();
 	
 	private final static Map<Double, Set<Vector>> auraCoords = new HashMap<>();
-	private final static Map<Integer, Set<Vector>> fibCoords = new HashMap<>();
 	private final static TreeMap<Integer, String> romanNums = new TreeMap<>();
 	
 	private final static BlockFace[] axis = { BlockFace.NORTH, BlockFace.EAST, BlockFace.SOUTH, BlockFace.WEST };
@@ -82,8 +79,6 @@ public final class PowerTools {
 	private final static PacketManager pm = S86Powers.getProtocolLib() != null ? new PacketManagerPLib() : new PacketManagerNull();
 	private final static Random random = new Random();
 	private final static VersionTools vTools = resolveVTools();
-	
-	private final static double phi = Math.PI * (3 - Math.sqrt(5));
 	
 	/**
 	 * Adds a disguise to an entity, making it look like a different kind of entity.
@@ -198,14 +193,10 @@ public final class PowerTools {
 	 * The team is created via packets only and shouldn't disrupt existing teams.
 	 * @param viewer - The player viewing the block
 	 * @param color - The color to apply to the block
-	 * @param blocks - The blocks to apply the effect to
-	 * @return An instance of the resulting Shulker.
 	 */
 	@PacketManaged
 	public static void addSpectralBlock(Player viewer, Block block, ChatColor color) {
-		if (pm != null) {
-			pm.addSpectralBlock(viewer, block, color);
-		}
+		pm.addSpectralBlock(viewer, block, color);
 	}
 	
 	/**
@@ -225,12 +216,11 @@ public final class PowerTools {
 	/**
 	 * Makes a collection of blocks appear as a different material.
 	 * <p>
-	 * Uses packets to maintain the appearance. The disguise will remain until {@link PowerTools#blockUpdate(Collection<Block>)} is called.
+	 * Uses packets to maintain the appearance. The disguise will remain until {@link PowerTools#blockUpdate(Collection)} is called.
 	 * <p>
 	 * Block disguises are not maintained after the server restarts or reloads.
 	 * @param blocks - Blocks to disguise
 	 * @param material - Material to disguise the blocks as. Using non-block materials may kick any players who can see it
-	 * @param meta - Metadata to be applied to the packet. Useful for materials that appear different with metadata (e.g. Wool)
 	 */
 	@PacketManaged
 	public static void blockDisguise(Collection<Block> blocks, Material material, BlockData data) {
@@ -255,30 +245,11 @@ public final class PowerTools {
 		pm.blockUpdate(blocks);
 	}
 
-	/**
-	 * Capitalizes the first letter for a given line of text.
-	 * @param line - Text to capitalize
-	 * @return The capitalized text
-	 */
-	public static String capitalize(String line) {
-		if (line != null) {
-			return line.length() > 1 ? line.substring(0, 1).toUpperCase() + line.substring(1).toLowerCase() : line.toUpperCase();
-		}
-		else {
-			return "";
-		}
-	}
-	
-	public static void copyEquipment(LivingEntity from, LivingEntity to) {
-		to.getEquipment().setArmorContents(from.getEquipment().getArmorContents());
-		to.getEquipment().setItemInMainHand(from.getEquipment().getItemInMainHand());
-		to.getEquipment().setItemInOffHand(from.getEquipment().getItemInOffHand());
-	}
-
 	@PacketManaged
 	@Deprecated
 	public static void createBeam(Location from, Location to) {
-		if (from.getWorld() == to.getWorld()) {
+		if (from.getWorld() == to.getWorld()
+				&& from.getWorld() != null) {
 			EnderCrystal crystal = from.getWorld().spawn(from, EnderCrystal.class);
 			pm.hide(crystal);
 			crystal.setBeamTarget(to);
@@ -288,12 +259,14 @@ public final class PowerTools {
 	public static ItemStack createPowerBook(Power power) {
 		ItemStack stack = new ItemStack(Material.ENCHANTED_BOOK, 1);
 		ItemMeta meta = stack.hasItemMeta() ? stack.getItemMeta() : Bukkit.getItemFactory().getItemMeta(Material.ENCHANTED_BOOK);
-		meta.setDisplayName(ChatColor.RESET.toString() + power.getType().getColor() + power.getName());
-		meta.getPersistentDataContainer().set(Power.getCollectorKey(), PersistentDataType.STRING, power.getClass().getSimpleName());
-		String powerDesc = PowerTools.getFilteredText(power, power.getDescription());
-		List<String> lore = PowerTools.wordSplit(ChatColor.RESET + ChatColor.GRAY.toString(), powerDesc, 30);
-		meta.setLore(lore);
-		stack.setItemMeta(meta);
+		if (meta != null) {
+			meta.setDisplayName(ChatColor.RESET.toString() + power.getType().getColor() + power.getName());
+			meta.getPersistentDataContainer().set(Power.getCollectorKey(), PersistentDataType.STRING, power.getClass().getSimpleName());
+			String powerDesc = PowerTools.getFilteredText(power, power.getDescription());
+			List<String> lore = PowerTools.wordSplit(ChatColor.RESET + ChatColor.GRAY.toString(), powerDesc, 30);
+			meta.setLore(lore);
+			stack.setItemMeta(meta);
+		}
 		return stack;
 	}
 	
@@ -326,21 +299,16 @@ public final class PowerTools {
 	
 	public static Axis getAxis(BlockFace face) {
 		switch (face) {
-			case NORTH: case SOUTH: return Axis.X;
-			case UP: case DOWN: return Axis.Y;
-			case EAST: case WEST: return Axis.Z;
-			default: return null;
-		}
-	}
-	
-	public static Block getClosestBlock(Location loc, Vector vector) {
-		for (Location newLoc = loc.clone(); newLoc.getBlockY() > 0 && newLoc.getBlockY() <= loc.getWorld().getMaxHeight(); newLoc.add(vector)) {
-			if (newLoc.getBlock() != null
-					&& newLoc.getBlock().getType().isSolid()) {
-				return newLoc.getBlock();
+			case NORTH, SOUTH -> {
+				return Axis.X;
+			}
+			case UP, DOWN -> {
+				return Axis.Y;
+			}
+			default -> {
+				return Axis.Z;
 			}
 		}
-		return null;
 	}
 	
 	/**
@@ -357,7 +325,7 @@ public final class PowerTools {
 	/**
 	 * Gets the horizontal Block Face from a given yaw angle
 	 * 
-	 * @param useSubCardinalDirections
+	 * @param useSubCardinalDirections Whether to use subcardinal directions
 	 * @return The Block Face of the angle
 	 * @author bergerkiller
 	 */
@@ -402,34 +370,32 @@ public final class PowerTools {
 		}
 		return null;
 	}
-
-	public static String getEntityType(Entity entity) {
-		return entity.getType().name();
-	}
 	
 	public static ItemStack getEquipment(LivingEntity entity, EquipmentSlot slot) {
-		switch(slot) {
-			case CHEST: return entity.getEquipment().getChestplate();
-			case FEET: return entity.getEquipment().getBoots();
-			case HAND: return entity.getEquipment().getItemInMainHand();
-			case HEAD: return entity.getEquipment().getHelmet();
-			case LEGS: return entity.getEquipment().getLeggings();
-			case OFF_HAND: return entity.getEquipment().getItemInOffHand();
+		if (entity.getEquipment() != null) {
+			return switch (slot) {
+				case CHEST -> entity.getEquipment().getChestplate();
+				case FEET -> entity.getEquipment().getBoots();
+				case HAND -> entity.getEquipment().getItemInMainHand();
+				case HEAD -> entity.getEquipment().getHelmet();
+				case LEGS -> entity.getEquipment().getLeggings();
+				case OFF_HAND -> entity.getEquipment().getItemInOffHand();
+			};
 		}
 		return null;
 	}
 	
 	public static String getFilteredText(Power power, String text) {
 		String tmp = text;
-		while(tmp.indexOf("[") != -1 && tmp.indexOf("]") != -1) {
+		while(tmp.contains("[") && tmp.contains("]")) {
 			int i = tmp.indexOf("["),
 					j = tmp.indexOf("]");
 			String tag = tmp.substring(i, j + 1),
 					field = tmp.substring(i + 1, j);
-			PowerOption<?> option = power.getOptionByName(field); // ADDED
+			PowerOption<?> option = power.getOptionByName(field);
 			if (field.startsWith("act:")) {
-				option = power.getOptionByName(field.substring(4)); // ADDED
-				Object object = null;
+				option = power.getOptionByName(field.substring(4));
+				Object object;
 				if (option != null) {
 					object = power.getOption(option);
 				}
@@ -442,7 +408,7 @@ public final class PowerTools {
 				}
 			}
 			else {
-				Object object = null;
+				Object object;
 				if (option != null) {
 					object = power.getOption(option);
 				}
@@ -478,7 +444,7 @@ public final class PowerTools {
 		chars[0] = Character.toUpperCase(chars[0]);
 		for (int i = 2; i < chars.length; i ++) {
 			if (chars[i - 2] == '.') {
-				Character.toUpperCase(chars[i]);
+				chars[i] = Character.toUpperCase(chars[i]);
 			}
 		}
 		tmp = new String(chars);
@@ -497,7 +463,7 @@ public final class PowerTools {
 	}
 
 	public static Block getHighestAirBlock(Location loc, int range) {
-		Location newLoc = loc.clone();
+		Location newLoc;
 		for (newLoc = loc.clone(); newLoc.distanceSquared(loc) < range * range; newLoc.add(0, 1, 0)) {
 			if (!newLoc.getBlock().getType().isSolid()
 					&& newLoc.getBlock().getRelative(BlockFace.UP).getType().isSolid()) {
@@ -509,26 +475,7 @@ public final class PowerTools {
 
 	public static String getItemName(ItemStack item) {
 		ItemMeta meta = item.hasItemMeta() ? item.getItemMeta() : Bukkit.getServer().getItemFactory().getItemMeta(item.getType());
-		return WordUtils.capitalize(meta.hasLocalizedName() ? meta.getLocalizedName() : item.getType().toString().replace('_', ' ').toLowerCase());
-	}
-	
-//	private static NamespacedKey getNamespacedKey(String key) {
-//		for (NamespacedKey nKey : nKeys) {
-//			if (nKey.getKey().equalsIgnoreCase(key)) {
-//				return nKey;
-//			}
-//		}
-//		NamespacedKey newKey = new NamespacedKey(JavaPlugin.getPlugin(S86Powers.class), key);
-//		nKeys.add(newKey);
-//		return newKey;
-//	}
-
-	public static Set<Block> getNearbyBlocks(Block block, BlockFace... faces) {
-		Set<Block> blocks = new HashSet<Block>();
-		for (BlockFace face : faces) {
-			blocks.add(block.getRelative(face));
-		}
-		return blocks;
+		return WordUtils.capitalize(meta != null && meta.hasLocalizedName() ? meta.getLocalizedName() : item.getType().toString().replace('_', ' ').toLowerCase());
 	}
 
 	public static Set<Block> getNearbyBlocks(Location loc, double radius) {
@@ -541,9 +488,10 @@ public final class PowerTools {
 			for (double y = -radius; y < radius; y ++) {
 				for (double z = -radius; z < radius; z ++) {
 					loc.add(x, y, z);
-					Block block = loc.getWorld().getBlockAt(loc);
+					Block block = loc.getWorld() != null ? loc.getWorld().getBlockAt(loc) : null;
 					loc.subtract(x, y, z);
-					if (loc.distanceSquared(block.getLocation()) <= radius * radius
+					if (block != null
+							&& loc.distanceSquared(block.getLocation()) <= radius * radius
 							&& materials.contains(block.getType())) {
 						blocks.add(block);
 					}
@@ -575,74 +523,27 @@ public final class PowerTools {
 		return tmp;
 	}
 	
-	public static Set<Material> getNearbyMaterials(Block block, BlockFace... faces) {
-		Set<Material> mats = new HashSet<Material>();
-		for (BlockFace face : faces) {
-			mats.add(block.getRelative(face).getType());
-		}
-		return mats;
-	}
-	
-	public static final NMSLibrary getNMSLibrary() {
+	public static NMSLibrary getNMSLibrary() {
 		return nms != null ? nms : resolveNMS();
 	}
 	
-	public static final PotionEffect getPotionEffect(PotionData data) {
+	public static PotionEffect getPotionEffect(PotionData data) {
 		PotionEffectType type = data.getType().getEffectType();
 		int amp = data.isUpgraded() ? 1 : 0;
 		int dur = 0;
 		switch (data.getType()) {
-			case FIRE_RESISTANCE: case INVISIBILITY: case JUMP: case NIGHT_VISION: case SPEED: case STRENGTH: case WATER_BREATHING: {
-				dur = data.isExtended() ? PowerTime.toTicks(8, 0, 0) : (data.isUpgraded() ? PowerTime.toTicks(1, 30, 0) : PowerTime.toTicks(3, 0, 0));
-				break;
+			case FIRE_RESISTANCE, INVISIBILITY, JUMP, NIGHT_VISION, SPEED, STRENGTH, WATER_BREATHING -> dur = data.isExtended() ? PowerTime.toTicks(8, 0, 0) : (data.isUpgraded() ? PowerTime.toTicks(1, 30, 0) : PowerTime.toTicks(3, 0, 0));
+			case POISON, REGEN -> dur = data.isExtended() ? PowerTime.toTicks(1, 30, 0) : (data.isUpgraded() ? PowerTime.toTicks(22, 0) : PowerTime.toTicks(45, 0));
+			case SLOW_FALLING, SLOWNESS, WEAKNESS -> dur = data.isExtended() ? PowerTime.toTicks(4, 0, 0) : (data.isUpgraded() ? PowerTime.toTicks(20, 0) : PowerTime.toTicks(1, 30, 0));
+			case TURTLE_MASTER -> dur = data.isExtended() ? PowerTime.toTicks(40, 0) : PowerTime.toTicks(20, 0);
+			default -> {
 			}
-			case POISON: case REGEN: {
-				dur = data.isExtended() ? PowerTime.toTicks(1, 30, 0) : (data.isUpgraded() ? PowerTime.toTicks(22, 0) : PowerTime.toTicks(45, 0));
-				break;
-			}
-			case SLOW_FALLING: case SLOWNESS: case WEAKNESS: {
-				dur = data.isExtended() ? PowerTime.toTicks(4, 0, 0) : (data.isUpgraded() ? PowerTime.toTicks(20, 0) : PowerTime.toTicks(1, 30, 0));
-				break;
-			}
-			case TURTLE_MASTER: {
-				dur = data.isExtended() ? PowerTime.toTicks(40, 0) : PowerTime.toTicks(20, 0);
-				break;
-			}
-			default: break;
 		}
-		return new PotionEffect(type, dur, amp);
+		return type != null ? new PotionEffect(type, dur, amp) : null;
 	}
 	
-	public static final String getPotionEffectName(PotionEffectType type) {
+	public static String getPotionEffectName(PotionEffectType type) {
 		return WordUtils.capitalizeFully(type.getName().replace("_", " "));
-//		switch (type) {
-//			case INSTANT_HEAL: return "Instant Health";
-//			case JUMP: return "Jump Boost";
-//			case REGEN: return "Regeneration";
-//			default: return WordUtils.capitalizeFully(type.name().replace("_", " "));
-//		}
-	}
-	
-	/**
-	 * Gets a potion effect type from string text.
-	 * <p>
-	 * Will convert MC-friendly names to Bukkit potion types
-	 * @param type
-	 * @return
-	 */
-	public static final PotionEffectType getPotionEffectType(String type) {
-		switch(type) {
-			case "slowness": return PotionEffectType.SLOW;
-			case "haste": return PotionEffectType.FAST_DIGGING;
-			case "mining_fatigue": return PotionEffectType.SLOW_DIGGING;
-			case "strength": return PotionEffectType.INCREASE_DAMAGE;
-			case "instant_health": return PotionEffectType.HEAL;
-			case "instant_damage": return PotionEffectType.HARM;
-			case "jump_boost": return PotionEffectType.JUMP;
-			case "nausea": return PotionEffectType.CONFUSION;
-			case "resistance": return PotionEffectType.DAMAGE_RESISTANCE;
-			default: return PotionEffectType.getByName(type.toUpperCase());
-		}
 	}
 	
 	public static LivingEntity getRandomEntity(Entity entity, double radius, LivingEntity... ignore) {
@@ -652,15 +553,13 @@ public final class PowerTools {
 	public static LivingEntity getRandomEntity(Entity entity, double radius, Set<LivingEntity> ignore) {
 		List<Entity> eList = entity.getNearbyEntities(radius, radius, radius);
 		Collections.shuffle(eList);
-		for (int i = 0; i < eList.size(); i ++) {
-			if (eList.get(i) instanceof LivingEntity) {
-				LivingEntity target = (LivingEntity) eList.get(i);
+		for (Entity value : eList) {
+			if (value instanceof LivingEntity target) {
 				if (ignore == null
 						|| !ignore.contains(target)) {
 					return target;
 				}
 			}
-			continue;
 		}
 		return null;
 	}
@@ -688,30 +587,6 @@ public final class PowerTools {
 		return romanNums.get(i) + getRomanNumeral(number - i);
 	}
 	
-	public static Material getSpawnEgg(EntityType type) {
-		return Material.getMaterial(type.toString() + "_SPAWN_EGG");
-	}
-	
-	private static Set<Vector> getFibCoords(int samples) {
-		if (!fibCoords.containsKey(samples)
-				|| fibCoords.get(samples) == null
-				|| fibCoords.get(samples).isEmpty()) {
-			Set<Vector> coords = new HashSet<>();
-			for (int i = 1; i < samples; i ++) {
-				float y = 1 - (i / (samples - 1)) * 2;
-				double rad = Math.sqrt(1 - y * y);
-				
-				double theta = phi * i;
-				double x = Math.cos(theta) * rad;
-				double z = Math.sin(theta) * rad;
-				coords.add(new Vector(x, y, z));
-			}
-			
-			fibCoords.put(samples, coords);
-		}
-		return fibCoords.get(samples);
-	}
-	
 	public static Set<Vector> getSphereCoords(double radius) {
 		if (!auraCoords.containsKey(radius)
 				|| auraCoords.get(radius) == null
@@ -731,41 +606,22 @@ public final class PowerTools {
 		return auraCoords.get(radius);
 	}
 	
-	public static Set<Vector> getSphereCoords(int samples, double radius) {
-		Set<Vector> coords = getFibCoords(samples);
-		Set<Vector> newCoords = new HashSet<>();
-		for (Vector coord : coords) {
-			newCoords.add(new Vector(coord.getX() * radius, coord.getY() * radius, coord.getZ() * radius));
-		}
-		return newCoords;
-	}
-	
 	public static PowerUser getTamedOwner(Entity entity) {
 		return tamed.containsKey(entity.getUniqueId()) ? S86Powers.getConfigManager().getUser(tamed.get(entity.getUniqueId())) : null;
 	}
 	
 	public static <T extends Entity> T getTargetEntity(Class<T> clazz, Location location, Vector direction, double maxDistance, Predicate<Entity> filter) {
-		return vTools.getTargetEntity(clazz, location, direction, maxDistance, filter);
+		return vTools != null ? vTools.getTargetEntity(clazz, location, direction, maxDistance, filter) : null;
 	}
 
 	@PacketManaged
 	public static boolean hasDisguise(Block block) {
 		return pm.hasDisguise(block);
 	}
-
-	@PacketManaged
-	public static boolean hasDisguise(Entity entity) {
-		return pm.hasDisguise(entity);
-	}
 	
 	public static boolean hasDurability(ItemStack item) {
 		return isSword(item)
 				|| isTool(item);
-	}
-
-	@PacketManaged
-	public static void hide(Entity entity) {
-		pm.hide(entity);
 	}
 
 	public static boolean inSunlight(Location loc) {
@@ -774,24 +630,24 @@ public final class PowerTools {
 				&& loc.getBlock().getLightLevel() > 10;
 	}
 
-	public static final boolean isArmor(ItemStack item) {
+	public static boolean isArmor(ItemStack item) {
 		return isBoots(item)
 				|| isChestplate(item)
 				|| isHelmet(item)
 				|| isLeggings(item);
 	}
 
-	public static final boolean isAxe(ItemStack item) {
+	public static boolean isAxe(ItemStack item) {
 		return item != null
 				&& item.getType().name().endsWith("_AXE");
 	}
 
-	public static final boolean isBoots(ItemStack item) {
+	public static boolean isBoots(ItemStack item) {
 		return item != null
 				&& item.getType().name().endsWith("_BOOTS");
 	}
 
-	public static final boolean isChestplate(ItemStack item) {
+	public static boolean isChestplate(ItemStack item) {
 		return item != null
 				&& item.getType().name().endsWith("_CHESTPLATE");
 	}
@@ -801,48 +657,36 @@ public final class PowerTools {
 		return pm.isGhost(player);
 	}
 
-	public static final boolean isHelmet(ItemStack item) {
+	public static boolean isHelmet(ItemStack item) {
 		return item != null
 				&& item.getType().name().endsWith("_HELMET");
 	}
 
-	public static final boolean isHoe(ItemStack item) {
+	public static boolean isHoe(ItemStack item) {
 		return item != null
 				&& item.getType().name().endsWith("_HOE");
 	}
 
-	public static final boolean isLeggings(ItemStack item) {
+	public static boolean isLeggings(ItemStack item) {
 		return item != null
 				&& item.getType().name().endsWith("_LEGGINGS");
 	}
 
 	public static boolean isOutside(Location loc) {
-		return loc.getBlockY() > loc.getWorld().getHighestBlockYAt(loc);
+		return loc.getWorld() != null && loc.getBlockY() > loc.getWorld().getHighestBlockYAt(loc);
 	}
 
-	public static final boolean isPickaxe(ItemStack item) {
+	public static boolean isPickaxe(ItemStack item) {
 		return item != null
 				&& item.getType().name().endsWith("_PICKAXE");
 	}
-	
-	public static final boolean isPotion(ItemStack item) {
-		return item.getType().name().contains("POTION")
-				&& item.hasItemMeta()
-				&& item.getItemMeta() instanceof PotionMeta;
-	}
 
-	public static final boolean isProjectile(ItemStack item) {
-		return item.getType() == Material.ENDER_PEARL
-				|| item.getType() == Material.EGG
-				|| item.getType() == Material.SNOWBALL;
-	}
-
-	public static final boolean isShovel(ItemStack item) {
+	public static boolean isShovel(ItemStack item) {
 		return item != null
 				&& item.getType().name().endsWith("_SPADE");
 	}
 
-	public static final boolean isSword(ItemStack item) {
+	public static boolean isSword(ItemStack item) {
 		return item != null
 				&& item.getType().name().endsWith("_SWORD");
 	}
@@ -851,7 +695,7 @@ public final class PowerTools {
 		return tamed.containsKey(entity.getUniqueId());
 	}
 
-	public static final boolean isTool(ItemStack item) {
+	public static boolean isTool(ItemStack item) {
 		return item != null
 				&& (item.getType() == Material.BOW
 						|| item.getType() == Material.FISHING_ROD
@@ -863,11 +707,6 @@ public final class PowerTools {
 						|| isShovel(item));
 	}
 	
-//	public static void modifyEntity(PersistentDataHolder holder, Entity entity) {
-//		PersistentDataContainer container = holder.getPersistentDataContainer();
-//		// TODO
-//	}
-	
 	public static void playParticleEffect(Location loc, Particle particle) {
 		playParticleEffect(loc, particle, random.nextInt(6));
 	}
@@ -877,16 +716,22 @@ public final class PowerTools {
 	}
 
 	public static void playParticleEffect(Location loc, Particle particle, Vector offset, int count) {
-		loc.getWorld().spawnParticle(particle, loc.getX(), loc.getY(), loc.getZ(), count, offset.getX(), offset.getY(), offset.getZ());
+		if (loc.getWorld() != null) {
+			loc.getWorld().spawnParticle(particle, loc.getX(), loc.getY(), loc.getZ(), count, offset.getX(), offset.getY(), offset.getZ());
+		}
 	}
 	
 	public static void playRedstoneEffect(Location loc, Vector offset, int count, DustOptions dustOptions) {
-		loc.getWorld().spawnParticle(Particle.REDSTONE, loc.getX(), loc.getY(), loc.getZ(), count, offset.getX(), offset.getY(), offset.getZ(), 1.0D, dustOptions);
+		if (loc.getWorld() != null) {
+			loc.getWorld().spawnParticle(Particle.REDSTONE, loc.getX(), loc.getY(), loc.getZ(), count, offset.getX(), offset.getY(), offset.getZ(), 1.0D, dustOptions);
+		}
 	}
 	
 	public static void removeControl(Player player, Creature creature) {
 		creature.eject();
-		nms.unTame(creature);
+		if (nms != null) {
+			nms.unTame(creature);
+		}
 		setCamera(player, player);
 	}
 
@@ -902,23 +747,11 @@ public final class PowerTools {
 
 	@PacketManaged
 	public static void removeSpectralBlock(Player player, Block block) {
-		if (pm != null) {
-			pm.removeSpectralBlock(player, block);
-		}
+		pm.removeSpectralBlock(player, block);
 	}
 	
 	public static EntityType resolveEntityType(String name) {
-		return vTools.resolveEntityType(name);
-	}
-	
-	@SuppressWarnings("deprecation")
-	public static EntityType resolveEntityTypeByName(String typeString) {
-		for (EntityType type : EntityType.values()) {
-			if (type.getName().equalsIgnoreCase(typeString)) {
-				return type;
-			}
-		}
-		return null;
+		return vTools != null ? vTools.resolveEntityType(name) : null;
 	}
 	
 	private static NMSLibrary resolveNMS() {
@@ -933,15 +766,14 @@ public final class PowerTools {
 	private static VersionTools resolveVTools() {
 		if (vTools == null) {
 			try {
-				switch(MCVersion.CURRENT_VERSION) {
-					case v1_13: case v1_13_1: case v1_13_2: {
+				switch (MCVersion.CURRENT_VERSION) {
+					case v1_13, v1_13_1, v1_13_2 -> {
 						return (VersionTools) Class.forName("me.sirrus86.s86powers.tools.version.v1_13.VersionTools").getDeclaredConstructor().newInstance();
 					}
-					case v1_14: case v1_14_1: case v1_14_2: case v1_14_3: case v1_14_4:
-					case v1_15: case v1_15_1: case v1_15_2: {
+					case v1_14, v1_14_1, v1_14_2, v1_14_3, v1_14_4, v1_15, v1_15_1, v1_15_2 -> {
 						return (VersionTools) Class.forName("me.sirrus86.s86powers.tools.version.v1_14.VersionTools").getDeclaredConstructor().newInstance();
 					}
-					default: {
+					default -> {
 						return (VersionTools) Class.forName("me.sirrus86.s86powers.tools.version.v1_16.VersionTools").getDeclaredConstructor().newInstance();
 					}
 				}
@@ -961,39 +793,28 @@ public final class PowerTools {
 	}
 
 	@PacketManaged
-	public static void setControlling(Player player, LivingEntity entity) {
-		pm.setControlling(player, entity);
-	}
-	
-	public static void setDirection(Fireball entity, Vector dir) {
-		nms.setDirection(entity, dir);
-	}
-	
-	public static ItemStack setItemGlow(ItemStack item) {
-		return nms.setItemGlow(item);
-	}
-
-	@PacketManaged
 	public static void setLook(Player player, Location loc) {
 		pm.setLook(player, loc);
 	}
 	
 	public static void setRotation(Entity entity, float yaw, float pitch) {
-		nms.setRotation(entity, yaw, pitch);
+		if (nms != null) {
+			nms.setRotation(entity, yaw, pitch);
+		}
 	}
 
 	@PacketManaged
 	public static void setTamed(Creature entity, PowerUser owner) {
-		if (owner != null) {
-			nms.setTamed(entity, owner.getPlayer());
-			tamed.put(entity.getUniqueId(), owner.getUUID());
-			if (ConfigOption.Powers.SHOW_HEARTS_ON_TAMED) {
-				pm.showHearts(entity, owner.getPlayer());
+		if (nms != null) {
+			if (owner != null) {
+				nms.setTamed(entity, owner.getPlayer());
+				tamed.put(entity.getUniqueId(), owner.getUUID());
+				if (ConfigOption.Powers.SHOW_HEARTS_ON_TAMED) {
+					pm.showHearts(entity, owner.getPlayer());
+				}
 			}
-		}
-		else {
-			nms.unTame(entity);
-			if (tamed.containsKey(entity.getUniqueId())) {
+			else {
+				nms.unTame(entity);
 				tamed.remove(entity.getUniqueId());
 			}
 		}
@@ -1019,28 +840,7 @@ public final class PowerTools {
 		pm.showItemCooldown(player, item, cooldown);
 	}
 	
-	public static void spawnEntity(Entity entity, Location loc) {
-		nms.spawnEntity(entity, loc);
-	}
-	
-	/**
-	 * Stores NBT data
-	 * @param holder
-	 * @param entity
-	 */
-//	public static void storeEntity(PersistentDataHolder holder, Entity entity) {
-//		PersistentDataContainer container = holder.getPersistentDataContainer();
-//		// TODO
-//	}
-	
-	public static void takeControl(Player player, Creature creature) {
-		creature.addPassenger(player);
-		nms.removePathfinding(creature);
-		setControlling(player, creature);
-		setCamera(player, creature);
-	}
-	
-	public static final boolean usesDurability(ItemStack item) {
+	public static boolean usesDurability(ItemStack item) {
 		return item != null
 				&& (item.getType() == Material.BOW
 						|| isArmor(item)

@@ -108,7 +108,9 @@ public final class PowerCollector extends Power {
 	private LootTables getLootTables(LootTable table) {
 		if (table != null) {
 			for (LootTables tables : LootTables.values()) {
-				if (Bukkit.getLootTable(tables.getKey()).equals(table)) {
+				LootTable lootTable = Bukkit.getLootTable(tables.getKey());
+				if (lootTable != null
+						&& lootTable.equals(table)) {
 					return tables;
 				}
 			}
@@ -128,8 +130,7 @@ public final class PowerCollector extends Power {
 	private void onDeath(EntityDeathEvent event) {
 		if (ConfigOption.Plugin.USE_LOOT_TABLES
 				&& event.getDroppedExp() > 0
-				&& event.getEntity() instanceof Lootable) {
-			Lootable entity = (Lootable) event.getEntity();
+				&& event.getEntity() instanceof Lootable entity) {
 			if (entity.getLootTable() != null
 					&& getLootTables(entity.getLootTable()) != null
 					&& lootChance.containsKey(getLootTables(entity.getLootTable()))
@@ -180,12 +181,13 @@ public final class PowerCollector extends Power {
 			}
 		}
 		else if (event.getAction().name().startsWith("RIGHT")
-				&& event.hasItem()
+				&& event.getItem() != null
 				&& event.getItem().getType() == Material.ENCHANTED_BOOK
 				&& event.getItem().hasItemMeta()) {
 			ItemStack stack = event.getItem();
 			ItemMeta meta = stack.getItemMeta();
-			if (meta.getPersistentDataContainer().has(collectorKey, PersistentDataType.STRING)) {
+			if (meta != null
+					&& meta.getPersistentDataContainer().has(collectorKey, PersistentDataType.STRING)) {
 				String pName = meta.getPersistentDataContainer().get(collectorKey, PersistentDataType.STRING);
 				Power power = S86Powers.getConfigManager().getPower(pName);
 				if (power != null) {

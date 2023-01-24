@@ -2,7 +2,6 @@ package me.sirrus86.s86powers.powers.internal.defense;
 
 import org.bukkit.Material;
 import org.bukkit.entity.Damageable;
-import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
@@ -39,10 +38,12 @@ public final class Electrified extends Power {
 				if (event instanceof EntityDamageByEntityEvent
 						&& user.getPlayer().isBlocking()) {
 					if (user.getCooldown(this) <= 0) {
-						Entity target = PowerTools.getEntitySource(((EntityDamageByEntityEvent) event).getDamager());
-						target.getWorld().strikeLightningEffect(target.getLocation());
-						user.causeDamage(this, (target instanceof Damageable ? (Damageable) target : null), DamageCause.LIGHTNING, user.getOption(lDmg));
-						user.setCooldown(this, user.getOption(cooldown));
+						Damageable target = PowerTools.getEntitySource(((EntityDamageByEntityEvent) event).getDamager());
+						if (target != null) {
+							target.getWorld().strikeLightningEffect(target.getLocation());
+							user.causeDamage(this, target, DamageCause.LIGHTNING, user.getOption(lDmg));
+							user.setCooldown(this, user.getOption(cooldown));
+						}
 					}
 				}
 				if (event.getCause() == DamageCause.LIGHTNING) {

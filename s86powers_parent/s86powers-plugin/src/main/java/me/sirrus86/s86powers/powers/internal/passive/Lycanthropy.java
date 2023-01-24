@@ -50,7 +50,8 @@ public final class Lycanthropy extends Power {
 	private PowerOption<Integer> moonEnd, moonStart, spdIncr;
 	private PowerStat transforms;
 	private String infected, noArmor, turnToHuman, turnToWolf;
-	@SuppressWarnings("unused")
+
+	@SuppressWarnings({"unused", "FieldCanBeLocal"})
 	private boolean either, noControl;
 	
 	@Override
@@ -90,7 +91,7 @@ public final class Lycanthropy extends Power {
 		either = getOption(nv) || getOption(speed);
 	}
 	
-	private Runnable manage = new BukkitRunnable() {
+	private final Runnable manage = new BukkitRunnable() {
 		@Override
 		public void run() {
 			for (PowerUser user : getUsers()) {
@@ -135,7 +136,7 @@ public final class Lycanthropy extends Power {
 	
 	private boolean isFullMoon(World world) {
 		if (world.getEnvironment() == Environment.NORMAL) {
-			double days = world.getFullTime() / 24000L;
+			double days = (double) world.getFullTime() / 24000;
 			int phase = (int) (days % 8);
 			return phase == 0
 					&& world.getTime() < getOption(moonEnd)
@@ -174,12 +175,10 @@ public final class Lycanthropy extends Power {
 	@EventHandler(ignoreCancelled = true)
 	private void onDmg(EntityDamageByEntityEvent event) {
 		if (event.getEntity() instanceof Player
-				&& event.getDamager() instanceof LivingEntity) {
+				&& event.getDamager() instanceof LivingEntity attacker) {
 			PowerUser user = getUser((Player) event.getEntity());
-			LivingEntity attacker = (LivingEntity) event.getDamager();
 			if (isWolf.contains(user)
 					&& attacker.getEquipment() != null
-					&& attacker.getEquipment().getItemInMainHand() != null
 					&& attacker.getEquipment().getItemInMainHand().getType().toString().startsWith("IRON_")) {
 				event.setDamage(event.getDamage() * (user.getOption(ironDmg) / 100));
 			}

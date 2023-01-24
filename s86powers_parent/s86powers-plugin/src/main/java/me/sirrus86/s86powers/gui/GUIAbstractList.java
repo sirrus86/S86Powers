@@ -16,14 +16,14 @@ import me.sirrus86.s86powers.localization.LocaleString;
 public abstract class GUIAbstractList<T extends Comparable<T>> extends GUIAbstract {
 
 	private final Collection<T> baseList;
-	List<T> list = new ArrayList<>();
+	List<T> list;
 	
 	List<GUIAbstractList<T>> sourceList = new ArrayList<>();
 	
 	final static ItemStack PAGE1 = new ItemStack(Material.PAPER),
 			PAGE2 = new ItemStack(Material.PAPER);
 	
-	int page = 1;
+	int page;
 	
 	public GUIAbstractList(int page, Collection<T> list) {
 		super(6, LocaleString.LIST.toString());
@@ -37,8 +37,8 @@ public abstract class GUIAbstractList<T extends Comparable<T>> extends GUIAbstra
 	static <X extends GUIAbstractList<Y>, Y extends Comparable<Y>> List<X> createLists(Class<X> clazz, Collection<Y> list, Collection<Y>... filters) {
 		int size = list.size();
 		if (filters != null) {
-			for (int i = 0; i < filters.length; i ++) {
-				size -= filters[i].size();
+			for (Collection<Y> filter : filters) {
+				size -= filter.size();
 			}
 		}
 		List<X> lists = new ArrayList<>();
@@ -46,7 +46,9 @@ public abstract class GUIAbstractList<T extends Comparable<T>> extends GUIAbstra
 		for (int i = size; i > 0; i -= 45) {
 			try {
 				X newList = clazz.getConstructor(int.class, Collection.class).newInstance(j, list);
-				newList.filterList(filters);
+				if (filters != null) {
+					newList.filterList(filters);
+				}
 				lists.add(newList);
 				j ++;
 			} catch (InstantiationException | IllegalAccessException | IllegalArgumentException
@@ -60,8 +62,8 @@ public abstract class GUIAbstractList<T extends Comparable<T>> extends GUIAbstra
 	@SafeVarargs
 	final void filterList(Collection<T>... filters) {
 		list = Lists.newArrayList(baseList);
-		for (int i = 0; i < filters.length; i ++) {
-			list.removeAll(filters[i]);
+		for (Collection<T> filter : filters) {
+			list.removeAll(filter);
 		}
 		Collections.sort(list);
 	}

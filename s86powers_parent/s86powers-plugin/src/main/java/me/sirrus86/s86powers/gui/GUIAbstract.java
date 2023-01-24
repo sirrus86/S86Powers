@@ -30,14 +30,12 @@ public abstract class GUIAbstract {
 	final static ItemStack BACK = createItem(Material.ARROW, LocaleString.BACK.toString(), null);
 	
 	Map<Integer, GUIAction> actions = new HashMap<>();
-	private static Map<UUID, GUIAbstract> currentGUI = new HashMap<>();
-	private static Map<UUID, List<GUIAbstract>> previousGUI = new HashMap<>();
+	private static final Map<UUID, GUIAbstract> currentGUI = new HashMap<>();
+	private static final Map<UUID, List<GUIAbstract>> previousGUI = new HashMap<>();
 	
 	static Map<UUID, PowerGroup> selectedGroup = new HashMap<>();
 	static Map<UUID, Power> selectedPower = new HashMap<>();
 	static Map<UUID, PowerUser> selectedUser = new HashMap<>();
-
-	static Map<Power, ItemStack> playerItems = new HashMap<>();
 	
 	Inventory guiInv;
 	
@@ -57,13 +55,15 @@ public abstract class GUIAbstract {
 	static ItemStack createItem(Material material, String name, List<String> text) {
 		ItemStack item = new ItemStack(material);
 		ItemMeta meta = item.hasItemMeta() ? item.getItemMeta() : Bukkit.getServer().getItemFactory().getItemMeta(item.getType());
-		meta.setDisplayName(ChatColor.RESET + name);
-		if (text != null
-				&& !text.isEmpty()) {
-			meta.setLore(text);
+		if (meta != null) {
+			meta.setDisplayName(ChatColor.RESET + name);
+			if (text != null
+					&& !text.isEmpty()) {
+				meta.setLore(text);
+			}
+			meta.addItemFlags(ItemFlag.values());
+			item.setItemMeta(meta);
 		}
-		meta.addItemFlags(ItemFlag.values());
-		item.setItemMeta(meta);
 		return item;
 	}
 	
@@ -85,12 +85,7 @@ public abstract class GUIAbstract {
 		if (!currentGUI.containsValue(gui)) {
 			gui.reloadGUI();
 		}
-		plugin.getServer().getScheduler().runTask(plugin, new Runnable() {
-			@Override
-			public void run() {
-				gui.open(player);
-			}
-		});
+		plugin.getServer().getScheduler().runTask(plugin, () -> gui.open(player));
 	}
 	
 	void openLast(Player player) {
@@ -135,13 +130,15 @@ public abstract class GUIAbstract {
 	
 	void setItem(int slot, ItemStack item, String name, List<String> text, GUIAction action) {
 		ItemMeta meta = item.hasItemMeta() ? item.getItemMeta() : Bukkit.getServer().getItemFactory().getItemMeta(item.getType());
-		meta.setDisplayName(ChatColor.RESET + name);
-		if (text != null
-				&& !text.isEmpty()) {
-			meta.setLore(text);
+		if (meta != null) {
+			meta.setDisplayName(ChatColor.RESET + name);
+			if (text != null
+					&& !text.isEmpty()) {
+				meta.setLore(text);
+			}
+			meta.addItemFlags(ItemFlag.values());
+			item.setItemMeta(meta);
 		}
-		meta.addItemFlags(ItemFlag.values());
-		item.setItemMeta(meta);
 		guiInv.setItem(slot, item);
 		if (action != null) {
 			actions.put(slot, action);

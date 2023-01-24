@@ -27,8 +27,7 @@ import me.sirrus86.s86powers.utils.PowerTime;
 public final class Adaptability extends Power {
 
 	private Map<PowerUser, AdaptUser> aUsers;
-	
-	private double incrAmt;
+
 	private PowerOption<List<String>> explosionTypes, fireTypes, iceTypes, lightningTypes, magicTypes, natureTypes, physicalTypes, poisonTypes, projectileTypes,
 				shadowTypes, waterTypes;
 	private PowerOption<Boolean> noArmor;
@@ -71,7 +70,7 @@ public final class Adaptability extends Power {
 	}
 	
 	private double adapt(PowerUser user, AdaptType type) {
-		double amt = 1.0D;
+		double amt;
 		if (aUsers.get(user).getType() != type) {
 			amt = user.getOption(dmgIncr);
 			if (user.getCooldown(this) <= 0L) {
@@ -84,7 +83,7 @@ public final class Adaptability extends Power {
 			amt = aUsers.get(user).getAmount();
 			if (user.getCooldown(this) <= 0L
 					&& aUsers.get(user).getAmount() < user.getOption(maxAmt)) {
-				incrAmt = (user.getOption(maxAmt) - user.getOption(initAmt)) / user.getOption(steps);
+				double incrAmt = (user.getOption(maxAmt) - user.getOption(initAmt)) / user.getOption(steps);
 				aUsers.get(user).increaseAmount(incrAmt);
 				user.sendMessage(resistIncrease.replace("[type]", type.name().toLowerCase()).replace("[amount]", Double.toString(aUsers.get(user).getAmount())));
 				user.setCooldown(this, user.getOption(cooldown));
@@ -173,11 +172,11 @@ public final class Adaptability extends Power {
 	
 	private enum AdaptType {
 		
-		EXPLOSION, FIRE, ICE, LIGHTNING, MAGIC, NATURE, PHYSICAL, POISON, PROJECTILE, SHADOW, WATER;
-				
+		EXPLOSION, FIRE, ICE, LIGHTNING, MAGIC, NATURE, PHYSICAL, POISON, PROJECTILE, SHADOW, WATER
+
 	}
 	
-	private class AdaptUser {
+	private static class AdaptUser {
 		
 		private double amount;
 		private AdaptType type;

@@ -12,12 +12,12 @@ import me.sirrus86.s86powers.powers.PowerManifest;
 import me.sirrus86.s86powers.powers.PowerType;
 import me.sirrus86.s86powers.users.PowerUser;
 
+@SuppressWarnings("unused")
 @PowerManifest(name = "Haste", type = PowerType.PASSIVE, author = "sirrus86", concept = "JJoiler", icon = Material.ELYTRA,
 	description = "Perform hand-related tasks (mining, digging, attacking, etc) much faster than other players.")
 public final class Haste extends Power {
 
 	private Set<PowerUser> hasEffects;
-//	private PowerOption<List<PotionEffect>> effects;
 	
 	@Override
 	protected void onEnable() {
@@ -42,8 +42,6 @@ public final class Haste extends Power {
 	}
 
 	@Override
-	protected void config() {
-//		effects = option("effects", List.of(new PotionEffect(PotionEffectType.FAST_DIGGING, Integer.MAX_VALUE, 3, false, false, true)), "Effects to be given to users.");
-	}
+	protected void config() {}
 
 }

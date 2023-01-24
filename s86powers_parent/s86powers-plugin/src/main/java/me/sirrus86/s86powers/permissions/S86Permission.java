@@ -70,7 +70,6 @@ public class S86Permission {
 	public static final Permission REGION_TOGGLE = new Permission("s86powers.manage.region.neutral", "Allows user to neutralize regions.", PermissionDefault.FALSE);
 	public static final Permission REGION_RESIZE = new Permission("s86powers.manage.region.resize", "Allows user to resize regions.", PermissionDefault.FALSE);
 
-	public static final Permission SELF = new Permission("s86powers.manage.self", "Allows user to use self commands.", PermissionDefault.TRUE);
 	public static final Permission SELF_ADD = new Permission("s86powers.manage.self.add", "Allows user to add powers to themselves.", PermissionDefault.TRUE);
 	public static final Permission SELF_CLEAR = new Permission("s86powers.manage.self.clear", "Allows user to remove all powers from themselves.", PermissionDefault.TRUE);
 	public static final Permission SELF_GIVE = new Permission("s86powers.manage.self.give", "Allows user to give themselves power books.", PermissionDefault.FALSE);

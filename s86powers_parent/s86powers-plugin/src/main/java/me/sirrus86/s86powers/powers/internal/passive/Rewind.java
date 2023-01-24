@@ -86,17 +86,19 @@ public final class Rewind extends Power {
 	
 	@EventHandler (ignoreCancelled = true)
 	private void onMove(PlayerMoveEvent event) {
-		if (event.getTo().getWorld() != event.getFrom().getWorld()
-				|| event.getTo().distanceSquared(event.getFrom()) > 0.0D) {
-			PowerUser user = getUser(event.getPlayer());
-			if (user.allowPower(this)
-					&& user.getCooldown(this) <= user.getOption(rewindTime)
-					&& (!locCD.containsKey(user)
-							|| locCD.get(user) <= System.currentTimeMillis())) {
-				locs.putIfAbsent(user, new TreeMap<>());
-				trimMap(locs.get(user), user.getOption(rewindTime));
-				locs.get(user).put(System.currentTimeMillis(), event.getFrom());
-				locCD.put(user, System.currentTimeMillis() + user.getOption(storeCD));
+		if (event.getTo() != null) {
+			if (event.getTo().getWorld() != event.getFrom().getWorld()
+					|| event.getTo().distanceSquared(event.getFrom()) > 0.0D) {
+				PowerUser user = getUser(event.getPlayer());
+				if (user.allowPower(this)
+						&& user.getCooldown(this) <= user.getOption(rewindTime)
+						&& (!locCD.containsKey(user)
+						|| locCD.get(user) <= System.currentTimeMillis())) {
+					locs.putIfAbsent(user, new TreeMap<>());
+					trimMap(locs.get(user), user.getOption(rewindTime));
+					locs.get(user).put(System.currentTimeMillis(), event.getFrom());
+					locCD.put(user, System.currentTimeMillis() + user.getOption(storeCD));
+				}
 			}
 		}
 	}

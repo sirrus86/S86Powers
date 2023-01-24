@@ -24,7 +24,7 @@ import java.util.zip.GZIPOutputStream;
 /**
  * bStats collects some data for plugin authors.
  * <p>
- * Check out https://bStats.org/ to learn more about bStats!
+ * Check out <a href="https://bStats.org/">https://bStats.org</a> to learn more about bStats!
  */
 public class Metrics {
 

@@ -14,7 +14,8 @@ import me.sirrus86.s86powers.users.PowerUser;
 public class PowerDamageEvent extends PowerEvent implements Cancellable {
 
 	private boolean cancelled = false;
-	private double cap, damage;
+	private final double cap;
+	private double damage;
 	private final DamageCause cause;
 	private final EntityDamageEvent event;
 	private final Damageable target;

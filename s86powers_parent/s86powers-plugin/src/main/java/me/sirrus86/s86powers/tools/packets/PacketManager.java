@@ -66,8 +66,6 @@ public abstract class PacketManager {
 	
 	public abstract boolean hasDisguise(Block block);
 	
-	public abstract boolean hasDisguise(Entity entity);
-	
 	public abstract void hide(Entity entity);
 	
 	public boolean isGhost(Player player) {
@@ -83,10 +81,6 @@ public abstract class PacketManager {
 	public abstract void removeSpectralEntity(Player viewer, Entity entity);
 	
 	public abstract void setCamera(Player player, Entity entity);
-	
-	public void setControlling(Player player, LivingEntity entity) {
-		control.put(player.getUniqueId(), entity);
-	}
 	
 	public abstract void setLook(Player player, Location loc);
 	

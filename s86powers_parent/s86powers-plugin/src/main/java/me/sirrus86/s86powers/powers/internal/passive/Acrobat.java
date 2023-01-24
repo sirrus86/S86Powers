@@ -78,14 +78,15 @@ public final class Acrobat extends Power {
 			effectPower.put(user, effectPower.get(user) < user.getOption(maxEffect) ? effectPower.get(user) + 1 : -1);
 			for (String effect : user.getOption(effectTypes)) {
 				PotionEffectType type = PotionEffectType.getByName(effect);
-				if (effectPower.get(user) >= 0) {
-					user.sendMessage(effectPwr.replace("[type]", PowerTools.getPotionEffectName(type))
-							.replace("[amount]", Integer.toString(effectPower.get(user) + 1)));
-					user.addPotionEffect(new PotionEffect(type, Integer.MAX_VALUE, effectPower.get(user)));
-				}
-				else {
-					user.removePotionEffect(type);
-					user.sendMessage(effectOff.replace("[type]", PowerTools.getPotionEffectName(type)));
+				if (type != null) {
+					if (effectPower.get(user) >= 0) {
+						user.sendMessage(effectPwr.replace("[type]", PowerTools.getPotionEffectName(type))
+								.replace("[amount]", Integer.toString(effectPower.get(user) + 1)));
+						user.addPotionEffect(new PotionEffect(type, Integer.MAX_VALUE, effectPower.get(user)));
+					} else {
+						user.removePotionEffect(type);
+						user.sendMessage(effectOff.replace("[type]", PowerTools.getPotionEffectName(type)));
+					}
 				}
 			}
 		}

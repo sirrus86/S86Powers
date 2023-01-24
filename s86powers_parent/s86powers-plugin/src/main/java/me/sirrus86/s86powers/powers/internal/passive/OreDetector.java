@@ -34,7 +34,7 @@ import me.sirrus86.s86powers.utils.PowerTime;
 			+ "[use-progression] Mining detected blocks will eventually allow you to detect more rare veins.[/use-progression]")
 public final class OreDetector extends Power {
 
-	private Set<Material> detectable = EnumSet.noneOf(Material.class);
+	private final Set<Material> detectable = EnumSet.noneOf(Material.class);
 	private Map<PowerUser, Set<Block>> detectBlocks;
 	
 	private PowerStat copperMined, goldMined, ironMined, lapisMined, quartzMined;
@@ -199,14 +199,7 @@ public final class OreDetector extends Power {
 						}
 					}
 				}
-				runTaskLater(new Runnable() {
-
-					@Override
-					public void run() {
-						refreshDetect(user);
-					}
-					
-				}, 1L);
+				runTaskLater(() -> refreshDetect(user), 1L);
 			}
 		}
 	}
@@ -216,14 +209,7 @@ public final class OreDetector extends Power {
 		if (event.getInstaBreak()) {
 			for (PowerUser user : detectBlocks.keySet()) {
 				if (detectBlocks.get(user).contains(event.getBlock())) {
-					runTaskLater(new Runnable() {
-
-						@Override
-						public void run() {
-							refreshDetect(user);
-						}
-						
-					}, 1L);
+					runTaskLater(() -> refreshDetect(user), 1L);
 				}
 			}
 		}
@@ -233,14 +219,7 @@ public final class OreDetector extends Power {
 	private void onExtend(BlockPistonExtendEvent event) {
 		for (PowerUser user : detectBlocks.keySet()) {
 			if (!Collections.disjoint(detectBlocks.get(user), event.getBlocks())) {
-				runTaskLater(new Runnable() {
-
-					@Override
-					public void run() {
-						refreshDetect(user);
-					}
-					
-				}, 1L);
+				runTaskLater(() -> refreshDetect(user), 1L);
 			}
 		}
 	}
@@ -249,14 +228,7 @@ public final class OreDetector extends Power {
 	private void onRetract(BlockPistonRetractEvent event) {
 		for (PowerUser user : detectBlocks.keySet()) {
 			if (!Collections.disjoint(detectBlocks.get(user), event.getBlocks())) {
-				runTaskLater(new Runnable() {
-
-					@Override
-					public void run() {
-						refreshDetect(user);
-					}
-					
-				}, 1L);
+				runTaskLater(() -> refreshDetect(user), 1L);
 			}
 		}
 	}
@@ -268,11 +240,13 @@ public final class OreDetector extends Power {
 	
 	@EventHandler (ignoreCancelled = true)
 	private void onMove(PlayerMoveEvent event) {
-		if (event.getFrom().getWorld() != event.getTo().getWorld()
-				|| event.getFrom().distanceSquared(event.getTo()) > 0.0D) {
-			PowerUser user = getUser(event.getPlayer());
-			if (user.getCooldown(this) <= 0L) {
-				refreshDetect(getUser(event.getPlayer()));
+		if (event.getTo() != null) {
+			if (event.getFrom().getWorld() != event.getTo().getWorld()
+					|| event.getFrom().distanceSquared(event.getTo()) > 0.0D) {
+				PowerUser user = getUser(event.getPlayer());
+				if (user.getCooldown(this) <= 0L) {
+					refreshDetect(getUser(event.getPlayer()));
+				}
 			}
 		}
 	}

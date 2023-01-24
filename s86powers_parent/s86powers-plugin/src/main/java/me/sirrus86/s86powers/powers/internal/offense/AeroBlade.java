@@ -28,7 +28,8 @@ public final class AeroBlade extends Power {
 	private Map<Snowball, PowerUser> sList;
 	
 	private PowerOption<Double> fSpread, fVel;
-	@SuppressWarnings("unused")
+
+	@SuppressWarnings({"unused", "FieldCanBeLocal"})
 	private boolean wMany;
 	
 	@Override
@@ -50,8 +51,8 @@ public final class AeroBlade extends Power {
 	
 	@EventHandler
 	private void onDmg(EntityDamageByEntityEvent event) {
-		if (sList.containsKey(event.getDamager())) {
-			Snowball snowball = (Snowball) event.getDamager();
+		if (event.getDamager() instanceof Snowball snowball
+				&& sList.containsKey(snowball)) {
 			event.getEntity().setVelocity(snowball.getVelocity());
 			sList.remove(snowball);
 			event.setCancelled(true);

@@ -26,19 +26,19 @@ import com.google.common.collect.Sets;
 
 public class PlayerListener implements Listener {
 
-	private double pLibVer;
+	private final double pLibVer;
 	
 	public PlayerListener(S86Powers plugin) {
 		pLibVer = getPLibVer();
 		plugin.getServer().getPluginManager().registerEvents(this, plugin);
 	}
 	
-	private final double getPLibVer() {
+	private double getPLibVer() {
 		try {
 			if (S86Powers.getProtocolLib() != null) {
 				return Double.parseDouble(S86Powers.getProtocolLib().getDescription().getVersion().substring(0, 3));
 			}
-		} catch (Exception e) { }
+		} catch (Exception ignored) { }
 		return 0.0D;
 	}
 	

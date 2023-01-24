@@ -3,9 +3,7 @@ package me.sirrus86.s86powers.users;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -21,7 +19,6 @@ import me.sirrus86.s86powers.events.UserMaxedStatEvent;
 import me.sirrus86.s86powers.localization.LocaleString;
 import me.sirrus86.s86powers.permissions.S86Permission;
 import me.sirrus86.s86powers.powers.Power;
-import me.sirrus86.s86powers.powers.PowerFire;
 import me.sirrus86.s86powers.powers.PowerOption;
 import me.sirrus86.s86powers.powers.PowerStat;
 import me.sirrus86.s86powers.powers.PowerType;
@@ -33,14 +30,14 @@ import me.sirrus86.s86powers.utils.PowerTime;
 import org.bukkit.ChatColor;
 import org.bukkit.Effect;
 import org.bukkit.GameMode;
-import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.attribute.Attribute;
+import org.bukkit.attribute.AttributeInstance;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Damageable;
 import org.bukkit.entity.Entity;
-import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
@@ -50,7 +47,6 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitTask;
-import org.bukkit.util.Vector;
 
 import com.google.common.collect.Sets;
 
@@ -61,13 +57,13 @@ import com.google.common.collect.Sets;
  */
 public final class PowerUser implements Comparable<PowerUser> {
 
-	private Set<Beacon> beacons = new HashSet<>();
-	private Map<Power, Long> cooldowns = new HashMap<>();
-	private Set<PowerGroup> groups = new HashSet<>();
-	private Map<PowerOption<?>, Object> options = new HashMap<>();
-	private Map<Power, Boolean> powers = new HashMap<>();
-	private Set<NeutralRegion> regions = new HashSet<>();
-	private Map<PowerStat, Integer> stats = new HashMap<>();
+	private final Set<Beacon> beacons = new HashSet<>();
+	private final Map<Power, Long> cooldowns = new HashMap<>();
+	private final Set<PowerGroup> groups = new HashSet<>();
+	private final Map<PowerOption<?>, Object> options = new HashMap<>();
+	private final Map<Power, Boolean> powers = new HashMap<>();
+	private final Set<NeutralRegion> regions = new HashSet<>();
+	private final Map<PowerStat, Integer> stats = new HashMap<>();
 	
 	private final File cFile;
 	private YamlConfiguration config;
@@ -83,9 +79,10 @@ public final class PowerUser implements Comparable<PowerUser> {
 	/**
 	 * Creates a new instance of a PowerUser with the supplied {@link UUID}.
 	 * <p>
-	 * New PowerUsers should not need to be created from within power classes. To get the PowerUser instance of a player, use {@link Power#getUser(OfflinePlayer)}.
+	 * New PowerUsers should not need to be created from within power classes.
 	 * @param uuid - {@link UUID} of the player
 	 */
+	@SuppressWarnings("ResultOfMethodCallIgnored")
 	public PowerUser(UUID uuid) {
 		this.uuid = uuid;
 		this.name = getOfflinePlayer().getName();
@@ -213,7 +210,7 @@ public final class PowerUser implements Comparable<PowerUser> {
 				&& this.getPlayer().isOnline()
 				&& this.hasEnablePermission()
 				&& this.hasPowersEnabled()
-				&& !this.isNeutralized()) {
+				&& this.isNotNeutralized()) {
 			return (this.hasPower(power) && this.hasPowerEnabled(power))
 					|| this.getPlayer().hasPermission(power.getUsePermission());
 		}
@@ -278,54 +275,14 @@ public final class PowerUser implements Comparable<PowerUser> {
 	public void causeDamage(Power power, Damageable target, DamageCause cause, double damage, double cap) {
 		plugin.getServer().getPluginManager().callEvent(new PowerDamageEvent(power, this, target, cause, damage, cap));
 	}
-	
-	/**
-	 * Ignites a target, then tracks the fire and attributes its damage to the specified power.
-	 * <p>
-	 * Use this method if you want to ignite a target on fire, then attribute the specified power as the cause should they burn to death.
-	 * @param power - {@link Power} that caused this ignition
-	 * @param target - Entity to be ignited
-	 * @param duration - Time in game ticks for the fire to last
-	 */
-	public void causeIgnite(Power power, Entity target, int duration) {
-		target.setFireTicks(duration);
-		if (target instanceof LivingEntity) {
-			plugin.getBlockListener().addIgnite((LivingEntity) target, new PowerFire(power, this));
-		}
-	}
-	
-	/**
-	 * Removes any progress the user made with the specified {@link PowerStat}.
-	 * @param stat - {@link PowerStat} to remove progress of
-	 */
-	public void clearStat(PowerStat stat) {
-		if (stats.containsKey(stat)) {
-			stats.remove(stat);
-		}
-		if (ConfigOption.Plugin.AUTO_SAVE
-				&& System.currentTimeMillis() >= saveTimer) {
-			this.save();
-		}
-	}
 
 	@Override
 	public int compareTo(PowerUser user) {
-		String o1Str = getName(),
-				o2Str = user.getName();
-		if (o1Str != null
-				&& o2Str != null) {
-			List<String> tmp = Arrays.asList(o1Str, o2Str);
-			Collections.sort(tmp);
-			return tmp.get(0).equalsIgnoreCase(getName()) ? -1 : 1;
-		}
-		else {
-			return -1;
-		}
+		return getName().compareTo(user.getName());
 	}
 	
-	void deneutralize(boolean force) {
-		if (!this.isNeutralized()
-				|| force) {
+	void deneutralize() {
+		if (this.isNotNeutralized()) {
 			if (isOnline()) {
 				sendMessage(ChatColor.GREEN + LocaleString.POWERS_RETURN.toString());
 			}
@@ -340,7 +297,7 @@ public final class PowerUser implements Comparable<PowerUser> {
 	}
 	
 	void neutralize(String message) {
-		if (!this.isNeutralized()) {
+		if (this.isNotNeutralized()) {
 			this.getPlayer().getWorld().playEffect(this.getPlayer().getEyeLocation(), Effect.STEP_SOUND, Material.BLUE_STAINED_GLASS);
 			this.sendMessage(ChatColor.BLUE + message);
 			for (Power power : powers.keySet()) {
@@ -366,17 +323,13 @@ public final class PowerUser implements Comparable<PowerUser> {
 	}
 	
 	public Set<Power> getAssignedPowersByType(PowerType type) {
-		Set<Power> tmp = new HashSet<Power>();
+		Set<Power> tmp = new HashSet<>();
 		for (Power power : powers.keySet()) {
 			if (power.getType() == type) {
 				tmp.add(power);
 			}
 		}
 		return tmp;
-	}
-	
-	Set<Beacon> getBeaconsInhabited() {
-		return beacons;
 	}
 	
 	/**
@@ -397,7 +350,7 @@ public final class PowerUser implements Comparable<PowerUser> {
 	}
 	
 	public Set<Power> getGroupPowers() {
-		Set<Power> tmp = new HashSet<Power>();
+		Set<Power> tmp = new HashSet<>();
 		for (PowerGroup group : getGroups()) {
 			tmp.addAll(group.getPowers());
 		}
@@ -405,7 +358,7 @@ public final class PowerUser implements Comparable<PowerUser> {
 	}
 	
 	public Set<PowerGroup> getGroups() {
-		Set<PowerGroup> tmp = new HashSet<PowerGroup>();
+		Set<PowerGroup> tmp = new HashSet<>();
 		tmp.addAll(getAssignedGroups());
 		tmp.addAll(getPermissibleGroups());
 		return tmp;
@@ -433,7 +386,7 @@ public final class PowerUser implements Comparable<PowerUser> {
 	public <O> O getOption(PowerOption<O> option) {
 		assert option != null;
 		Power power = option.getPower();
-		return options.containsKey(option) ? (O) options.get(option) : (O) power.getOption(option);
+		return options.containsKey(option) ? (O) options.get(option) : power.getOption(option);
 	}
 	
 	public Map<PowerOption<?>, Object> getOptions() {
@@ -441,11 +394,11 @@ public final class PowerUser implements Comparable<PowerUser> {
 	}
 	
 	public Object getOptionValue(PowerOption<?> option) {
-		return options.containsKey(option) ? options.get(option) : null;
+		return options.getOrDefault(option, null);
 	}
 	
 	Set<PowerGroup> getPermissibleGroups() {
-		Set<PowerGroup> tmp = new HashSet<PowerGroup>();
+		Set<PowerGroup> tmp = new HashSet<>();
 		if (isOnline()
 				&& ConfigOption.Plugin.ENABLE_PERMISSION_ASSIGNMENTS) {
 			for (PowerGroup group : S86Powers.getConfigManager().getGroups()) {
@@ -458,7 +411,7 @@ public final class PowerUser implements Comparable<PowerUser> {
 	}
 	
 	public Set<Power> getPermissiblePowers() {
-		Set<Power> tmp = new HashSet<Power>();
+		Set<Power> tmp = new HashSet<>();
 		if (isOnline()
 				&& ConfigOption.Plugin.ENABLE_PERMISSION_ASSIGNMENTS) {
 			for (Power power : S86Powers.getConfigManager().getPowers()) {
@@ -479,7 +432,7 @@ public final class PowerUser implements Comparable<PowerUser> {
 	}
 	
 	public Set<Power> getPowers(boolean includeUtility) {
-		Set<Power> tmp = new HashSet<Power>();
+		Set<Power> tmp = new HashSet<>();
 		if (includeUtility) {
 			tmp.addAll(S86Powers.getConfigManager().getPowersByType(PowerType.UTILITY));
 		}
@@ -489,23 +442,8 @@ public final class PowerUser implements Comparable<PowerUser> {
 		return tmp;
 	}
 	
-	Set<NeutralRegion> getRegionsInhabited() {
-		return regions;
-	}
-	
 	public int getStatCount(PowerStat stat) {
-		return stats.containsKey(stat) ? stats.get(stat) : 0;
-	}
-	
-	/**
-	 * Gets the entity in the user's line of sight.
-	 * This will always return the first entity hit (other than the player itself),
-	 * or null if none are hit within the specified range.
-	 * @param range - Range in blocks to check
-	 * @return The target entity, or null if there is none
-	 */
-	public Entity getTargetEntity(double range) {
-		return getTargetEntity(Entity.class, range);
+		return stats.getOrDefault(stat, 0);
 	}
 	
 	/**
@@ -518,28 +456,14 @@ public final class PowerUser implements Comparable<PowerUser> {
 	 */
 	public <E extends Entity> E getTargetEntity(Class<E> clazz, double range) {
 		if (isOnline()) {
-			Predicate<Entity> pred = entity -> {
-				return entity != getPlayer()
-						&& clazz.isInstance(entity);
-			};
+			Predicate<Entity> pred = entity -> entity != getPlayer()
+					&& clazz.isInstance(entity);
 			return PowerTools.getTargetEntity(clazz, getPlayer().getEyeLocation(), getPlayer().getEyeLocation().getDirection(), range, pred);
 		}
 		return null;
 	}
 	
-	public Location getTargetLocation(double range) {
-		if (isOnline()) {
-			Vector dir = getPlayer().getLocation().getDirection();
-			for (Location loc = getPlayer().getEyeLocation().clone(); getPlayer().getEyeLocation().distanceSquared(loc) <= range * range; loc.add(dir)) {
-				if (loc.getBlock().getType().isOccluding()) {
-					return loc;
-				}
-			}
-		}
-		return null;
-	}
-	
-	public final UUID getUUID() {
+	public UUID getUUID() {
 		return uuid;
 	}
 	
@@ -580,7 +504,8 @@ public final class PowerUser implements Comparable<PowerUser> {
 	
 	public void heal(double amt) {
 		if (isOnline()) {
-			amt = getPlayer().getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue() - getPlayer().getHealth() < amt ? getPlayer().getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue() - getPlayer().getHealth() : amt;
+			AttributeInstance health = getPlayer().getAttribute(Attribute.GENERIC_MAX_HEALTH);
+			amt = health != null ? Math.min(health.getValue() - getPlayer().getHealth(), amt) : 0;
 			getPlayer().setHealth(getPlayer().getHealth() + amt);
 		}
 	}
@@ -593,7 +518,7 @@ public final class PowerUser implements Comparable<PowerUser> {
 		if (stats.get(stat) < power.getStatValue(stat)
 				|| amount < 0) {
 			int newStat = stats.get(stat) + amount;
-			stats.put(stat, newStat > power.getStatValue(stat) ? power.getStatValue(stat) : newStat);
+			stats.put(stat, Math.min(newStat, power.getStatValue(stat)));
 			if (isOnline()) {
 				sendMessage(power.getType().getColor() + power.getName() + ChatColor.RESET + " > " + ChatColor.YELLOW + stat.getDescription() + ChatColor.RESET + ": " + (stats.get(stat) < power.getStatValue(stat) + 1 ? stats.get(stat) : power.getStatValue(stat)) + "/" + power.getStatValue(stat));
 				if (hasStatMaxed(stat)) {
@@ -621,18 +546,18 @@ public final class PowerUser implements Comparable<PowerUser> {
 	}
 	
 	public boolean isHoldingItem(ItemStack item) {
-		return (isOnline() && getPlayer().getInventory().getItemInMainHand() != null && getPlayer().getInventory().getItemInMainHand().getType() == item.getType())
-				|| (isOnline() && getPlayer().getInventory().getItemInOffHand() != null && getPlayer().getInventory().getItemInOffHand().getType() == item.getType());
+		return (isOnline() && getPlayer().getInventory().getItemInMainHand().getType() == item.getType())
+				|| (isOnline() && getPlayer().getInventory().getItemInOffHand().getType() == item.getType());
 	}
 	
 	public boolean isOnline() {
 		return getOfflinePlayer().isOnline();
 	}
 	
-	public boolean isNeutralized() {
-		return !beacons.isEmpty()
-				|| !regions.isEmpty()
-				|| nTask > -1;
+	public boolean isNotNeutralized() {
+		return beacons.isEmpty()
+				&& regions.isEmpty()
+				&& nTask <= -1;
 	}
 	
 	public void load() {
@@ -642,25 +567,30 @@ public final class PowerUser implements Comparable<PowerUser> {
 		if (cFile != null) {
 			config = YamlConfiguration.loadConfiguration(cFile);
 			if (config.contains("powers")) {
-				for (String pwr : config.getConfigurationSection("powers").getKeys(false)) {
-					Power power = S86Powers.getConfigManager().getPower(pwr);
-					if (power != null) {
-						if (config.contains("powers." + pwr + ".active", false)) {
-							addPowerWithoutSaving(power, config.getBoolean("powers." + pwr + ".active", false));
-						}
-						if (config.contains("powers." + pwr + ".options")) {
-							for (String optName : config.getConfigurationSection("powers." + pwr + ".options").getKeys(false)) {
-								PowerOption<?> option = power.getOptionByName(optName);
-								if (option != null) {
-									options.put(option, config.get("powers." + pwr + ".options." + optName, power.getOption(option)));
+				ConfigurationSection powersSection = config.getConfigurationSection("powers");
+				if (powersSection != null) {
+					for (String pwr : powersSection.getKeys(false)) {
+						Power power = S86Powers.getConfigManager().getPower(pwr);
+						if (power != null) {
+							ConfigurationSection optionsSection = powersSection.getConfigurationSection(pwr + ".options");
+							ConfigurationSection statsSection = powersSection.getConfigurationSection(pwr + ".stats");
+							if (config.contains("powers." + pwr + ".active", false)) {
+								addPowerWithoutSaving(power, config.getBoolean("powers." + pwr + ".active", false));
+							}
+							if (optionsSection != null) {
+								for (String optName : optionsSection.getKeys(false)) {
+									PowerOption<?> option = power.getOptionByName(optName);
+									if (option != null) {
+										options.put(option, config.get("powers." + pwr + ".options." + optName, power.getOption(option)));
+									}
 								}
 							}
-						}
-						if (config.contains("powers." + pwr + ".stats")) {
-							for (String statName : config.getConfigurationSection("powers." + pwr + ".stats").getKeys(false)) {
-								PowerStat stat = power.getStat(statName);
-								if (stat != null) {
-									stats.put(stat, config.getInt("powers." + pwr + ".stats." + statName, 0));
+							if (statsSection != null) {
+								for (String statName : statsSection.getKeys(false)) {
+									PowerStat stat = power.getStat(statName);
+									if (stat != null) {
+										stats.put(stat, config.getInt("powers." + pwr + ".stats." + statName, 0));
+									}
 								}
 							}
 						}
@@ -680,25 +610,13 @@ public final class PowerUser implements Comparable<PowerUser> {
 			}
 		}
 		else {
-			if (ConfigOption.Plugin.SHOW_CONFIG_STATUS) {
-				plugin.getLogger().info(LocaleString.LOAD_FAIL.build(cFile));
-			}
 			throw new NullPointerException();
 		}
 	}
 	
-	void purge() {
-		beacons = new HashSet<>();
-		cooldowns = new HashMap<>();
-		groups = new HashSet<>();
-		powers = new HashMap<>();
-		regions = new HashSet<>();
-		stats = new HashMap<>();
-	}
-	
 	public void regenHunger(int amt) {
 		if (isOnline()) {
-			amt = 20 - getPlayer().getFoodLevel() < amt ? 20 - getPlayer().getFoodLevel() : amt;
+			amt = Math.min(20 - getPlayer().getFoodLevel(), amt);
 			getPlayer().setFoodLevel(getPlayer().getFoodLevel() + amt);
 		}
 	}
@@ -706,7 +624,7 @@ public final class PowerUser implements Comparable<PowerUser> {
 	public void removeBeacon(Beacon beacon) {
 		if (beacons.contains(beacon)) {
 			beacons.remove(beacon);
-			deneutralize(false);
+			deneutralize();
 		}
 		PowerTools.removeSpectralBlock(getPlayer(), beacon.getBlock());
 	}
@@ -720,9 +638,7 @@ public final class PowerUser implements Comparable<PowerUser> {
 	}
 	
 	public void removeOption(PowerOption<?> option) {
-		if (options.containsKey(option)) {
-			options.remove(option);
-		}
+		options.remove(option);
 	}
 	
 	/**
@@ -754,9 +670,7 @@ public final class PowerUser implements Comparable<PowerUser> {
 	}
 	
 	public void removePower(Power power) {
-		if (powers.containsKey(power)) {
-			powers.remove(power);
-		}
+		powers.remove(power);
 		power.removeUser(this);
 		power.disable(this);
 		autosave();
@@ -765,7 +679,7 @@ public final class PowerUser implements Comparable<PowerUser> {
 	public void removeRegion(NeutralRegion region) {
 		if (regions.contains(region)) {
 			regions.remove(region);
-			deneutralize(false);
+			deneutralize();
 		}
 	}
 	
@@ -779,7 +693,7 @@ public final class PowerUser implements Comparable<PowerUser> {
 			}
 			config.set("groups", null);
 			if (!getAssignedGroups().isEmpty()) {
-				List<String> gList = new ArrayList<String>();
+				List<String> gList = new ArrayList<>();
 				for (PowerGroup group : getAssignedGroups()) {
 					gList.add(group.getName());
 				}
@@ -815,9 +729,6 @@ public final class PowerUser implements Comparable<PowerUser> {
 			}
 		}
 		else {
-			if (ConfigOption.Plugin.SHOW_CONFIG_STATUS) {
-				plugin.getLogger().info(LocaleString.SAVE_FAIL.build(cFile));
-			}
 			throw new NullPointerException();
 		}
 	}
@@ -858,12 +769,9 @@ public final class PowerUser implements Comparable<PowerUser> {
 			if (plugin.getServer().getScheduler().isQueued(nTask)) {
 				plugin.getServer().getScheduler().cancelTask(nTask);
 			}
-			BukkitTask task = plugin.getServer().getScheduler().runTaskLater(plugin, new Runnable() {
-				@Override
-				public void run() {
-					nTask = -1;
-					deneutralize(false);
-				}
+			BukkitTask task = plugin.getServer().getScheduler().runTaskLater(plugin, () -> {
+				nTask = -1;
+				deneutralize();
 			}, PowerTime.toTicks(duration));
 			nTask = task.getTaskId();
 			nTimer = System.currentTimeMillis() + duration;
@@ -927,7 +835,7 @@ public final class PowerUser implements Comparable<PowerUser> {
 					if (j > -1) {
 						getPlayer().getInventory().setItem(j, item);
 					}
-					else {
+					else if (item != null) {
 						getPlayer().getWorld().dropItem(getPlayer().getLocation(), item);
 					}
 				}

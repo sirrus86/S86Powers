@@ -103,11 +103,6 @@ public class PacketManagerNull extends PacketManager {
 	}
 
 	@Override
-	public boolean hasDisguise(Entity entity) {
-		return false;
-	}
-
-	@Override
 	public void hide(Entity entity) {
 		
 	}

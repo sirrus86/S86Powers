@@ -17,7 +17,6 @@ import org.bukkit.event.entity.ProjectileLaunchEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
-import org.bukkit.scheduler.BukkitRunnable;
 
 import me.sirrus86.s86powers.powers.Power;
 import me.sirrus86.s86powers.powers.PowerManifest;
@@ -36,7 +35,8 @@ public class SnowMiser extends Power {
 	private PowerOption<Boolean> addSnow, freezeWater;
 	private PowerOption<Integer> freezeCap;
 	private PowerOption<Long> freezeDur;
-	@SuppressWarnings("unused")
+
+	@SuppressWarnings({"unused", "FieldCanBeLocal"})
 	private boolean snowAndIce, snowOrIce;
 
 	@Override
@@ -65,38 +65,32 @@ public class SnowMiser extends Power {
 	}
 	
 	private int trackSnowball(Snowball snowball) {
-		return runTaskLater(new BukkitRunnable() {
-
-			@Override
-			public void run() {
-				if (snowball.isValid()) {
-					Block block = snowball.getLocation().getBlock();
-					if (block.getType() == Material.WATER
-							&& getOption(freezeWater)) {
-						block.setType(Material.ICE);
-						snowball.remove();
-					}
-					else {
-						snowballs.put(snowball, trackSnowball(snowball));
-					}
+		return runTaskLater(() -> {
+			if (snowball.isValid()) {
+				Block block = snowball.getLocation().getBlock();
+				if (block.getType() == Material.WATER
+						&& getOption(freezeWater)) {
+					block.setType(Material.ICE);
+					snowball.remove();
+				} else {
+					snowballs.put(snowball, trackSnowball(snowball));
 				}
 			}
-			
 		}, 1L).getTaskId();
 	}
 	
 	@EventHandler (ignoreCancelled = true)
 	private void onHit(EntityDamageByEntityEvent event) {
-		if (event.getEntity() instanceof LivingEntity
-				&& !(event.getEntity() instanceof Snowman)
-				&& event.getDamager() instanceof Snowball
-				&& snowballs.containsKey(event.getDamager())) {
-			LivingEntity target = (LivingEntity) event.getEntity();
+		if (event.getEntity() instanceof LivingEntity target
+				&& !(target instanceof Snowman)
+				&& event.getDamager() instanceof Snowball snowball
+				&& snowballs.containsKey(snowball)) {
 			if (!(target instanceof Player)
 					|| !getUser((Player)target).hasPower(this)) {
 				int amplifier = 0;
-				if (target.hasPotionEffect(PotionEffectType.SLOW)) {
-					amplifier = Integer.min(getOption(freezeCap), target.getPotionEffect(PotionEffectType.SLOW).getAmplifier() + 1);
+				PotionEffect effect = target.getPotionEffect(PotionEffectType.SLOW);
+				if (effect != null) {
+					amplifier = Integer.min(getOption(freezeCap), effect.getAmplifier() + 1);
 				}
 				target.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, (int) PowerTime.toTicks(getOption(freezeDur)), amplifier));
 			}
@@ -105,8 +99,8 @@ public class SnowMiser extends Power {
 	
 	@EventHandler
 	private void onHit(ProjectileHitEvent event) {
-		if (event.getEntity() instanceof Snowball
-				&& snowballs.containsKey(event.getEntity())) {
+		if (event.getEntity() instanceof Snowball snowball
+				&& snowballs.containsKey(snowball)) {
 			Block hitBlock = event.getEntity().getLocation().getBlock(),
 					checkBlock = hitBlock.getRelative(BlockFace.DOWN);
 			if (checkBlock.getType().isSolid()

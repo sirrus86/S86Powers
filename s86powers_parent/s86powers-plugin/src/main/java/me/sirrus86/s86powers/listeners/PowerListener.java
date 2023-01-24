@@ -30,7 +30,7 @@ import org.bukkit.inventory.ItemStack;
 
 public final class PowerListener implements Listener {
 
-	private Map<Damageable, PowerDamageCause> trackList = new WeakHashMap<>();
+	private final Map<Damageable, PowerDamageCause> trackList = new WeakHashMap<>();
 	
 	public PowerListener(S86Powers plugin) {
 		plugin.getServer().getPluginManager().registerEvents(this, plugin);
@@ -54,12 +54,9 @@ public final class PowerListener implements Listener {
 				&& PowerTools.isAxe(item)) {
 			return true;
 		}
-		else if (wSword != null
-				&& user.getOption(wSword)
-				&& PowerTools.isSword(item)) {
-			return true;
-		}
-		return false;
+		else return wSword != null
+					&& user.getOption(wSword)
+					&& PowerTools.isSword(item);
 	}
 	
 	@EventHandler
@@ -73,9 +70,6 @@ public final class PowerListener implements Listener {
 				PowerUser victim = S86Powers.getConfigManager().getUser(event.getEntity().getUniqueId());
 				((PlayerDeathEvent) event).setDeathMessage(LocaleString.KILLED_BY_POWER.build(victim, (cause.getUser() != null && cause.getUser().getName() != null ? cause.getUser().getName() : "someone"), cause.getPower()));
 			}
-			else {
-				// TODO create loot
-			}
 		}
 	}
 	
@@ -86,6 +80,7 @@ public final class PowerListener implements Listener {
 			if (user.allowPower(power)
 					&& power.isEnabled()
 					&& power.getRequiredItem() != null
+					&& event.getItem() != null
 					&& hasCorrectItem(user, power, event.getItem())
 					&& !(event.getAction() == Action.RIGHT_CLICK_BLOCK && event.getItem().getType().isBlock())) {
 				Bukkit.getServer().getPluginManager().callEvent(new PowerUseEvent(user, power, event.getItem(), event.getHand(), event.getClickedBlock(), event.getBlockFace()));
@@ -115,7 +110,7 @@ public final class PowerListener implements Listener {
 	private void onDmg(PowerDamageEvent event) {
 		PowerUser user = event.getUser();
 		Damageable target = event.getTarget();
-		PowerUser uTarget = target instanceof Player ? S86Powers.getConfigManager().getUser(((Player) target).getUniqueId()) : null;
+		PowerUser uTarget = target instanceof Player ? S86Powers.getConfigManager().getUser((target).getUniqueId()) : null;
 		if (uTarget == null
 				|| ConfigOption.Powers.DAMAGE_PLAYERS) {
 			double damage = event.getDamage();
@@ -140,7 +135,7 @@ public final class PowerListener implements Listener {
 		}
 	}
 	
-	private class PowerDamageCause {
+	private static class PowerDamageCause {
 		
 		private final EntityDamageEvent event;
 		private final Power power;

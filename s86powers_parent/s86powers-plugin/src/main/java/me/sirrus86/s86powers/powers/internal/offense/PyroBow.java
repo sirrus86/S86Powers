@@ -71,8 +71,7 @@ public final class PyroBow extends Power {
 			PowerUser user = getUser((Player) event.getEntity());
 			if (user.allowPower(this)
 					&& user.getCooldown(this) <= 0
-					&& event.getProjectile() instanceof Arrow) {
-				Arrow arrow = (Arrow) event.getProjectile();
+					&& event.getProjectile() instanceof Arrow arrow) {
 				arrows.put(arrow, user.hasStatMaxed(canExplode));
 				tasks.put(arrow, runTaskTimer(doSmoke(arrow), 0L, 1L).getTaskId());
 			}
@@ -83,7 +82,9 @@ public final class PyroBow extends Power {
 	private void onMove(PlayerMoveEvent event) {
 		PowerUser user = getUser(event.getPlayer());
 		if (user.getOption(disableIfWet)
-				&& user.allowPower(this)) {
+				&& user.allowPower(this)
+				&& event.getTo() != null
+				&& event.getTo().getWorld() != null) {
 			if (event.getTo().getBlock().getType() == Material.WATER
 					|| (PowerTools.isOutside(event.getTo())
 							&& event.getTo().getWorld().hasStorm())) {
@@ -94,9 +95,10 @@ public final class PyroBow extends Power {
 	
 	@EventHandler
 	private void onHit(ProjectileHitEvent event) {
-		if (arrows.containsKey(event.getEntity())) {
-			Arrow arrow = (Arrow) event.getEntity();
-			PowerUser user = getUser((Player)arrow.getShooter());
+		if (event.getEntity() instanceof Arrow arrow
+				&& arrows.containsKey(arrow)
+				&& arrow.getShooter() instanceof Player player) {
+			PowerUser user = getUser(player);
 			if (event.getHitBlock() != null
 					&& user.getOption(igniteBlocks)) {
 				callEvent(new PowerIgniteEvent(this, user, arrow.getLocation().getBlock(), null));

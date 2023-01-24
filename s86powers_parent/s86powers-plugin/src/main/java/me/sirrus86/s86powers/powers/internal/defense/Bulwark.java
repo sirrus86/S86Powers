@@ -33,7 +33,6 @@ public final class Bulwark extends Power {
 	private Map<PowerUser, Long> parryWindow;
 	
 	private PowerOption<Boolean> doEffects;
-//	private PowerOption<List<PotionEffect>> effects;
 	private PowerOption<Double> knockback;
 	private PowerOption<Long> parryTime;
 
@@ -48,7 +47,6 @@ public final class Bulwark extends Power {
 	protected void config() {
 		cooldown = option("cooldown", PowerTime.toMillis(3, 0), "Amount of time after a successful parry before an attack can be parried again.");
 		doEffects = option("effects.enable", true, "Whether to afflict the parried entity with status effects.");
-//		effects = option("effects", List.of(new PotionEffect(PotionEffectType.SLOW_DIGGING, (int) PowerTime.toMillis(5, 0), 0, false, false, true)), "Effects to afflict parried entities.");
 		item = option("item", new ItemStack(Material.SHIELD), "Item used for blocking.", true);
 		knockback = option("knockback", 1.3D, "Velocity modifier for knockback when an attack is parried.");
 		parryTime = option("parry-window", PowerTime.toMillis(1, 0), "Maximum amount of time after blocking to successfully parry an attack.");
@@ -79,8 +77,7 @@ public final class Bulwark extends Power {
 					&& parryWindow.containsKey(user)
 					&& parryWindow.get(user) > System.currentTimeMillis()
 					&& user.getCooldown(this) <= 0L) {
-				if (event.getDamager() instanceof LivingEntity) {
-					LivingEntity target = (LivingEntity) event.getDamager();
+				if (event.getDamager() instanceof LivingEntity target) {
 					Vector difference = target.getLocation().clone().subtract(user.getPlayer().getLocation()).toVector();
 					target.setVelocity(difference.multiply(user.getOption(knockback)));
 					if (target instanceof Player) {
@@ -88,15 +85,15 @@ public final class Bulwark extends Power {
 					}
 					user.sendMessage(didParry.replace("[name]", PowerTools.getFriendlyName(target) + ChatColor.GREEN));
 					if (user.getOption(doEffects)) {
-						target.addPotionEffect(new PotionEffect(PotionEffectType.SLOW_DIGGING, (int) PowerTime.toTicks(5, 0), 0, false, false, true));
+						target.addPotionEffect(new PotionEffect(PotionEffectType.SLOW_DIGGING, PowerTime.toTicks(5, 0), 0, false, false, true));
 					}
 				}
-				else if (event.getDamager() instanceof Arrow
+				else if (event.getDamager() instanceof Arrow proj
 						&& ((Arrow)event.getDamager()).getShooter() != null
 						&& ((Arrow)event.getDamager()).getShooter() instanceof LivingEntity) {
-					Arrow proj = (Arrow) event.getDamager();
 					LivingEntity target = (LivingEntity) proj.getShooter();
-					if (proj.getWorld() == target.getWorld()) {
+					if (target != null
+							&& proj.getWorld() == target.getWorld()) {
 						double speed = proj.getVelocity().length();
 						Vector direction = target.getEyeLocation().toVector().subtract(new Vector(0.0D, 0.25D, 0.0D)).subtract(proj.getLocation().toVector()).normalize();
 						Arrow newProj = proj.getWorld().spawnArrow(proj.getLocation(), direction, (float) speed * 0.9F, 0.0F);

@@ -187,8 +187,7 @@ public class ComPlayer extends ComAbstract {
 			if (page != null) {
 				try {
 					i = Integer.parseInt(page);
-				} catch (NumberFormatException e) {
-					i = 1;
+				} catch (NumberFormatException ignored) {
 				}
 			}
 			PageMaker pm = new PageMaker(HELP + ChatColor.GREEN + LocaleString.PLAYER, HelpTopic.showHelp(sender, "PLAYER"), i);
@@ -216,7 +215,7 @@ public class ComPlayer extends ComAbstract {
 			if (page != null) {
 				try {
 					i = Integer.parseInt(page);
-				} catch (Exception e) {
+				} catch (Exception ignored) {
 				}
 			}
 			PageMaker pm = new PageMaker(LIST + ChatColor.GREEN + LocaleString.PLAYERS, getUsers() + ".", i);
@@ -227,7 +226,7 @@ public class ComPlayer extends ComAbstract {
 		}
 	}
 	
-	private final void comUserOption(PowerUser user, Power power, String page, PowerOption<?> option, String valueStr) {
+	private void comUserOption(PowerUser user, Power power, String page, PowerOption<?> option, String valueStr) {
 		if (sender.hasPermission(S86Permission.PLAYER_OPTION)) {
 			if (power != null) {
 				if (option != null) {
@@ -253,7 +252,7 @@ public class ComPlayer extends ComAbstract {
 									}
 								}
 								else {
-									sUser.setOption(option, option.getDefaultValue() instanceof Long ? (Long) value : value);
+									sUser.setOption(option, option.getDefaultValue() instanceof Long ? ((Number)value).longValue() : value);
 									sender.sendMessage(SUCCESS + LocaleString.SET_OPTION_SUCCESS.build(option.getPath(), value));
 								}
 							}
@@ -271,10 +270,11 @@ public class ComPlayer extends ComAbstract {
 						}
 					}
 					else {
+						Object value = user.getOptionValue(option);
 						sender.sendMessage(ChatColor.GREEN + option.getPath());
 						sender.sendMessage(LocaleString.DESCRIPTION + ": " + ChatColor.GRAY + option.getDescription());
 						sender.sendMessage(LocaleString.TYPE + ": " + ChatColor.GRAY + option.getDefaultValue().getClass().getSimpleName());
-						sender.sendMessage(LocaleString.VALUE + ": " + ChatColor.BLUE + (user.getOptionValue(option) instanceof ItemStack ? PowerTools.getItemName((ItemStack) user.getOptionValue(option)) : user.getOptionValue(option).toString()) + ChatColor.RESET + " " + LocaleString.DEFAULT + ": " + ChatColor.GRAY + option.getDefaultValue());
+						sender.sendMessage(LocaleString.VALUE + ": " + ChatColor.BLUE + (value == null ? option.getDefaultValue() : value instanceof ItemStack ? PowerTools.getItemName((ItemStack) value) : value.toString()) + ChatColor.RESET + " " + LocaleString.DEFAULT + ": " + ChatColor.GRAY + option.getDefaultValue());
 					}
 				}
 				else if (page != null) {
@@ -344,26 +344,24 @@ public class ComPlayer extends ComAbstract {
 					sender.sendMessage(INFO + getUserName(user) + " " + LocaleString.STATS);
 					List<Power> powers = power != null ? Lists.newArrayList(power) : new ArrayList<>(user.getPowers());
 					Collections.sort(powers);
-					String tmp = "";
-					for (int i = 0; i < powers.size(); i ++) {
-						Power nextPower = powers.get(i);
-						List<PowerStat> stats = new ArrayList<PowerStat>(nextPower.getStats().keySet());
+					StringBuilder tmp = new StringBuilder();
+					for (Power nextPower : powers) {
+						List<PowerStat> stats = new ArrayList<>(nextPower.getStats().keySet());
 						Collections.sort(stats);
 						if (!stats.isEmpty()) {
-							tmp += nextPower.getType().getColor() + nextPower.getName() + "\n";
-							for (int j = 0; j < stats.size(); j ++) {
-								tmp += ChatColor.RESET + " " + stats.get(j).getDescription() + ": " + user.getStatCount(stats.get(j)) + "/" + nextPower.getStatValue(stats.get(j)) + "\n";
-								tmp += "  " + LocaleString.REWARD + ": " + (!user.hasStatMaxed(stats.get(j)) ? ChatColor.GRAY : "") + PowerTools.getFilteredText(nextPower, stats.get(j).getReward()) + "\n";
+							tmp.append(nextPower.getType().getColor()).append(nextPower.getName()).append("\n");
+							for (PowerStat powerStat : stats) {
+								tmp.append(ChatColor.RESET).append(" ").append(powerStat.getDescription()).append(": ").append(user.getStatCount(powerStat)).append("/").append(nextPower.getStatValue(powerStat)).append("\n").append("  ").append(LocaleString.REWARD).append(": ").append(!user.hasStatMaxed(powerStat) ? ChatColor.GRAY : "").append(PowerTools.getFilteredText(nextPower, powerStat.getReward())).append("\n");
 							}
 						}
 					}
-					if (tmp.equalsIgnoreCase("")) {
-						tmp = LocaleString.NO_STATS_RECORDED.toString();
+					if (tmp.toString().equalsIgnoreCase("")) {
+						tmp = new StringBuilder(LocaleString.NO_STATS_RECORDED.toString());
 					}
-					if (tmp.endsWith("\n")) {
-						tmp = tmp.substring(0, tmp.lastIndexOf("\n"));
+					if (tmp.toString().endsWith("\n")) {
+						tmp = new StringBuilder(tmp.substring(0, tmp.lastIndexOf("\n")));
 					}
-					sender.sendMessage(tmp);
+					sender.sendMessage(tmp.toString());
 				}
 			}
 			else {

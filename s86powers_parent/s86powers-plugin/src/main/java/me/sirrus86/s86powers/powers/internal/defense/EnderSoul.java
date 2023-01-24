@@ -28,15 +28,14 @@ import me.sirrus86.s86powers.utils.PowerTime;
 public final class EnderSoul extends Power {
 
 	private PowerOption<Boolean> doEffects, immunePearl, modVel, refundPearl;
-//	private PowerOption<List<PotionEffect>> effects;
-	@SuppressWarnings("unused")
+
+	@SuppressWarnings({"unused", "FieldCanBeLocal"})
 	private boolean velAndRefund, velOrRefund;
 	private PowerOption<Double> velMod;
 	
 	@Override
 	protected void config() {
 		doEffects = option("effects.enable", true, "Whether effects should be applied to user after teleporting.");
-//		effects = option("effects", List.of(new PotionEffect(PotionEffectType.SLOW_FALLING, (int) PowerTime.toMillis(1, 0), 2, false, false, false)), "Effects to apply to users after teleporting.");
 		immunePearl = option("pearl-damage-immunity", true, "Whether users should be immune to ender pearl damage.");
 		modVel = option("modify-pearl-velocity", true, "Whether ender pearl velocity should be modified. If false, pearls are thrown normally.");
 		refundPearl = option("refund-pearl", true, "Whether ender pearls should be refunded immediately after use.");
@@ -63,14 +62,13 @@ public final class EnderSoul extends Power {
 		if (user.getOption(doEffects)
 				&& user.allowPower(this)
 				&& event.getCause() == TeleportCause.ENDER_PEARL) {
-			user.getPlayer().addPotionEffect(new PotionEffect(PotionEffectType.SLOW_FALLING, (int) PowerTime.toTicks(1, 0), 2, false, false, false));
+			user.getPlayer().addPotionEffect(new PotionEffect(PotionEffectType.SLOW_FALLING, PowerTime.toTicks(1, 0), 2, false, false, false));
 		}
 	}
 
 	@EventHandler(ignoreCancelled = true)
 	private void onLaunch(ProjectileLaunchEvent event) {
-		if (event.getEntity() instanceof EnderPearl) {
-			EnderPearl pearl = (EnderPearl) event.getEntity();
+		if (event.getEntity() instanceof EnderPearl pearl) {
 			if (pearl.getShooter() instanceof Player) {
 				PowerUser user = getUser((Player)pearl.getShooter());
 				if (user.allowPower(this)) {

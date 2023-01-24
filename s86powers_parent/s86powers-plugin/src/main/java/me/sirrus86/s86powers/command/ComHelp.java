@@ -13,26 +13,25 @@ public final class ComHelp extends ComAbstract {
 		comHelp(args.length > 1 ? args[1] : null, args.length > 2 ? args[2] : args.length > 1 ? args[1] : null);
 	}
 	
-	private final void comHelp(String topic, String page) {
+	private void comHelp(String topic, String page) {
 		if (sender.hasPermission(S86Permission.HELP)) {
 			int i = 1, j = 0;
 			if (page != null) {
 				try {
 					i = Integer.parseInt(page);
 				} catch (Exception e) {
-					i = 1;
 					page = null;
 				}
 			}
 			if (page == null && topic != null) {
 				try {
 					j = Integer.parseInt(topic);
-				} catch (Exception e) {
+				} catch (Exception ignored) {
 				}
 				if (j != 0) topic = null;
 			}
-			PageMaker pm = new PageMaker(HELP + ChatColor.GREEN + (topic != null && topic != page ? topic : ""),
-					HelpTopic.showHelp(sender, topic != null && topic != page ? topic.toUpperCase() : ""), i);
+			PageMaker pm = new PageMaker(HELP + ChatColor.GREEN + (topic != null && !topic.equals(page) ? topic : ""),
+					HelpTopic.showHelp(sender, topic != null && !topic.equals(page) ? topic.toUpperCase() : ""), i);
 			pm.send(sender);
 		}
 		else {

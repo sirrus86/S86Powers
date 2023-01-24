@@ -2,7 +2,6 @@ package me.sirrus86.s86powers.gui;
 
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.bukkit.ChatColor;
@@ -27,25 +26,19 @@ public class GUIGroupList extends GUIAbstractList<PowerGroup> {
 			for (int i = index; i < Math.min(list.size(), index + 45); i ++) {
 				PowerGroup group = list.get(i);
 				if (!groupItems.containsKey(group)) {
-					groupItems.put(group, createItem(Material.TOTEM_OF_UNDYING, ChatColor.RESET + group.getName(), (List<String>) null));
+					groupItems.put(group, createItem(Material.TOTEM_OF_UNDYING, ChatColor.RESET + group.getName(), null));
 				}
 				setItem(i - index, groupItems.get(group), player -> {
 					selectedGroup.put(player.getUniqueId(), group);
 					openNext(player, GUIBase.GROUP_GUI);
 				});
 			}
-			setItem(48, BACK, player -> {
-				openLast(player);
-			});
+			setItem(48, BACK, this::openLast);
 			if (page > 1) {
-				setItem(49, PAGE1, LocaleString.PAGE.toString() + " " + Integer.toString(page - 1), (List<String>) null, player -> {
-					openGUI(player, sourceList.get(page - 2));
-				});
+				setItem(49, PAGE1, LocaleString.PAGE + " " + (page - 1), null, player -> openGUI(player, sourceList.get(page - 2)));
 			}
 			if (page < sourceList.size()) {
-				setItem(50, PAGE2, LocaleString.PAGE.toString() + " " + Integer.toString(page + 1), (List<String>) null, player -> {
-					openGUI(player, sourceList.get(page));
-				});
+				setItem(50, PAGE2, LocaleString.PAGE + " " + (page + 1), null, player -> openGUI(player, sourceList.get(page)));
 			}
 		}
 	}

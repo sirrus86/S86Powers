@@ -10,16 +10,17 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.jetbrains.annotations.NotNull;
 
 public final class PowerComExecutor implements CommandExecutor {
 
 	private final static String HEADER = "-----[" + ChatColor.GOLD + "S86 Powers" + ChatColor.RESET + " v" + JavaPlugin.getPlugin(S86Powers.class).getDescription().getVersion() + " by sirrus86]---------------";
 	private static String FOOTER;
 	
-	private GUIBase gui = new GUIBase();
+	private final GUIBase gui = new GUIBase();
 	
 	@Override
-	public boolean onCommand(CommandSender sender, Command com, String string, String[] args) {
+	public boolean onCommand(@NotNull CommandSender sender, @NotNull Command com, @NotNull String string, String[] args) {
 		if (ConfigOption.Plugin.USE_GUI
 					&& sender instanceof Player
 					&& args.length == 0) {
@@ -65,11 +66,7 @@ public final class PowerComExecutor implements CommandExecutor {
 	}
 	
 	private String createFooter(CommandSender sender) {
-		String tmp = "";
-		for (int i = sender instanceof Player ? 7 : 4; i < HEADER.length(); i ++) {
-			tmp = tmp + "-";
-		}
-		return tmp;
+		return "-".repeat(Math.max(0, HEADER.length() - (sender instanceof Player ? 7 : 4)));
 	}
 
 }

@@ -6,6 +6,7 @@ import java.util.Map;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.attribute.Attribute;
+import org.bukkit.attribute.AttributeInstance;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.entity.EnderCrystal;
@@ -83,7 +84,8 @@ public final class SoulSiphon extends Power {
 	private class Siphon implements Listener {
 		
 		private final EnderCrystal crystal;
-		private int drainCD = 0, drainTask = -1;
+		private int drainCD = 0;
+		private final int drainTask;
 		private double life = 0.0D;
 		private final PowerUser owner;
 		private LivingEntity target = null;
@@ -93,48 +95,47 @@ public final class SoulSiphon extends Power {
 			this.crystal = crystal;
 			this.owner = owner;
 			updateHealth();
+			Runnable doDrain = new BukkitRunnable() {
+
+				@Override
+				public void run() {
+					if (drainCD > 0) {
+						drainCD--;
+					}
+					updateHealth();
+					AttributeInstance health = owner.getPlayer().getAttribute(Attribute.GENERIC_MAX_HEALTH);
+					if (owner.getPlayer().getWorld().equals(crystal.getWorld())
+							&& owner.getPlayer().getLocation().distanceSquared(crystal.getLocation()) < owner.getOption(drainRange) * owner.getOption(drainRange)
+							&& health != null
+							&& owner.getPlayer().getHealth() < health.getValue()
+							&& !owner.getPlayer().isDead()
+							&& life > 0.0D) {
+						crystal.setBeamTarget(owner.getPlayer().getLocation().clone().subtract(0.0D, 1.0D, 0.0D));
+						if (drainCD <= 0) {
+							life--;
+							owner.heal(1.0D);
+							drainCD = 10;
+						}
+					} else if (target != null
+							&& !target.isDead()
+							&& target.getLocation().distanceSquared(crystal.getLocation()) < owner.getOption(drainRange) * owner.getOption(drainRange)
+							&& life < owner.getOption(maxLife)) {
+						crystal.setBeamTarget(target.getLocation().clone().subtract(0.0D, 1.0D, 0.0D));
+						if (drainCD <= 0) {
+							life++;
+							owner.causeDamage(getInstance(), target, DamageCause.MAGIC, 1.0D);
+							drainCD = 10;
+						}
+					} else {
+						crystal.setBeamTarget(null);
+						target = PowerTools.getRandomEntity(crystal, owner.getOption(drainRange), owner.getPlayer());
+					}
+				}
+
+			};
 			drainTask = runTaskTimer(doDrain, 0L, 0L).getTaskId();
 		}
-		
-		private Runnable doDrain = new BukkitRunnable() {
 
-			@Override
-			public void run() {
-				if (drainCD > 0) {
-					drainCD --;
-				}
-				updateHealth();
-				if (owner.getPlayer().getWorld().equals(crystal.getWorld())
-						&& owner.getPlayer().getLocation().distanceSquared(crystal.getLocation()) < owner.getOption(drainRange) * owner.getOption(drainRange)
-						&& owner.getPlayer().getHealth() < owner.getPlayer().getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue()
-						&& !owner.getPlayer().isDead()
-						&& life > 0.0D) {
-					crystal.setBeamTarget(owner.getPlayer().getLocation().clone().subtract(0.0D, 1.0D, 0.0D));
-					if (drainCD <= 0) {
-						life --;
-						owner.heal(1.0D);
-						drainCD = 10;
-					}
-				}
-				else if (target != null
-						&& !target.isDead()
-						&& target.getLocation().distanceSquared(crystal.getLocation()) < owner.getOption(drainRange) * owner.getOption(drainRange)
-						&& life < owner.getOption(maxLife)) {
-					crystal.setBeamTarget(target.getLocation().clone().subtract(0.0D, 1.0D, 0.0D));
-					if (drainCD <= 0) {
-						life ++;
-						owner.causeDamage(getInstance(), target, DamageCause.MAGIC, 1.0D);
-						drainCD = 10;
-					}
-				}
-				else {
-					crystal.setBeamTarget(null);
-					target = PowerTools.getRandomEntity(crystal, owner.getOption(drainRange), owner.getPlayer());
-				}
-			}
-			
-		};
-		
 		public void destroy() {
 			cancelTask(drainTask);
 			PowerTools.fakeExplosion(crystal.getLocation(), 3.0F);
@@ -144,20 +145,20 @@ public final class SoulSiphon extends Power {
 		}
 		
 		private void updateHealth() {
-			String tmp = "";
+			StringBuilder tmp = new StringBuilder();
 			double i = life / 2.0D;
 			double j = owner.getOption(maxLife) / 2.0D;
 			for (int k = 0; k < j; k ++) {
 				if (i > 0.0D) {
-					tmp = tmp + ChatColor.RED;
+					tmp.append(ChatColor.RED);
 					i --;
 				}
 				else {
-					tmp = tmp + ChatColor.GRAY;
+					tmp.append(ChatColor.GRAY);
 				}
-				tmp = tmp + "\u2665";
+				tmp.append("♥");
 			}
-			crystal.setCustomName(tmp);
+			crystal.setCustomName(tmp.toString());
 			crystal.setCustomNameVisible(true);
 		}
 		

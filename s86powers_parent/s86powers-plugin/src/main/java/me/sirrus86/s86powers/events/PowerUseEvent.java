@@ -39,10 +39,6 @@ public class PowerUseEvent extends UserEvent implements Cancellable {
 		return block;
 	}
 	
-	public EquipmentSlot getHand() {
-		return hand;
-	}
-	
 	public ItemStack getItem() {
 		return item;
 	}

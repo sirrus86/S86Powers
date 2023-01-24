@@ -20,8 +20,7 @@ public class GUIListener implements Listener {
 	
 	@EventHandler
 	private void onClick(InventoryClickEvent event) {
-		if (event.getWhoClicked() instanceof Player) {
-			Player player = (Player) event.getWhoClicked();
+		if (event.getWhoClicked() instanceof Player player) {
 			GUIAbstract gui = GUIAbstract.getGUI(player.getUniqueId());
 			if (gui != null) {
 				event.setCancelled(true);
@@ -37,8 +36,7 @@ public class GUIListener implements Listener {
 	
 	@EventHandler
 	private void onClose(InventoryCloseEvent event) {
-		if (event.getPlayer() instanceof Player) {
-			Player player = (Player) event.getPlayer();
+		if (event.getPlayer() instanceof Player player) {
 			GUIAbstract gui = GUIAbstract.getGUI(player.getUniqueId());
 			if (gui != null) {
 				gui.removeViewer(player.getUniqueId());

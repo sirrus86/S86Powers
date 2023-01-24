@@ -99,7 +99,7 @@ public final class AutoGun extends Power {
 			if (base.getType() == Material.AIR
 					&& event.getClickedBlock().getType().isSolid()) {
 				if (!turrets.containsKey(event.getUser())) {
-					turrets.put(event.getUser(), new ArrayList<Turret>());
+					turrets.put(event.getUser(), new ArrayList<>());
 				}
 				if ((!event.getUser().hasStatMaxed(dmgByTurrets) && turrets.get(event.getUser()).size() >= 1)
 						|| (event.getUser().hasStatMaxed(dmgByTurrets) && turrets.get(event.getUser()).size() >= event.getUser().getOption(maxTurrets))) {
@@ -127,27 +127,25 @@ public final class AutoGun extends Power {
 	
 	private class Turret implements Listener {
 		
-		private Set<Arrow> arrows;
+		private final Set<Arrow> arrows;
 		private final Block base;
 		private final RideableMinecart cart;
 		private final PowerUser owner;
 		private final Predicate<Entity> predEntity;
 		private LivingEntity target = null;
-		private int task = -1;
+		private int task;
 		
 		public Turret(PowerUser owner, RideableMinecart cart, Block base) {
 			getInstance().registerEvents(this);
-			this.arrows = new HashSet<Arrow>();
+			this.arrows = new HashSet<>();
 			this.base = base;
 			this.cart = cart;
 			this.owner = owner;
-			this.predEntity = entity -> {
-				return entity != this.cart && entity != this.owner.getPlayer() && entity instanceof LivingEntity;
-			};
+			this.predEntity = entity -> entity != this.cart && entity != this.owner.getPlayer() && entity instanceof LivingEntity;
 			task = runTask(cycleActions).getTaskId();
 		}
 		
-		private Runnable cycleActions = new BukkitRunnable() {
+		private final Runnable cycleActions = new Runnable() {
 
 			@Override
 			public void run() {
@@ -166,7 +164,7 @@ public final class AutoGun extends Power {
 					task = getInstance().runTaskLater(cycleActions, 40L).getTaskId();
 				}
 			}
-			
+
 		};
 		
 		public void destroy() {
@@ -190,14 +188,13 @@ public final class AutoGun extends Power {
 			List<Entity> nearby = cart.getNearbyEntities(getRange, getRange, getRange);
 			Collections.shuffle(nearby);
 			for (Entity entity : nearby) {
-				if (entity instanceof LivingEntity
+				if (entity instanceof LivingEntity livingEntity
 						&& entity != owner.getPlayer()) {
-					LivingEntity lEntity = (LivingEntity) entity;
-					if (haveLineOfSight(lEntity)) {
+					if (haveLineOfSight(livingEntity)) {
 						if (!owner.getOption(ignoreInvis)
-								|| !lEntity.hasPotionEffect(PotionEffectType.INVISIBILITY)) {
-							lookAt(lEntity.getEyeLocation());
-							return lEntity;
+								|| !livingEntity.hasPotionEffect(PotionEffectType.INVISIBILITY)) {
+							lookAt(livingEntity.getEyeLocation());
+							return livingEntity;
 						}
 					}
 				}
@@ -230,7 +227,12 @@ public final class AutoGun extends Power {
 		
 		private boolean haveLineOfSight(LivingEntity entity) {
 			Vector direction = PowerTools.getDirection(cart.getLocation().add(cartCenter), entity.getLocation());
-			return PowerTools.getTargetEntity(LivingEntity.class, cart.getLocation().clone().add(direction).add(cartCenter), direction, owner.getOption(range), predEntity) != null;
+			if (direction != null) {
+				return PowerTools.getTargetEntity(LivingEntity.class, cart.getLocation().clone().add(direction).add(cartCenter), direction, owner.getOption(range), predEntity) != null;
+			}
+			else {
+				return false;
+			}
 		}
 		
 		private void lookAt(Location loc) {
@@ -269,7 +271,8 @@ public final class AutoGun extends Power {
 		
 		@EventHandler (ignoreCancelled = true)
 		private void onArrowDamage(EntityDamageByEntityEvent event) {
-			if (arrows.contains(event.getDamager())) {
+			if (event.getDamager() instanceof Arrow arrow
+					&& arrows.contains(arrow)) {
 				owner.causeDamage(getInstance(), event);
 				owner.increaseStat(dmgByTurrets, (int) event.getDamage());
 			}
@@ -281,11 +284,11 @@ public final class AutoGun extends Power {
 				this.target = null;
 			}
 		}
-		
-		@SuppressWarnings("deprecation")
+
 		@EventHandler (ignoreCancelled = true)
 		private void noPickup(PlayerPickupArrowEvent event) {
-			if (arrows.contains(event.getArrow())) {
+			if (event.getArrow() instanceof Arrow arrow
+					&& arrows.contains(arrow)) {
 				event.setCancelled(true);
 			}
 		}

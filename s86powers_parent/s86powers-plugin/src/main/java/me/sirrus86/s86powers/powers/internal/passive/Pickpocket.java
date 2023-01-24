@@ -1,8 +1,6 @@
 package me.sirrus86.s86powers.powers.internal.passive;
 
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 import org.bukkit.ChatColor;
 import org.bukkit.EntityEffect;
@@ -97,12 +95,13 @@ public final class Pickpocket extends Power {
 			}
 			return drop;
 		}
-		else if (entity instanceof Lootable) {
-			Collection<ItemStack> loot = ((Lootable) entity).getLootTable().populateLoot(random,
-					new LootContext.Builder(entity.getLocation()).killer(killer).lootedEntity(entity).build());
+		else if (entity instanceof Lootable lootable) {
+			Collection<ItemStack> loot = lootable.getLootTable() != null ? lootable.getLootTable().populateLoot(random,
+					new LootContext.Builder(entity.getLocation()).killer(killer).lootedEntity(entity).build()) : List.of();
 			if (loot.size() > 0) {
 				int chance = random.nextInt(loot.size());
-				return loot.stream().skip(chance).findFirst().get();
+				Optional<ItemStack> first = loot.stream().skip(chance).findFirst();
+				return first.orElse(null);
 			}
 		}
 		return null;

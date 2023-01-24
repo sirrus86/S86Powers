@@ -4,11 +4,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.bukkit.Color;
-import org.bukkit.Location;
-import org.bukkit.Material;
+import org.bukkit.*;
 import org.bukkit.Particle.DustOptions;
-import org.bukkit.Sound;
 import org.bukkit.entity.Damageable;
 import org.bukkit.entity.Entity;
 import org.bukkit.event.EventHandler;
@@ -21,7 +18,6 @@ import me.sirrus86.s86powers.events.PowerUseEvent;
 import me.sirrus86.s86powers.powers.Power;
 import me.sirrus86.s86powers.powers.PowerManifest;
 import me.sirrus86.s86powers.powers.PowerOption;
-//import me.sirrus86.s86powers.powers.PowerStat;
 import me.sirrus86.s86powers.powers.PowerType;
 import me.sirrus86.s86powers.tools.PowerTools;
 import me.sirrus86.s86powers.users.PowerUser;
@@ -94,6 +90,37 @@ public final class Laser extends Power {
 		
 		public Beam(PowerUser owner) {
 			this.owner = owner;
+			Runnable doBeam = new BukkitRunnable() {
+				@Override
+				public void run() {
+					if (!owner.getOption(useConsume)
+							|| owner.getPlayer().getInventory().containsAtLeast(getConsumable(), 1)) {
+						Location loc = owner.getPlayer().getEyeLocation().add(0.0D, -0.5D, 0.0D);
+						if (loc.getWorld() != null) {
+							loc.getWorld().playSound(loc, Sound.ENTITY_FIREWORK_ROCKET_LAUNCH, 1.0F, 1.0F);
+						}
+						double getDist = owner.getOption(dist);
+						List<Entity> entities = owner.getPlayer().getNearbyEntities(getDist, getDist, getDist);
+						Vector dir = loc.getDirection();
+						for (int i = 0; i < owner.getOption(dist) * 10; i++) {
+							Vector newDir = dir.clone().multiply(i * 0.1D);
+							loc.add(newDir);
+							PowerTools.playRedstoneEffect(loc, new Vector(0, 0, 0), 1, new DustOptions(Color.fromRGB(owner.getOption(laserRed), owner.getOption(laserGreen), owner.getOption(laserBlue)), 1.0F));
+							for (Entity entity : entities) {
+								if (entity instanceof Damageable
+										&& entity.getLocation().distanceSquared(loc) < 1.0D) {
+									owner.causeDamage(getInstance(), (Damageable) entity, DamageCause.PROJECTILE, owner.getOption(damage));
+								}
+							}
+						}
+						if (owner.getOption(useConsume)) {
+							owner.getPlayer().getInventory().removeItem(getConsumable());
+						}
+					} else {
+						disable();
+					}
+				}
+			};
 			task = runTaskTimer(doBeam, 0L, 1L).getTaskId();
 		}
 		
@@ -102,38 +129,7 @@ public final class Laser extends Power {
 			owner.setCooldown(getInstance(), owner.getOption(cooldown));
 			lasers.remove(owner);
 		}
-		
-		private Runnable doBeam = new BukkitRunnable() {
-			@Override
-			public void run() {
-				if (!owner.getOption(useConsume)
-						|| owner.getPlayer().getInventory().containsAtLeast(getConsumable(), 1)) {
-					Location loc = owner.getPlayer().getEyeLocation().add(0.0D, -0.5D, 0.0D);
-					loc.getWorld().playSound(loc, Sound.ENTITY_FIREWORK_ROCKET_LAUNCH, 1.0F, 1.0F);
-					double getDist = owner.getOption(dist);
-					List<Entity> entities = owner.getPlayer().getNearbyEntities(getDist, getDist, getDist);
-					Vector dir = loc.getDirection();
-					for (int i = 0; i < owner.getOption(dist) * 10; i ++) {
-						Vector newDir = dir.clone().multiply(i * 0.1D);
-						loc.add(newDir);
-						PowerTools.playRedstoneEffect(loc, new Vector(0, 0, 0), 1, new DustOptions(Color.fromRGB(owner.getOption(laserRed), owner.getOption(laserGreen), owner.getOption(laserBlue)), 1.0F));
-						for (Entity entity : entities) {
-							if (entity instanceof Damageable
-									&& entity.getLocation().distanceSquared(loc) < 1.0D) {
-								owner.causeDamage(getInstance(), (Damageable) entity, DamageCause.PROJECTILE, owner.getOption(damage));
-							}
-						}
-					}
-					if (owner.getOption(useConsume)) {
-						owner.getPlayer().getInventory().removeItem(getConsumable());
-					}
-				}
-				else {
-					disable();
-				}
-			}
-		};
-		
+
 	}
 
 }

@@ -18,14 +18,14 @@ import me.sirrus86.s86powers.users.PowerUser;
 
 public class GUIPlayer extends GUIAbstract {
 	
-	private static Map<PowerUser, List<GUIPowerList>> userAddPowerList = new HashMap<>(),
-			userRemovePowerList = new HashMap<>();
+	private static final Map<PowerUser, List<GUIPowerList>> userAddPowerList = new HashMap<>();
+	private static final Map<PowerUser, List<GUIPowerList>> userRemovePowerList = new HashMap<>();
 	
 	static List<GUIPlayerList> PLAYER_LIST_GUI = new ArrayList<>();
 	
-	final static ItemStack ADD_POWER = createItem(Material.BLAZE_POWDER, LocaleString.ADD_POWER.toString(), PowerTools.wordSplit(ChatColor.RESET.toString() + ChatColor.GRAY.toString(), LocaleString.PLAYER_ADD_HELP.toString(), 30)),
-			REMOVE_POWER = createItem(Material.BLAZE_POWDER, LocaleString.REMOVE_POWER.toString(), PowerTools.wordSplit(ChatColor.RESET.toString() + ChatColor.GRAY.toString(), LocaleString.PLAYER_REMOVE_HELP.toString(), 30)),
-			INFO = createItem(Material.FILLED_MAP, LocaleString.INFO.toString(), PowerTools.wordSplit(ChatColor.RESET.toString() + ChatColor.GRAY.toString(), LocaleString.PLAYER_INFO_HELP.toString(), 30));
+	final static ItemStack ADD_POWER = createItem(Material.BLAZE_POWDER, LocaleString.ADD_POWER.toString(), PowerTools.wordSplit(ChatColor.RESET + ChatColor.GRAY.toString(), LocaleString.PLAYER_ADD_HELP.toString(), 30)),
+			REMOVE_POWER = createItem(Material.BLAZE_POWDER, LocaleString.REMOVE_POWER.toString(), PowerTools.wordSplit(ChatColor.RESET + ChatColor.GRAY.toString(), LocaleString.PLAYER_REMOVE_HELP.toString(), 30)),
+			INFO = createItem(Material.FILLED_MAP, LocaleString.INFO.toString(), PowerTools.wordSplit(ChatColor.RESET + ChatColor.GRAY.toString(), LocaleString.PLAYER_INFO_HELP.toString(), 30));
 	
 	public GUIPlayer() {
 		super(2, LocaleString.PLAYER.toString());
@@ -76,9 +76,7 @@ public class GUIPlayer extends GUIAbstract {
 			player.closeInventory();
 			player.performCommand("powers player " + (user.getName() != null ? user.getName() : "!NULL") + " info");
 		});
-		setItem(12, BACK, player -> {
-			openLast(player);
-		});
+		setItem(12, BACK, this::openLast);
 	}
 
 }

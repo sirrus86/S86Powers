@@ -113,7 +113,7 @@ public final class Bloodbend extends Power {
 	
 	private class BendTarget {
 		
-		private int taskID = -1;
+		private final int taskID;
 		private final PowerUser user;
 		
 		protected BendTarget(final PowerUser user, final LivingEntity target) {

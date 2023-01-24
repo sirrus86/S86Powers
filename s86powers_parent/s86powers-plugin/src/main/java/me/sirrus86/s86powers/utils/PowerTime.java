@@ -12,7 +12,7 @@ public class PowerTime {
 	
 	public static String asClock(long millis, boolean showDays, boolean showHours, boolean showMinutes, boolean showSeconds, boolean showMillis) {
 		String tmp = "";
-		long time = millis, remain = 0L;
+		long time = millis, remain;
 		if (millis >= MILLISECONDS_PER_DAY
 				|| showDays) {
 			if (time >= MILLISECONDS_PER_DAY) {
@@ -64,56 +64,31 @@ public class PowerTime {
 		return tmp;
 	}
 	
-	public static String asString(long millis) {
-		String tmp = "";
-		long time = millis;
-		if (time >= MILLISECONDS_PER_DAY) {
-			tmp = tmp + time / MILLISECONDS_PER_DAY + "d";
-			time %= MILLISECONDS_PER_DAY;
-		}
-		if (time >= MILLISECONDS_PER_HOUR) {
-			tmp = tmp + time / MILLISECONDS_PER_HOUR + "h";
-			time %= MILLISECONDS_PER_HOUR;
-		}
-		if (time >= MILLISECONDS_PER_MINUTE) {
-			tmp = tmp + time / MILLISECONDS_PER_MINUTE + "m";
-			time %= MILLISECONDS_PER_MINUTE;
-		}
-		if (time >= MILLISECONDS_PER_SECOND) {
-			tmp = tmp + time / MILLISECONDS_PER_SECOND + "s";
-			time %= MILLISECONDS_PER_SECOND;
-		}
-		if (time > 0) {
-			tmp = tmp + time / MILLISECONDS_PER_TICK + "t";
-		}
-		return tmp != "" ? tmp : LocaleString.NONE.toString();
-	}
-	
 	public static String asLongString(long millis) {
 		String tmp = "";
 		long time = millis;
 		if (time >= MILLISECONDS_PER_DAY) {
 			tmp = tmp + time / MILLISECONDS_PER_DAY + ((time / MILLISECONDS_PER_DAY) == 1 ?
-					" " + LocaleString.DAY.toString() + " " :
-					" " + LocaleString.DAYS.toString() + " ");
+					" " + LocaleString.DAY + " " :
+					" " + LocaleString.DAYS + " ");
 			time %= MILLISECONDS_PER_DAY;
 		}
 		if (time >= MILLISECONDS_PER_HOUR) {
 			tmp = tmp + time / MILLISECONDS_PER_HOUR + ((time / MILLISECONDS_PER_HOUR) == 1 ?
-					" " + LocaleString.HOUR.toString() + " " :
-					" " + LocaleString.HOURS.toString() + " ");
+					" " + LocaleString.HOUR + " " :
+					" " + LocaleString.HOURS + " ");
 			time %= MILLISECONDS_PER_HOUR;
 		}
 		if (time >= MILLISECONDS_PER_MINUTE) {
 			tmp = tmp + time / MILLISECONDS_PER_MINUTE + ((time / MILLISECONDS_PER_MINUTE) == 1 ?
-					" " + LocaleString.MINUTE.toString() + " " :
-					" " + LocaleString.MINUTES.toString() + " ");
+					" " + LocaleString.MINUTE + " " :
+					" " + LocaleString.MINUTES + " ");
 			time %= MILLISECONDS_PER_MINUTE;
 		}
 		if (time >= MILLISECONDS_PER_SECOND) {
 			tmp = tmp + time / MILLISECONDS_PER_SECOND + ((time / MILLISECONDS_PER_SECOND) == 1 ?
-					" " + LocaleString.SECOND.toString() + " " :
-					" " + LocaleString.SECONDS.toString() + " ");
+					" " + LocaleString.SECOND + " " :
+					" " + LocaleString.SECONDS + " ");
 		}
 		if (tmp.equalsIgnoreCase("")) {
 			return LocaleString.LESS_THAN_ONE_SECOND.toString();
@@ -160,7 +135,7 @@ public class PowerTime {
 			for (int i = 0; i < times.length; i ++) {
 				if (i == times.length - 1) {
 					if (times[i].contains(".")) {
-						String[] secs = times[i].split(".");
+						String[] secs = times[i].split("\\.");
 						millis += Integer.parseInt(secs[0]);
 						millis += Integer.parseInt(secs[1].substring(0, 2));
 					}

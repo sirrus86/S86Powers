@@ -15,15 +15,13 @@ public class PowerClassLoader extends ClassLoader {
 	}
 	
 	@Override
-	public Class<?> loadClass(final String name, final boolean resolve)
-			throws ClassNotFoundException {
+	public Class<?> loadClass(final String name, final boolean resolve) {
 		Class<?> clazz = findLoadedClass(name);
 		if (clazz == null) {
 			try {
 				clazz = Class.forName(name);
 				return clazz;
-			} catch (final Throwable e) {
-				clazz = null;
+			} catch (final Throwable ignored) {
 			}
 		}
 		if (clazz == null) {
@@ -32,15 +30,14 @@ public class PowerClassLoader extends ClassLoader {
 				final ByteArrayOutputStream out = new ByteArrayOutputStream();
 				final byte[] buffer = new byte[IOHelper.BYTE_BUFFER];
 				int len;
-				while ((len = in.read(buffer)) != -1) {
+				while (in != null && (len = in.read(buffer)) != -1) {
 					out.write(buffer, 0, len);
 				}
 				final byte[] bytes = out.toByteArray();
 				try {
 					clazz = defineClass(name, bytes, 0, bytes.length);
 				}
-				catch (Throwable e) {
-					clazz = null;
+				catch (Throwable ignored) {
 				}
 				if (clazz != null
 						&& resolve) {
@@ -52,14 +49,13 @@ public class PowerClassLoader extends ClassLoader {
 				if (clazz == null) {
 					try {
 						clazz = findSystemClass(name);
-					} catch (ClassNotFoundException ex) {
-						clazz = null;
+					} catch (ClassNotFoundException ignored) {
 					}
 				}
 				if (clazz == null) {
 					try {
 						super.loadClass(name, resolve);
-					} catch (ClassNotFoundException ex) {}
+					} catch (ClassNotFoundException ignored) {}
 				}
 			}
 		}

@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -24,7 +23,6 @@ import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.entity.Explosive;
 import org.bukkit.event.Event;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.HandlerList;
@@ -44,18 +42,20 @@ import com.google.common.collect.Sets;
  */
 public abstract class Power implements Comparable<Power>, Listener {
 	
-	private Map<PowerOption<?>, Object> options = new HashMap<>();
-	private List<ItemStack> supplies = new ArrayList<>();
-	private Map<PowerStat, Integer> stats = new HashMap<>();
-	private Set<Integer> tasks = new HashSet<>();
-	private Set<PowerUser> users = new HashSet<>();
+	private final Map<PowerOption<?>, Object> options = new HashMap<>();
+	private final List<ItemStack> supplies = new ArrayList<>();
+	private final Map<PowerStat, Integer> stats = new HashMap<>();
+	private final Set<Integer> tasks = new HashSet<>();
+	private final Set<PowerUser> users = new HashSet<>();
 	
-	private File cFile, defLocFile, locFile;
-	private YamlConfiguration config, defLocConfig, locConfig;
+	private final File cFile;
+	private final File defLocFile;
+	private final YamlConfiguration config;
+	private final YamlConfiguration defLocConfig;
+	private final YamlConfiguration locConfig;
 	private boolean enabled = true,
 			locked = false;
 	private final Permission aPerm, perm;
-	@Deprecated
 	protected boolean incomplete = false;
 	private final PowerManifest manifest = getClass().getAnnotation(PowerManifest.class);
 	private final static S86Powers plugin = JavaPlugin.getPlugin(S86Powers.class);
@@ -70,7 +70,7 @@ public abstract class Power implements Comparable<Power>, Listener {
 
 	protected PowerOption<Long> cooldown;
 	protected PowerOption<ItemStack> consumable, item;
-	protected PowerOption<Boolean> wAxe, wItem, wSword;
+	protected PowerOption<Boolean> wItem, wSword;
 	
 	/**
 	 * Events which should occur when the power becomes enabled or reloaded.
@@ -104,6 +104,7 @@ public abstract class Power implements Comparable<Power>, Listener {
 	 */
 	protected abstract void config();
 
+	@SuppressWarnings("ResultOfMethodCallIgnored")
 	public Power() {
 		plugin.getServer().getPluginManager().registerEvents(this, plugin);
 		File locFolder = new File(plugin.getPowerDirectory(), "localization");
@@ -131,7 +132,7 @@ public abstract class Power implements Comparable<Power>, Listener {
 		if (ConfigOption.Plugin.SHOW_CONFIG_STATUS) {
 			plugin.getLogger().info(LocaleString.LOAD_SUCCESS.build(defLocFile));
 		}
-		locFile = new File(locFolder, tag + "-" + ConfigOption.Plugin.LOCALIZATION + ".yml");
+		File locFile = new File(locFolder, tag + "-" + ConfigOption.Plugin.LOCALIZATION + ".yml");
 		locConfig = locFile.exists() ? YamlConfiguration.loadConfiguration(locFile) : defLocConfig;
 		aPerm = new Permission("s86powers.assign." + tag, "Allows player to assign " + getName() + ".", PermissionDefault.TRUE);
 		perm = new Permission("s86powers.power." + tag, "Allows player to use  " + getName() + " regardless if assigned or not.", PermissionDefault.FALSE);
@@ -170,38 +171,9 @@ public abstract class Power implements Comparable<Power>, Listener {
 		}
 	}
 	
-	/**
-	 * Determines whether any {@link ItemStack} which represents an axe can be used to activate this power.
-	 * @return {@link boolean} value of the field {@code wAxe}
-	 */
-	public boolean canUseAnyAxe() {
-		return hasOption(wAxe) ? getOption(wAxe) : false;
-	}
-	
-	/**
-	 * Determines whether any {@link ItemStack} which represents the item specified by the field {@code item} can be used to activate this power.
-	 * @return {@link boolean} value of the field {@code wItem}
-	 */
-	public boolean canUseSpecificItem() {
-		return hasOption(wItem) ? getOption(wItem) : true;
-	}
-	
-	/**
-	 * Determines whether any {@link ItemStack} which represents a sword can be used to activate this power.
-	 * @return {@link boolean} value of the field {@code wSword}
-	 */
-	public boolean canUseAnySword() {
-		return hasOption(wSword) ? getOption(wSword) : false;
-	}
-	
 	@Override
-	public int compareTo(Power p) {
-		String o1Str = getName(),
-				o2Str = p.getName();
-		List<String> tmp = Arrays.asList(o1Str, o2Str);
-		Collections.sort(tmp);
-		if (tmp.get(0).equalsIgnoreCase(getName())) return -1;
-		else return 1;
+	public int compareTo(Power power) {
+		return getName().compareTo(power.getName());
 	}
 	
 	/**
@@ -287,8 +259,8 @@ public abstract class Power implements Comparable<Power>, Listener {
 	}
 	
 	public Object getFieldValue(String option) {
-		Field field = null;
-		Object object = null;
+		Field field;
+		Object object;
 		try {
 			field = getClass().getDeclaredField(option);
 			field.setAccessible(true);
@@ -375,7 +347,7 @@ public abstract class Power implements Comparable<Power>, Listener {
 	}
 	
 	public int getStatValue(PowerStat stat) {
-		return stats.containsKey(stat) ? stats.get(stat) : 0;
+		return stats.getOrDefault(stat, 0);
 	}
 	
 	public List<ItemStack> getSupplies() {
@@ -439,10 +411,6 @@ public abstract class Power implements Comparable<Power>, Listener {
 		return options.containsKey(option);
 	}
 	
-	boolean hasSupply(final int index) {
-		return index >= 0 && index < supplies.size();
-	}
-	
 	public boolean isEnabled() {
 		return enabled;
 	}
@@ -457,8 +425,9 @@ public abstract class Power implements Comparable<Power>, Listener {
 	}
 	
 	protected String locale(String path, String defValue) {
-		if (!defLocConfig.contains(path)
-				|| !defLocConfig.getString(path).equals(defValue)) {
+		String pathValue = defLocConfig.getString(path);
+		if (pathValue == null
+				|| !pathValue.equals(defValue)) {
 			defLocConfig.set(path, defValue);
 			try {
 				defLocConfig.save(defLocFile);
@@ -476,20 +445,10 @@ public abstract class Power implements Comparable<Power>, Listener {
 	}
 
 	/**
-	 * Tells the plugin to monitor this explosive. If grief protection is turned on,
-	 * it will ensure no collateral damage occurs.
-	 * @param explosive - The explosive to monitor
-	 */
-	protected void monitorExplosive(Explosive explosive) {
-		plugin.getBlockListener().addExplosive(explosive);
-	}
-
-	/**
 	 * Creates a configurable option.
 	 * <p>
 	 * Fields can be directly assigned a value of this method, as it should always return
 	 * a value that is an instance of the default value.
-	 * @param <O>
 	 * @param <O> - The class of the default value
 	 * @param path - The path used to reference this option in this power class' config file
 	 * @param defValue - The default value of this option
@@ -505,7 +464,7 @@ public abstract class Power implements Comparable<Power>, Listener {
 	protected <O> PowerOption<O> option(final String path, final O defValue, final String desc, final boolean locked) {
 		PowerOption<O> option = (PowerOption<O>) getOptionByName(path);
 		if (option == null) {
-			option = new PowerOption<O>(this, path, defValue, locale("options." + path + ".description", desc), locked);
+			option = new PowerOption<>(this, path, defValue, locale("options." + path + ".description", desc), locked);
 		}
 		if (!options.containsKey(option)
 				&& !locked) {
@@ -620,12 +579,11 @@ public abstract class Power implements Comparable<Power>, Listener {
 		if (!locked) {
 			if (enable) {
 				enable();
-				return true;
 			}
 			else {
 				disable();
-				return true;
 			}
+			return true;
 		}
 		return false;
 	}
@@ -675,7 +633,7 @@ public abstract class Power implements Comparable<Power>, Listener {
 	 * Creates a configurable stat for this power.
 	 * @param path - The path used to reference this stat in this power class' config file
 	 * @param defValue - The default value of this option
-	 * @param desc - A description of what this stat is tracking, sent to the player any time they make progress
+	 * @param description - A description of what this stat is tracking, sent to the player any time they make progress
 	 * @param reward - The message a player gets when they complete this stat, to explain what their reward is
 	 * @return The configured {@link PowerStat} instance of this stat
 	 */
@@ -722,8 +680,7 @@ public abstract class Power implements Comparable<Power>, Listener {
 			}
 		}
 		for (PowerUser user : S86Powers.getConfigManager().getUserList()) {
-			if (user.hasPower(this)
-					&& !users.contains(user)) {
+			if (user.hasPower(this)) {
 				users.add(user);
 			}
 		}

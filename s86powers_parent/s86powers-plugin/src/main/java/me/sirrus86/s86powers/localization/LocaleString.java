@@ -2,6 +2,7 @@ package me.sirrus86.s86powers.localization;
 
 import java.io.File;
 
+import me.sirrus86.s86powers.S86Powers;
 import org.bukkit.ChatColor;
 
 import me.sirrus86.s86powers.command.HelpTopic;
@@ -165,7 +166,7 @@ public enum LocaleString {
 	INVALID_SERVER_SOFTWARE("console", "&string will not work with this server software and was not loaded. Required software: &server"),
 	INVALID_SERVER_VERSION("console", "&string will not work with this server version and was not loaded. Required version: &version"),
 	LOAD_ATTEMPT("console", "Attempting to load &file..."),
-	LOAD_FAIL("console", "Failed to load &file."),
+	LOAD_FAIL("console", "Failed to load &string."),
 	LOAD_SUCCESS("console", "Successfully loaded &file."),
 	POWER_LOAD_BLOCKED("console", "&class is blocked and was not loaded."),
 	POWER_LOAD_SUCCESS("console", "&power loaded successfully."),
@@ -193,6 +194,8 @@ public enum LocaleString {
 	GROUP_REMOVE_HELP("help", "Removes the specified power from the group."),
 	HELP_HELP("help", "Shows a list of all available commands, optionally for a specific topic."),
 	PLAYER_ADD_HELP("help", "Adds the specified power to the player."),
+	PLAYER_CLEAR_HELP("help", "Clears all powers or those of the specified type from the specified player."),
+	PLAYER_GIVE_HELP("help", "Gives a power book for the specified power to the specified player."),
 	PLAYER_HELP_HELP("help", "Shows a list of applicable player commands."),
 	PLAYER_INFO_HELP("help", "Shows info on the specified player."),
 	PLAYER_LIST_HELP("help", "Shows a list of all players in the database."),
@@ -224,6 +227,8 @@ public enum LocaleString {
 	REGION_RESIZE_HELP("help", "Changes the size of the specified region."),
 	REGION_TOGGLE_HELP("help", "Toggles the neutral state of the specified region."),
 	SELF_ADD_HELP("help", "Adds the specified power to the command user."),
+	SELF_CLEAR_HELP("help", "Clears all powers or those of the specified type from the command user."),
+	SELF_GIVE_HELP("help", "Gives a power book for the specified power to the command user."),
 	SELF_INFO_HELP("help", "Shows info on the command user."),
 	SELF_OPTION_HELP("help", "Views or modifies personal power options for the command user."),
 	SELF_REMOVE_HELP("help", "Removes the specified power from the command user."),
@@ -290,91 +295,61 @@ public enum LocaleString {
 	
 	private final String defText, prefix;
 	
-	private LocaleString(String prefix, String defText) {
+	LocaleString(String prefix, String defText) {
 		this.defText = defText;
 		this.prefix = prefix;
 	}
 	
 	public String build(Object... objects) {
 		String text = this.toString();
-		for (int i = 0; i < objects.length; i ++) {
-			if (objects[i] instanceof File
+		for (Object object : objects) {
+			if (object instanceof File file
 					&& text.contains("&file")) {
-				File file = (File) objects[i];
 				text = text.replaceAll("&file", file.getName());
-			}
-			else if (objects[i] instanceof Long
+			} else if (object instanceof Long
 					&& text.contains("&cooldown")) {
-				long cooldown = (long) objects[i];
+				long cooldown = (long) object;
 				text = text.replaceAll("&cooldown", PowerTime.asLongString(cooldown));
-			}
-			else if (objects[i] instanceof PowerGroup
+			} else if (object instanceof PowerGroup group
 					&& text.contains("&group")) {
-				PowerGroup group = (PowerGroup) objects[i];
 				text = text.replaceAll("&group", group.getName());
-			}
-			else if (objects[i] instanceof Double
+			} else if (object instanceof Double
 					&& text.contains("&double")) {
-				double j = (double) objects[i];
+				double j = (double) object;
 				text = text.replaceAll("&double", Double.toString(j));
-			}
-			else if (objects[i] instanceof Integer
+			} else if (object instanceof Integer
 					&& text.contains("&int")) {
-				int j = (int) objects[i];
+				int j = (int) object;
 				text = text.replaceAll("&int", Integer.toString(j));
-			}
-			else if (objects[i] instanceof PowerUser
+			} else if (object instanceof PowerUser user
 					&& text.contains("&player")) {
-				PowerUser user = (PowerUser) objects[i];
 				text = text.replaceAll("&player", user.getName() != null ? user.getName() : "!NULL");
-			}
-			else if (objects[i] instanceof Power
+			} else if (object instanceof Power power
 					&& text.contains("&power")) {
-				Power power = (Power) objects[i];
 				text = text.replaceAll("&power", power.getType().getColor() + power.getName() + ChatColor.RESET);
-			}
-//			else if (objects[i] instanceof PotionEffect
-//					&& text.contains("&effect")) {
-//				PotionEffect effect = (PotionEffect) objects[i];
-//				text = text.replaceAll("&effect", text); // TODO
-//			}
-			else if (objects[i] instanceof String
+			} else if (object instanceof String string
 					&& text.contains("&string")) {
-				String string = (String) objects[i];
 				text = text.replaceAll("&string", string);
-			}
-			else if (objects[i] instanceof HelpTopic
+			} else if (object instanceof HelpTopic topic
 					&& text.contains("&syntax")) {
-				HelpTopic topic = (HelpTopic) objects[i];
 				text = text.replaceAll("&syntax", ChatColor.AQUA + topic.getSyntax() + ChatColor.RESET);
-			}
-			else if (objects[i] instanceof Class<?>
+			} else if (object instanceof Class<?> clazz
 					&& text.contains("&class")) {
-				Class<?> clazz = (Class<?>) objects[i];
 				text = text.replaceAll("&class", clazz.getSimpleName());
-			}
-			else if (objects[i] instanceof PowerType
+			} else if (object instanceof PowerType type
 					&& text.contains("&type")) {
-				PowerType type = (PowerType) objects[i];
 				text = text.replaceAll("&type", type.getColor() + type.getName() + ChatColor.RESET);
-			}
-			else if (objects[i] instanceof NeutralRegion
+			} else if (object instanceof NeutralRegion region
 					&& text.contains("&region")) {
-				NeutralRegion region = (NeutralRegion) objects[i];
 				text = text.replaceAll("&region", region.getName());
-			}
-			else if (objects[i] instanceof MCVersion
+			} else if (object instanceof MCVersion version
 					&& text.contains("&version")) {
-				MCVersion version = (MCVersion) objects[i];
 				text = text.replaceAll("&version", version.name().replace("_", "."));
-			}
-			else if (objects[i] instanceof MCServer
+			} else if (object instanceof MCServer server
 					&& text.contains("&server")) {
-				MCServer server = (MCServer) objects[i];
 				text = text.replaceAll("&server", server.toString());
-			}
-			else if (text.contains("&value")) {
-				text = text.replaceAll("&value", objects[i] != null ? objects[i].toString() : "null");
+			} else if (text.contains("&value")) {
+				text = text.replaceAll("&value", object != null ? object.toString() : "null");
 			}
 		}
 		return text;
@@ -398,7 +373,7 @@ public enum LocaleString {
 	
 	@Override
 	public String toString() {
-		return LocaleLoader.LOCALIZATION_YAML.getString(this.getPath());
+		return S86Powers.LOCALIZATION_YAML.getString(this.getPath());
 	}
 	
 }

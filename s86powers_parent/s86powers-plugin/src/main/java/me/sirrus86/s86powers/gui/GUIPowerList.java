@@ -26,7 +26,7 @@ public class GUIPowerList extends GUIAbstractList<Power> {
 		if (!powerItems.containsKey(power)) {
 			String powerName = ChatColor.RESET + "" + power.getType().getColor() + power.getName();
 			String powerDesc = PowerTools.getFilteredText(power, power.getDescription());
-			List<String> lore = PowerTools.wordSplit(ChatColor.RESET.toString() + ChatColor.GRAY.toString(), powerDesc, 30);
+			List<String> lore = PowerTools.wordSplit(ChatColor.RESET + ChatColor.GRAY.toString(), powerDesc, 30);
 			powerItems.put(power, createItem(power.getIcon(), powerName, lore));
 		}
 		setItem(slot, powerItems.get(power), action);
@@ -67,18 +67,12 @@ public class GUIPowerList extends GUIAbstractList<Power> {
 					}
 				});
 			}
-			setItem(48, BACK, player -> {
-				openLast(player);
-			});
+			setItem(48, BACK, this::openLast);
 			if (page > 1) {
-				setItem(49, PAGE1, LocaleString.PAGE.toString() + " " + Integer.toString(page - 1), (List<String>) null, player -> {
-					openGUI(player, sourceList.get(page - 2));
-				});
+				setItem(49, PAGE1, LocaleString.PAGE + " " + (page - 1), null, player -> openGUI(player, sourceList.get(page - 2)));
 			}
 			if (page < sourceList.size()) {
-				setItem(50, PAGE2, LocaleString.PAGE.toString() + " " + Integer.toString(page + 1), (List<String>) null, player -> {
-					openGUI(player, sourceList.get(page));
-				});
+				setItem(50, PAGE2, LocaleString.PAGE + " " + (page + 1), null, player -> openGUI(player, sourceList.get(page)));
 			}
 		}
 	}

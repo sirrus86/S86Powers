@@ -101,25 +101,19 @@ public final class CelestialPillars extends Power {
 					block.getRelative(BlockFace.SOUTH_WEST, usrPRange / 2).getRelative(BlockFace.WEST, usrPRange / 2).getRelative(BlockFace.UP)};
 			user.increaseStat(pillarsSummoned, 6);
 		}
-		if (blocks != null) {
-			for (final Block b : blocks) {
-				for (int i = 0; i < usrPHeight; i ++) {
-					runTaskLater(new Runnable() {
-						@Override
-						public void run() {
-							Block air = PowerTools.getHighestAirBlock(b.getLocation(), usrPHeight);
-							if (air != null
-									&& !air.getType().isSolid()) {
-								FallingBlock fall = air.getWorld().spawnFallingBlock(air.getLocation(), Material.SEA_LANTERN.createBlockData());
-								fall.setDropItem(false);
-								falling.put(fall, user);
-								if (isSuper) {
-									superFalling.add(fall);
-								}
-							}
+		for (final Block b : blocks) {
+			for (int i = 0; i < usrPHeight; i ++) {
+				runTaskLater(() -> {
+					Block air = PowerTools.getHighestAirBlock(b.getLocation(), usrPHeight);
+					if (!air.getType().isSolid()) {
+						FallingBlock fall = air.getWorld().spawnFallingBlock(air.getLocation(), Material.SEA_LANTERN.createBlockData());
+						fall.setDropItem(false);
+						falling.put(fall, user);
+						if (isSuper) {
+							superFalling.add(fall);
 						}
-					}, i * 5);
-				}
+					}
+				}, i * 5L);
 			}
 		}
 		PowerTools.blockDisguise(block, Material.SEA_LANTERN);
@@ -127,20 +121,19 @@ public final class CelestialPillars extends Power {
 	
 	@EventHandler(ignoreCancelled = true)
 	private void onChange(EntityChangeBlockEvent event) {
-		if (event.getEntity() instanceof FallingBlock) {
-			FallingBlock fallBlock = (FallingBlock) event.getEntity();
+		if (event.getEntity() instanceof FallingBlock fallBlock) {
 			if (falling.containsKey(fallBlock)
 					&& pillars.containsKey(falling.get(fallBlock))) {
 				PowerUser user = falling.get(fallBlock);
+				Pillar pillar;
 				if (superFalling.contains(fallBlock)
 						&& sPillars.containsKey(user)) {
-					Pillar pillar = sPillars.get(user);
-					pillar.addBlock(event.getBlock());
+					pillar = sPillars.get(user);
 				}
 				else {
-					Pillar pillar = pillars.get(user);
-					pillar.addBlock(event.getBlock());
+					pillar = pillars.get(user);
 				}
+				pillar.addBlock(event.getBlock());
 			}
 		}
 	}
@@ -176,11 +169,11 @@ public final class CelestialPillars extends Power {
 	
 	private class Pillar implements Listener {
 		
-		private Map<UUID, Location> inside, outside;
+		private final Map<UUID, Location> inside;
+		private final Map<UUID, Location> outside;
 		
 		private final List<Block> blocks;
 		private final Block core;
-		private boolean isSuper;
 		private long life;
 		private final int task;
 		private final PowerUser user;
@@ -189,10 +182,46 @@ public final class CelestialPillars extends Power {
 			this.user = user;
 			this.blocks = new ArrayList<>();
 			this.core = core;
-			this.isSuper = isSuper;
 			this.life = System.currentTimeMillis() + user.getOption(pDur);
 			inside = new HashMap<>();
 			outside = new HashMap<>();
+			Runnable manage = new BukkitRunnable() {
+				@Override
+				public void run() {
+					if (life > System.currentTimeMillis()) {
+						double range = isSuper ? user.getOption(sPRange) : user.getOption(pRange);
+						for (Entity entity : PowerTools.getNearbyEntities(Entity.class, core.getLocation(), range + 2)) {
+							if (entity instanceof FallingBlock
+									&& !falling.containsKey(entity)
+									&& !superFalling.contains(entity)) {
+								Location checkLoc = core.getLocation().clone();
+								checkLoc.setY(entity.getLocation().getY());
+								if (!inside.containsKey(entity.getUniqueId())
+										&& !outside.containsKey(entity.getUniqueId())) {
+									if (entity.getLocation().distanceSquared(checkLoc) > range * range) {
+										outside.put(entity.getUniqueId(), entity.getLocation().clone());
+									} else {
+										inside.put(entity.getUniqueId(), entity.getLocation().clone());
+									}
+								}
+								if (inside.containsKey(entity.getUniqueId()) && checkLoc.distanceSquared(entity.getLocation()) > range * range) {
+									entity.teleport(inside.get(entity.getUniqueId()));
+								} else if (outside.containsKey(entity.getUniqueId()) && checkLoc.distanceSquared(entity.getLocation()) <= range * range) {
+									entity.teleport(outside.get(entity.getUniqueId()));
+								} else {
+									if (inside.containsKey(entity.getUniqueId())) {
+										inside.put(entity.getUniqueId(), entity.getLocation().clone());
+									} else if (outside.containsKey(entity.getUniqueId())) {
+										outside.put(entity.getUniqueId(), entity.getLocation().clone());
+									}
+								}
+							}
+						}
+					} else {
+						shatter();
+					}
+				}
+			};
 			task = runTaskTimer(manage, 0L, 0L).getTaskId();
 			registerEvents(this);
 		}
@@ -214,8 +243,7 @@ public final class CelestialPillars extends Power {
 		}
 		
 		public void shatter() {
-			for (int i = 0; i < blocks.size(); i ++) {
-				Block block = blocks.get(i);
+			for (Block block : blocks) {
 				block.setType(Material.AIR);
 				block.getWorld().playEffect(block.getLocation(), Effect.STEP_SOUND, Material.SEA_LANTERN);
 			}
@@ -234,49 +262,6 @@ public final class CelestialPillars extends Power {
 			unregisterEvents(this);
 			cancelTask(task);
 		}
-		
-		private Runnable manage = new BukkitRunnable() {
-			@Override
-			public void run() {
-				if (life > System.currentTimeMillis()) {
-					double range = isSuper ? user.getOption(sPRange) : user.getOption(pRange);
-					for (Entity entity : PowerTools.getNearbyEntities(Entity.class, core.getLocation(), range + 2)) {
-						if (entity != user.getPlayer()
-								&& !falling.containsKey(entity)
-								&& !superFalling.contains(entity)) {
-							Location checkLoc = core.getLocation().clone();
-							checkLoc.setY(entity.getLocation().getY());
-							if (!inside.containsKey(entity.getUniqueId())
-									&& !outside.containsKey(entity.getUniqueId())) {
-								if (entity.getLocation().distanceSquared(checkLoc) > range * range) {
-									outside.put(entity.getUniqueId(), entity.getLocation().clone());
-								}
-								else {
-									inside.put(entity.getUniqueId(), entity.getLocation().clone());
-								}
-							}
-							if (inside.containsKey(entity.getUniqueId()) && checkLoc.distanceSquared(entity.getLocation()) > range * range) {
-								entity.teleport(inside.get(entity.getUniqueId()));
-							}
-							else if (outside.containsKey(entity.getUniqueId()) && checkLoc.distanceSquared(entity.getLocation()) <= range * range) {
-								entity.teleport(outside.get(entity.getUniqueId()));
-							}
-							else {
-								if (inside.containsKey(entity.getUniqueId())) {
-									inside.put(entity.getUniqueId(), entity.getLocation().clone());
-								}
-								else if (outside.containsKey(entity.getUniqueId())) {
-									outside.put(entity.getUniqueId(), entity.getLocation().clone());
-								}
-							}
-						}
-					}
-				}
-				else {
-					shatter();
-				}
-			}
-		};
 
 		@EventHandler(ignoreCancelled = true)
 		private void onBreak(BlockBreakEvent event) {

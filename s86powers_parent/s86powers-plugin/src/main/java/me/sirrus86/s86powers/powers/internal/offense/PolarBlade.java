@@ -43,78 +43,72 @@ public final class PolarBlade extends Power {
 		supplies(new ItemStack(Material.IRON_SWORD), new ItemStack(Material.ICE, 16), new ItemStack(Material.SNOW_BLOCK, 16));
 	}
 	
-	private ItemStack createPBlade(PowerUser user, ItemStack[] matrix) {
+	private ItemStack createPBlade(ItemStack[] matrix) {
 		ItemStack sword = null;
 		int slow = 0;
 		int sharpness = 0;
-		for (int i = 0; i < matrix.length; i ++) {
-			ItemStack stack = matrix[i];
+		for (ItemStack stack : matrix) {
 			if (stack != null && stack.getType() != Material.AIR) {
 				if (PowerTools.isSword(stack)) {
 					sword = stack.clone();
-				}
-				else if (stack.getType() == Material.ICE){
-					sharpness ++;
-				}
-				else if (stack.getType() == Material.SNOWBALL) {
-					slow ++;
-				}
-				else if (stack.getType() == Material.SNOW_BLOCK){
+				} else if (stack.getType() == Material.ICE) {
+					sharpness++;
+				} else if (stack.getType() == Material.SNOWBALL) {
+					slow++;
+				} else if (stack.getType() == Material.SNOW_BLOCK) {
 					slow += 3;
 				}
 			}
 		}
 		if (sword != null) {
 			ItemMeta meta = sword.hasItemMeta() ? getRequiredItem().getItemMeta() : Bukkit.getServer().getItemFactory().getItemMeta(sword.getType());
-			meta.setDisplayName(ChatColor.RESET + this.getName());
-			meta.getPersistentDataContainer().set(isPolar, PersistentDataType.BYTE, (byte) 0x1);
-			if (sharpness > 0) {
-				meta.addEnchant(Enchantment.DAMAGE_ALL, sharpness, true);
+			if (meta != null) {
+				meta.setDisplayName(ChatColor.RESET + this.getName());
+				meta.getPersistentDataContainer().set(isPolar, PersistentDataType.BYTE, (byte) 0x1);
+				if (sharpness > 0) {
+					meta.addEnchant(Enchantment.DAMAGE_ALL, sharpness, true);
+				}
+				if (slow > 0) {
+					slow --;
+					meta.getPersistentDataContainer().set(pBladeEffectAmps, PersistentDataType.INTEGER, slow);
+					String effectText = effectDesc.replace("[effect]", "Slowness")
+							.replace("[power]", PowerTools.getRomanNumeral(slow))
+							.replace("[time]", PowerTime.asClock(PowerTime.toMillis(3, 0), false, false, true, true, false));
+					meta.setLore(List.of(effectText));
+				}
+				sword.setItemMeta(meta);
 			}
-			if (slow > 0) {
-				slow --;
-				meta.getPersistentDataContainer().set(pBladeEffectAmps, PersistentDataType.INTEGER, slow);
-				String effectText = effectDesc.replace("[effect]", "Slowness")
-						.replace("[power]", PowerTools.getRomanNumeral(slow))
-						.replace("[time]", PowerTime.asClock(PowerTime.toMillis(3, 0), false, false, true, true, false));
-				meta.setLore(List.of(effectText));
-			}
-			sword.setItemMeta(meta);
 		}
 		return sword;
 	}
 	
 	private boolean hasPBlade(LivingEntity entity) {
-		ItemStack sword = entity instanceof Player ? ((Player) entity).getInventory().getItemInMainHand() : entity.getEquipment().getItemInMainHand();
-		return sword != null
-				&& isPBlade(sword);
+		ItemStack sword = entity instanceof Player ? ((Player) entity).getInventory().getItemInMainHand() : entity.getEquipment() != null ? entity.getEquipment().getItemInMainHand() : null;
+		return isPBlade(sword);
 	}
 	
 	private boolean isPBlade(ItemStack sword) {
 		return PowerTools.isSword(sword)
-				&& sword.hasItemMeta()
+				&& sword.getItemMeta() != null
 				&& sword.getItemMeta().getPersistentDataContainer().has(isPolar, PersistentDataType.BYTE);
 	}
 	
-	private boolean isPBladeRecipe(PowerUser user, ItemStack[] matrix) {
+	private boolean isPBladeRecipe(ItemStack[] matrix) {
 		boolean broken = false, hasMats = false, hasSword = false;
-		for (int i = 0; i < matrix.length; i ++) {
-			ItemStack stack = matrix[i];
+		for (ItemStack stack : matrix) {
 			if (stack != null && stack.getType() != Material.AIR) {
 				if (PowerTools.isSword(stack)
-						&& (!stack.hasItemMeta() || !stack.getItemMeta().hasEnchants())) {
+						&& (stack.getItemMeta() == null || !stack.getItemMeta().hasEnchants())) {
 					if (!hasSword) hasSword = true;
 					else {
 						broken = true;
 						break;
 					}
-				}
-				else if (stack.getType() == Material.ICE
+				} else if (stack.getType() == Material.ICE
 						|| stack.getType() == Material.SNOWBALL
 						|| stack.getType() == Material.SNOW_BLOCK) {
 					hasMats = true;
-				}
-				else {
+				} else {
 					broken = true;
 					break;
 				}
@@ -123,19 +117,19 @@ public final class PolarBlade extends Power {
 		return !broken && hasMats && hasSword;
 	}
 	
+	@SuppressWarnings("DataFlowIssue")
 	@EventHandler(ignoreCancelled = true)
 	private void onDamage(EntityDamageByEntityEvent event) {
 		if (event.getDamager() instanceof LivingEntity
-				&& event.getEntity() instanceof LivingEntity) {
-			LivingEntity damager = (LivingEntity) event.getDamager();
+				&& event.getEntity() instanceof LivingEntity damager) {
 			if (hasPBlade(damager)) {
 				if (damager instanceof Player) {
 					PowerUser user = getUser((Player) damager);
 					user.causeDamage(this, event);
 				}
-				ItemStack sword = damager instanceof Player ? ((Player) damager).getInventory().getItemInMainHand() : damager.getEquipment().getItemInMainHand();
+				ItemStack sword = damager instanceof Player ? ((Player) damager).getInventory().getItemInMainHand() : damager.getEquipment() != null ? damager.getEquipment().getItemInMainHand() : null;
 				LivingEntity entity = (LivingEntity) event.getEntity();
-				int slowAmp = sword.getItemMeta().getPersistentDataContainer().get(pBladeEffectAmps, PersistentDataType.INTEGER);
+				int slowAmp = sword != null && sword.getItemMeta() != null ? sword.getItemMeta().getPersistentDataContainer().get(pBladeEffectAmps, PersistentDataType.INTEGER) : -1;
 				entity.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, PowerTime.toTicks(3, 0), slowAmp));
 			}
 		}
@@ -147,15 +141,11 @@ public final class PolarBlade extends Power {
 		if (event.getWhoClicked() instanceof Player) {
 			final PowerUser user = getUser((Player) event.getWhoClicked());
 			if (user.allowPower(this)
-					&& event.getInventory() instanceof CraftingInventory) {
-				final CraftingInventory inv = (CraftingInventory) event.getInventory();
-				runTaskLater(new Runnable() {
-					@Override
-					public void run() {
-						if (isPBladeRecipe(user, inv.getMatrix())) {
-							inv.setResult(createPBlade(user, inv.getMatrix()));
-							user.getPlayer().updateInventory();
-						}
+					&& event.getInventory() instanceof final CraftingInventory inv) {
+				runTaskLater(() -> {
+					if (isPBladeRecipe(inv.getMatrix())) {
+						inv.setResult(createPBlade(inv.getMatrix()));
+						user.getPlayer().updateInventory();
 					}
 				}, 1L);
 				if (event.getCurrentItem() != null
@@ -167,14 +157,12 @@ public final class PolarBlade extends Power {
 							inv.setResult(null);
 							user.getPlayer().updateInventory();
 						}
-						else {
-							if (event.getCursor() == null
-									|| event.getCursor().getType() == Material.AIR) {
-								event.setCursor(event.getCurrentItem());
-								inv.setMatrix(new ItemStack[inv.getMatrix().length]);
-								inv.setResult(null);
-								user.getPlayer().updateInventory();
-							}
+						else if (event.getCursor() == null
+								|| event.getCursor().getType() == Material.AIR) {
+							event.setCursor(event.getCurrentItem());
+							inv.setMatrix(new ItemStack[inv.getMatrix().length]);
+							inv.setResult(null);
+							user.getPlayer().updateInventory();
 						}
 					}
 				}

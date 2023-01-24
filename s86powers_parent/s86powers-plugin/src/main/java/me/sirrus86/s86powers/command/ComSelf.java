@@ -176,7 +176,7 @@ public class ComSelf extends ComAbstract {
 		}
 	}
 	
-	private final void comSelfOption(Power power, String page, PowerOption<?> option, String valueStr) {
+	private void comSelfOption(Power power, String page, PowerOption<?> option, String valueStr) {
 		if (sender.hasPermission(S86Permission.SELF_OPTION)) {
 			if (power != null) {
 				if (option != null) {
@@ -202,7 +202,7 @@ public class ComSelf extends ComAbstract {
 									}
 								}
 								else {
-									sUser.setOption(option, option.getDefaultValue() instanceof Long ? (Long) value : value);
+									sUser.setOption(option, option.getDefaultValue() instanceof Long ? ((Number)value).longValue() : value);
 									sender.sendMessage(SUCCESS + LocaleString.SET_OPTION_SUCCESS.build(option.getPath(), value));
 								}
 							}
@@ -220,10 +220,11 @@ public class ComSelf extends ComAbstract {
 						}
 					}
 					else {
+						Object value = sUser.getOptionValue(option);
 						sender.sendMessage(ChatColor.GREEN + option.getPath());
 						sender.sendMessage(LocaleString.DESCRIPTION + ": " + ChatColor.GRAY + option.getDescription());
 						sender.sendMessage(LocaleString.TYPE + ": " + ChatColor.GRAY + option.getDefaultValue().getClass().getSimpleName());
-						sender.sendMessage(LocaleString.VALUE + ": " + ChatColor.BLUE + (sUser.getOptionValue(option) instanceof ItemStack ? PowerTools.getItemName((ItemStack) sUser.getOptionValue(option)) : sUser.getOptionValue(option).toString()) + ChatColor.RESET + " " + LocaleString.DEFAULT + ": " + ChatColor.GRAY + option.getDefaultValue());
+						sender.sendMessage(LocaleString.VALUE + ": " + ChatColor.BLUE + (value == null ? option.getDefaultValue() : value instanceof ItemStack ? PowerTools.getItemName((ItemStack) value) : value.toString()) + ChatColor.RESET + " " + LocaleString.DEFAULT + ": " + ChatColor.GRAY + option.getDefaultValue());
 					}
 				}
 				else if (page != null) {
@@ -293,32 +294,30 @@ public class ComSelf extends ComAbstract {
 					sender.sendMessage(INFO + getUserName(sUser) + " " + LocaleString.STATS);
 					List<Power> powers = power != null ? Lists.newArrayList(power) : new ArrayList<>(sUser.getPowers());
 					Collections.sort(powers);
-					String tmp = "";
-					for (int i = 0; i < powers.size(); i ++) {
-						Power nextPower = powers.get(i);
-						List<PowerStat> stats = new ArrayList<PowerStat>(power.getStats().keySet());
+					StringBuilder tmp = new StringBuilder();
+					for (Power nextPower : powers) {
+						List<PowerStat> stats = power != null ? new ArrayList<>(power.getStats().keySet()) : new ArrayList<>();
 						Collections.sort(stats);
 						if (!stats.isEmpty()) {
-							tmp += nextPower.getType().getColor() + nextPower.getName() + "\n";
-							for (int j = 0; j < stats.size(); j ++) {
-								tmp += ChatColor.RESET + " " + stats.get(j).getDescription() + ": " + sUser.getStatCount(stats.get(j)) + "/" + nextPower.getStatValue(stats.get(j)) + "\n";
+							tmp.append(nextPower.getType().getColor()).append(nextPower.getName()).append("\n");
+							for (PowerStat powerStat : stats) {
+								tmp.append(ChatColor.RESET).append(" ").append(powerStat.getDescription()).append(": ").append(sUser.getStatCount(powerStat)).append("/").append(nextPower.getStatValue(powerStat)).append("\n");
 								if (ConfigOption.Users.VIEW_INCOMPLETE_STAT_REWARDS
-										|| sUser.hasStatMaxed(stats.get(j))) {
-									tmp += "  " + LocaleString.REWARD + ": " + (!sUser.hasStatMaxed(stats.get(j)) ? ChatColor.GRAY : "") + PowerTools.getFilteredText(nextPower, stats.get(j).getReward()) + "\n";
-								}
-								else {
-									tmp += "  " + LocaleString.REWARD + ": " + ChatColor.GRAY + "???\n";
+										|| sUser.hasStatMaxed(powerStat)) {
+									tmp.append("  ").append(LocaleString.REWARD).append(": ").append(!sUser.hasStatMaxed(powerStat) ? ChatColor.GRAY : "").append(PowerTools.getFilteredText(nextPower, powerStat.getReward())).append("\n");
+								} else {
+									tmp.append("  ").append(LocaleString.REWARD).append(": ").append(ChatColor.GRAY).append("???\n");
 								}
 							}
 						}
 					}
-					if (tmp.equalsIgnoreCase("")) {
-						tmp = LocaleString.NO_STATS_RECORDED.toString();
+					if (tmp.toString().equalsIgnoreCase("")) {
+						tmp = new StringBuilder(LocaleString.NO_STATS_RECORDED.toString());
 					}
-					if (tmp.endsWith("\n")) {
-						tmp = tmp.substring(0, tmp.lastIndexOf("\n"));
+					if (tmp.toString().endsWith("\n")) {
+						tmp = new StringBuilder(tmp.substring(0, tmp.lastIndexOf("\n")));
 					}
-					sender.sendMessage(tmp);
+					sender.sendMessage(tmp.toString());
 				}
 			}
 			else {

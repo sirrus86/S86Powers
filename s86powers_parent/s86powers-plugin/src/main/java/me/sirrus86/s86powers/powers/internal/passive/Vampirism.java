@@ -1,7 +1,6 @@
 package me.sirrus86.s86powers.powers.internal.passive;
 
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Set;
 
 import org.bukkit.ChatColor;
@@ -95,12 +94,10 @@ public final class Vampirism extends Power {
 		turnToBat = locale("message.turn-to-bat", ChatColor.GREEN + "You transform into a bat.");
 	}
 	
-	private BukkitRunnable manage = new BukkitRunnable() {
+	private final BukkitRunnable manage = new BukkitRunnable() {
 		@Override
 		public void run() {
-			Iterator<PowerUser> it = getInstance().getUsers().iterator();
-			while (it.hasNext()) {
-				PowerUser user = it.next();
+			for (PowerUser user : getInstance().getUsers()) {
 				if (user.isOnline()
 						&& user.allowPower(getInstance())) {
 					if (PowerTools.inSunlight(user.getPlayer().getEyeLocation())) {
@@ -110,14 +107,12 @@ public final class Vampirism extends Power {
 						if (user.getPlayer().getFoodLevel() > 0) {
 							user.getPlayer().setFoodLevel(user.getPlayer().getFoodLevel() - 1);
 							user.getPlayer().getWorld().playEffect(user.getPlayer().getEyeLocation(), Effect.SMOKE, BlockFace.UP);
-						}
-						else if (!user.getOption(helmProt)
+						} else if (!user.getOption(helmProt)
 								|| user.getPlayer().getInventory().getHelmet() == null
 								|| user.getPlayer().getInventory().getHelmet().getType() == Material.AIR) {
 							user.getPlayer().setFireTicks(20);
 						}
-					}
-					else if (user.hasStatMaxed(kills)
+					} else if (user.hasStatMaxed(kills)
 							&& user.getCooldown(getInstance()) < 0L) {
 						user.setAllowFlight(true);
 					}
@@ -169,11 +164,9 @@ public final class Vampirism extends Power {
 				event.setCancelled(true);
 			}
 		}
-		if (!event.isCancelled()
-				&& event.getEntity() instanceof Player
-				&& event.getDamager() instanceof LivingEntity) {
+		if (event.getEntity() instanceof Player
+				&& event.getDamager() instanceof LivingEntity attacker) {
 			PowerUser user = getUser((Player) event.getEntity());
-			LivingEntity attacker = (LivingEntity) event.getDamager();
 			if (user.allowPower(this)) {
 				ItemStack used = null;
 				if (attacker.getEquipment() != null) {
@@ -220,7 +213,6 @@ public final class Vampirism extends Power {
 	private void onConsume(PlayerItemConsumeEvent event) {
 		PowerUser user = getUser(event.getPlayer());
 		if (user.allowPower(this)
-				&& event.getItem() != null
 				&& event.getItem().getType().isEdible()) {
 			event.setCancelled(true);
 		}
@@ -253,7 +245,7 @@ public final class Vampirism extends Power {
 	}
 	
 	@EventHandler
-	protected void onStatMax(UserMaxedStatEvent event) {
+	private void onStatMax(UserMaxedStatEvent event) {
 		PowerUser user = event.getUser();
 		if (event.getStat() == kills) {
 			user.setAllowFlight(true);

@@ -14,10 +14,6 @@ public class IOHelper {
 		return url;
 	}
 	
-	public static boolean isClass(File file) {
-		return file.getName().endsWith(".class");
-	}
-	
 	public static boolean isJar(File file) {
 		return file.getName().endsWith(".jar");
 	}

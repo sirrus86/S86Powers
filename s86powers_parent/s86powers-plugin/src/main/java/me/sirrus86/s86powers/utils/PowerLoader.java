@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
-import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
@@ -30,9 +29,8 @@ public class PowerLoader {
 	private void load(File file) {
 		if (file.isDirectory()) {
 			File[] files = file.listFiles();
-			Arrays.sort(files, new Comparator<File>() {
-				@Override
-				public int compare(File o1, File o2) {
+			if (files != null) {
+				Arrays.sort(files, (o1, o2) -> {
 					String o1name = o1.getName();
 					int o1dot = o1name.lastIndexOf('.');
 					String o2name = o2.getName();
@@ -41,22 +39,20 @@ public class PowerLoader {
 						o1name = o1name.substring(o1dot + 1);
 						o2name = o2name.substring(o2dot + 1);
 						return o1name.compareTo(o2name);
-					}
-					else if (o1dot == -1) {
+					} else if (o1dot == -1) {
 						return -1;
-					}
-					else {
+					} else {
 						return 1;
 					}
+				});
+				try {
+					ClassLoader loader = new PowerClassLoader(file.toURI().toURL());
+					for (final File item : files) {
+						load(item, loader);
+					}
+				} catch (final Exception e) {
+					e.printStackTrace();
 				}
-			});
-			try {
-				ClassLoader loader = new PowerClassLoader(file.toURI().toURL());
-				for (final File item : files) {
-					load(item, loader);
-				}
-			} catch (final Exception e) {
-				e.printStackTrace();
 			}
 		}
 		else if (IOHelper.isJar(file)) {
@@ -83,8 +79,10 @@ public class PowerLoader {
 	
 	private void load(File file, ClassLoader loader, String prefix) {
 		if (file.isDirectory()) {
-			if (!file.getName().startsWith(".")) {
-				for (final File f : file.listFiles()) {
+			File[] fileList = file.listFiles();
+			if (!file.getName().startsWith(".")
+					&& fileList != null) {
+				for (final File f : fileList) {
 					load(f, loader, prefix + file.getName() + ".");
 				}
 			}
@@ -97,7 +95,7 @@ public class PowerLoader {
 					&& !name.contains("!")
 					&& !name.contains("$")) {
 				name = name.substring(0, name.length() - ext.length());
-				load(loader, name, file.getAbsolutePath());
+				load(loader, name);
 			}
 		}
 	}
@@ -110,13 +108,13 @@ public class PowerLoader {
 			final String ext = ".class";
 			if (name.endsWith(ext)
 					&& !name.contains("$")) {
-				load(loader, name.substring(0, name.length() - ext.length()), jar.getName());
+				load(loader, name.substring(0, name.length() - ext.length()));
 			}
 		}
 	}
 	
-	private void load(ClassLoader loader, String name, String path) {
-		Class<?> clazz = null;
+	private void load(ClassLoader loader, String name) {
+		Class<?> clazz;
         try {
     		clazz = loader.loadClass(name);
     		if (clazz == null) {
@@ -130,7 +128,7 @@ public class PowerLoader {
     						S86Powers.log(Level.WARNING, LocaleString.INVALID_POWER_TYPE.build(name));
     					}
     				}
-    				else if (manifest.name() == "") {
+    				else if (manifest.name().equals("")) {
     					if (ConfigOption.Plugin.SHOW_CONFIG_STATUS) {
     						S86Powers.log(Level.WARNING, LocaleString.INVALID_POWER_NAME.build(name));
     					}
@@ -168,7 +166,6 @@ public class PowerLoader {
     		}
         } catch (Throwable e) {
 			e.printStackTrace();
-            return;
         }
 	}
 	
@@ -190,8 +187,8 @@ public class PowerLoader {
 	
 	private Class<?> resolveClass(ClassLoader loader, String name) throws ClassNotFoundException {
 		Class<?> clazz = null;
-		for (int i = 0; i < TYPE_PREFIX.length; i ++) {
-			clazz = loader.loadClass(POWER_PREFIX + TYPE_PREFIX[i] + name);
+		for (String typePrefix : TYPE_PREFIX) {
+			clazz = loader.loadClass(POWER_PREFIX + typePrefix + name);
 			if (clazz != null) {
 				break;
 			}

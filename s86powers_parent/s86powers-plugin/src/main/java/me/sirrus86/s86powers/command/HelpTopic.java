@@ -77,16 +77,16 @@ public enum HelpTopic {
 	private final String syntax;
 	private final Permission perm;
 	
-	private HelpTopic(final Permission perm, final String syntax) {
+	HelpTopic(final Permission perm, final String syntax) {
 		this.perm = perm;
 		this.syntax = syntax;
 	}
 	
-	private final String getDescription() {
+	private String getDescription() {
 		return LocaleString.valueOf(this.name() + "_HELP").toString();
 	}
 	
-	private final Permission getPermission() {
+	private Permission getPermission() {
 		return perm;
 	}
 	
@@ -94,15 +94,15 @@ public enum HelpTopic {
 		return syntax;
 	}
 	
-	protected static String showHelp(final CommandSender sender, final String topic) {
-		String tmp = "";
+	static String showHelp(final CommandSender sender, final String topic) {
+		StringBuilder tmp = new StringBuilder();
 		for (HelpTopic help : HelpTopic.values()) {
 			if (help.toString().startsWith(topic.toUpperCase())
-					&& (help.getPermission() != null ? sender.hasPermission(help.getPermission()) : true)) {
-				tmp = tmp + ChatColor.AQUA + help.getSyntax() + ChatColor.RESET + " - " + help.getDescription() + "\n";
+					&& (help.getPermission() == null || sender.hasPermission(help.getPermission()))) {
+				tmp.append(ChatColor.AQUA).append(help.getSyntax()).append(ChatColor.RESET).append(" - ").append(help.getDescription()).append("\n");
 			}
 		}
-		return tmp;
+		return tmp.toString();
 	}
 	
 }
