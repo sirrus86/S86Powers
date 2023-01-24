@@ -1,14 +1,13 @@
 package me.sirrus86.s86powers.tools.packets;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
+
+import me.sirrus86.s86powers.config.ConfigOption;
+import me.sirrus86.s86powers.tools.PowerTools;
+import me.sirrus86.s86powers.tools.version.MCMetadata;
+import me.sirrus86.s86powers.tools.version.MCVersion;
+import me.sirrus86.s86powers.utils.PowerTime;
+import me.sirrus86.s86powers.users.PowerUser;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -17,6 +16,7 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.attribute.Attribute;
+import org.bukkit.attribute.AttributeInstance;
 import org.bukkit.block.Block;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.entity.Creature;
@@ -49,20 +49,15 @@ import com.comphenix.protocol.wrappers.EnumWrappers.NativeGameMode;
 import com.comphenix.protocol.wrappers.EnumWrappers.PlayerDigType;
 import com.comphenix.protocol.wrappers.EnumWrappers.PlayerInfoAction;
 import com.comphenix.protocol.wrappers.WrappedDataWatcher.Registry;
-import com.google.common.collect.Lists;
 
-import me.sirrus86.s86powers.config.ConfigOption;
-import me.sirrus86.s86powers.tools.PowerTools;
-import me.sirrus86.s86powers.tools.version.MCMetadata;
-import me.sirrus86.s86powers.tools.version.MCVersion;
-import me.sirrus86.s86powers.utils.PowerTime;
+import com.google.common.collect.Lists;
 
 public final class PacketManagerPLib extends PacketManager {
 
-	private Map<BlockPosition, PacketContainer> blocks = new HashMap<>();
-	private Map<UUID, PacketContainer> disguises = new HashMap<>(),
-			metadata = new HashMap<>();
-	private Map<UUID, Set<PacketContainer>> equipment = new HashMap<>();
+	private final Map<BlockPosition, PacketContainer> blocks = new HashMap<>();
+	private final Map<UUID, PacketContainer> disguises = new HashMap<>();
+	private final Map<UUID, PacketContainer> metadata = new HashMap<>();
+	private final Map<UUID, Set<PacketContainer>> equipment = new HashMap<>();
 	
 	private final ProtocolManager pm;
 	
@@ -78,7 +73,8 @@ public final class PacketManagerPLib extends PacketManager {
 				Entity entity = null;
 				try {
 					entity = event.getPacket().getEntityModifier(event).readSafely(0);
-				} catch (Exception e) {
+				}
+				catch (Exception e) {
 					// ProtocolLib can't pinpoint the entity, so leave the field null
 					if (ConfigOption.Plugin.SHOW_PACKET_ERRORS) {
 						e.printStackTrace();
@@ -126,23 +122,27 @@ public final class PacketManagerPLib extends PacketManager {
 						}
 						if (PowerTools.isTamed(entity)
 								&& ConfigOption.Powers.SHOW_HEARTS_ON_TAMED
-								&& entity instanceof LivingEntity) {
-							Player owner = PowerTools.getTamedOwner(entity).getPlayer();
+								&& entity instanceof LivingEntity
+								&& PowerTools.getTamedOwner(entity) != null) {
+							PowerUser powerOwner = PowerTools.getTamedOwner(entity);
+							Player owner = powerOwner != null && powerOwner.getPlayer() != null ? powerOwner.getPlayer() : null;
 							if (viewer == owner) {
-								double i = ((LivingEntity) entity).getHealth() / 2,
-										j = ((LivingEntity) entity).getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue() / 2;
-								String health = "";
+								LivingEntity lEntity = (LivingEntity) entity;
+								AttributeInstance health = lEntity.getAttribute(Attribute.GENERIC_MAX_HEALTH);
+								double i = lEntity.getHealth() / 2,
+										j = health != null ? health.getValue() / 2 : 0;
+								StringBuilder healthString = new StringBuilder();
 								for (int k = 0; k < j; k ++) {
 									if (i > 0) {
-										health = health + ChatColor.RED + "\u2665";
+										healthString.append(ChatColor.RED).append("♥");
 										i --;
 									}
 									else {
-										health = health + ChatColor.GRAY + "\u2665";
+										healthString.append(ChatColor.GRAY).append("♥");
 									}
 								}
 								WrappedDataWatcher watcher = WrappedDataWatcher.getEntityWatcher(entity);
-								watcher.setObject(MCMetadata.EntityMeta.ENTITY_CUSTOM_NAME.getIndex(), Registry.getChatComponentSerializer(true), Optional.of(WrappedChatComponent.fromText(health).getHandle()));
+								watcher.setObject(MCMetadata.EntityMeta.ENTITY_CUSTOM_NAME.getIndex(), Registry.getChatComponentSerializer(true), Optional.of(WrappedChatComponent.fromText(healthString.toString()).getHandle()));
 								watcher.setObject(MCMetadata.EntityMeta.ENTITY_IS_CUSTOM_NAME_VISIBLE.getIndex(), Registry.get(Boolean.class), (Object) true);
 								PacketContainer packet = createEntityMetadataPacket(entity.getEntityId(), watcher);
 								event.setPacket(packet);
@@ -165,41 +165,32 @@ public final class PacketManagerPLib extends PacketManager {
 						if (event.getPacket().getBooleans().read(1)) {
 							event.setCancelled(true);
 						}
-						plugin.getServer().getScheduler().runTask(plugin, new Runnable() {
-							@Override
-							public void run() {
-								Player controller = event.getPlayer();
-								if (control.containsKey(controller.getUniqueId())
-										&& control.get(controller.getUniqueId()) != null) {
-									float forward = 0.0F;
-									if (event.getPacket().getBooleans().read(1)) {
-										forward = 1.0F;
-									}
-									LivingEntity entity = control.get(controller.getUniqueId());
-									nms.controlWASD(controller, entity, forward, 0.0F, false);
+						plugin.getServer().getScheduler().runTask(plugin, () -> {
+							Player controller = event.getPlayer();
+							if (control.containsKey(controller.getUniqueId())
+									&& control.get(controller.getUniqueId()) != null) {
+								float forward = 0.0F;
+								if (event.getPacket().getBooleans().read(1)) {
+									forward = 1.0F;
 								}
+								LivingEntity entity = control.get(controller.getUniqueId());
+								nms.controlWASD(controller, entity, forward, 0.0F, false);
 							}
 						});
 					}
 				}
-				plugin.getServer().getScheduler().runTask(plugin, new Runnable() {
-
-					@Override
-					public void run() {
-						if (event.getPacketType() == PacketType.Play.Client.BLOCK_DIG) {
-							if (event.getPacket().getPlayerDigTypes().read(0) == PlayerDigType.DROP_ITEM) {
-								Player player = event.getPlayer();
-								if (player.isInsideVehicle()
-										&& player.getVehicle() instanceof Creature
-										&& control.containsKey(player.getUniqueId())) {
-									Creature vehicle = (Creature) player.getVehicle();
-									control.remove(player.getUniqueId());
-									PowerTools.removeControl(player, vehicle);
-								}
+				plugin.getServer().getScheduler().runTask(plugin, () -> {
+					if (event.getPacketType() == PacketType.Play.Client.BLOCK_DIG) {
+						if (event.getPacket().getPlayerDigTypes().read(0) == PlayerDigType.DROP_ITEM) {
+							Player player = event.getPlayer();
+							if (player.isInsideVehicle()
+									&& player.getVehicle() instanceof Creature vehicle
+									&& control.containsKey(player.getUniqueId())) {
+								control.remove(player.getUniqueId());
+								PowerTools.removeControl(player, vehicle);
 							}
 						}
 					}
-						
 				});
 			}
 			
@@ -208,18 +199,18 @@ public final class PacketManagerPLib extends PacketManager {
 	
 	@Override
 	public void addDisguise(Entity entity, EntityType type) {
-		createEntityPacket(entity, type, (WrappedDataWatcher) null, null);
+		createEntityPacket(entity, type, null, null);
 	}
 
 	@Override
 	public void addDisguise(Entity entity, EntityType type, Map<Integer, Object> meta) {
-		createEntityPacket(entity, type, meta != null ? createWrappedDataWatcher(null, meta) : null, null);
+		createEntityPacket(entity, type, meta != null ? createWrappedDataWatcher(meta) : null, null);
 	}
 
 	@Override
 	public void addDisguise(Entity entity, EntityType type, Map<Integer, Object> meta, Object data) {
 		createEntityPacket(entity.getEntityId(), entity.getUniqueId(), entity.getLocation(), entity.getVelocity(), type,
-				meta != null ? createWrappedDataWatcher(null, meta) : null, data, null);
+				meta != null ? createWrappedDataWatcher(meta) : null, data, null);
 	}
 
 	private void createEntityPacket(Entity entity, EntityType type, WrappedDataWatcher watcher, Object data) {
@@ -227,16 +218,17 @@ public final class PacketManagerPLib extends PacketManager {
 	}
 
 	private void createEntityPacket(int id, UUID uuid, Location loc, Vector velocity, EntityType type, WrappedDataWatcher watcher, Object data, Player viewer) {
-		PacketContainer entityPacket = null, metaPacket = null;
+		PacketContainer entityPacket, infoPacket = null, metaPacket;
 		if (type == EntityType.PLAYER) {
-			entityPacket = pm.createPacket(PacketType.Play.Server.NAMED_ENTITY_SPAWN, true);
+			entityPacket = pm.createPacket(PacketType.Play.Server.NAMED_ENTITY_SPAWN);
 			entityPacket.getIntegers().write(0, id);
-			entityPacket.getUUIDs().write(0, (UUID) data);
+			entityPacket.getUUIDs().write(0, uuid);
 			entityPacket.getDoubles().write(0, loc.getX());
 			entityPacket.getDoubles().write(1, loc.getY());
 			entityPacket.getDoubles().write(2, loc.getZ());
 			entityPacket.getBytes().write(0, (byte) (loc.getYaw() * 256.0F / 360.0F));
 			entityPacket.getBytes().write(1, (byte) (loc.getPitch() * 256.0F / 360.0F));
+			infoPacket = createPlayerInfoPacket(uuid, Bukkit.getPlayer((UUID) data));
 		}
 		else if (type == EntityType.EXPERIENCE_ORB) {
 			entityPacket = pm.createPacket(PacketType.Play.Server.SPAWN_ENTITY_EXPERIENCE_ORB, true);
@@ -259,8 +251,7 @@ public final class PacketManagerPLib extends PacketManager {
 			if (MCVersion.isLessThan(MCVersion.v1_19)) {
 				entityPacket.getIntegers().write(4, (int) (loc.getYaw() * 256.0F / 360.0F));
 				entityPacket.getIntegers().write(5, (int) (loc.getPitch() * 256.0F / 360.0F));
-				if (data != null
-						&& data instanceof Integer) {
+				if (data instanceof Integer) {
 					entityPacket.getIntegers().write(6, (int) data);
 				}
 			}
@@ -268,35 +259,23 @@ public final class PacketManagerPLib extends PacketManager {
 				entityPacket.getBytes().write(0, (byte) (loc.getYaw() * 256.0F / 360.0F));
 				entityPacket.getBytes().write(1, (byte) (loc.getPitch() * 256.0F / 360.0F));
 				entityPacket.getBytes().write(2, (byte) (loc.getYaw() * 256.0F / 360.0F));
-				if (data != null
-						&& data instanceof Integer) {
+				if (data instanceof Integer) {
 					entityPacket.getIntegers().write(4, (int) data);
 				}
 			}
 			entityPacket.getEntityTypeModifier().write(0, type);
 		}
 		Entity entity = Bukkit.getEntity(uuid);
-		if (entityPacket != null) {
-			if (viewer != null) {
-				sendServerPacket(viewer, entityPacket);
-			}
-			if (entity != null) {
-				if (entity instanceof Player) {
-					Player player = (Player) entity;
-					PacketContainer infoPacket = pm.createPacket(PacketType.Play.Server.PLAYER_INFO);
-					infoPacket.getPlayerInfoAction().write(0, PlayerInfoAction.ADD_PLAYER);
-					List<PlayerInfoData> pInfo = new ArrayList<>();
-					WrappedGameProfile profile = WrappedGameProfile.fromPlayer(player).withId(Integer.toString(id));
-					NativeGameMode mode = NativeGameMode.fromBukkit(player.getGameMode());
-					WrappedChatComponent name = WrappedChatComponent.fromText(player.getDisplayName());
-					pInfo.add(new PlayerInfoData(profile, 0, mode, name));
-					infoPacket.getPlayerInfoDataLists().write(0, pInfo);
-					pm.broadcastServerPacket(infoPacket, entity, false);
-				}
-				pm.broadcastServerPacket(entityPacket, entity, false);
-			}
-			disguises.put(uuid, entityPacket);
+		if (viewer != null) {
+			sendServerPacket(viewer, entityPacket);
 		}
+		if (entity != null) {
+			if (infoPacket != null) {
+				pm.broadcastServerPacket(infoPacket, entity, false);
+			}
+			pm.broadcastServerPacket(entityPacket, entity, false);
+		}
+		disguises.put(uuid, entityPacket);
 		if (watcher != null) {
 			metaPacket = createEntityMetadataPacket(id, watcher);
 			if (viewer != null) {
@@ -313,23 +292,16 @@ public final class PacketManagerPLib extends PacketManager {
 	public void addDisguise(Entity entity, ItemStack item) {
 		WrappedDataWatcher watcher = new WrappedDataWatcher();
 		watcher.setObject(MCMetadata.EntityMeta.THROWABLE_ITEM.getIndex(), Registry.getItemStackSerializer(false), item, true);
-		createEntityPacket(entity, EntityType.SNOWBALL, watcher, (int) 1);
+		createEntityPacket(entity, EntityType.SNOWBALL, watcher, 1);
 	}
 
 	@Override
 	public void addDisguise(Entity entity, Entity target) {
 		Object data = null;
 		switch (target.getType()) {
-			case PAINTING: {
-				data = ((Painting)target).getArt();
-				break;
-			}
-			case PLAYER: {
-				data = target.getUniqueId();
-				break;
-			}
-			default: {
-				break;
+			case PAINTING -> data = ((Painting) target).getArt();
+			case PLAYER -> data = target.getUniqueId();
+			default -> {
 			}
 		}
 		createEntityPacket(entity, target.getType(), WrappedDataWatcher.getEntityWatcher(target), data);
@@ -340,13 +312,11 @@ public final class PacketManagerPLib extends PacketManager {
 
 	@Override
 	public void addEquipmentDisguise(Entity entity, LivingEntity target) {
-		if (equipment != null) {
-			Set<PacketContainer> eqPackets = createEquipmentPackets(entity.getEntityId(), (LivingEntity) target);
-			for (PacketContainer eqPacket : eqPackets) {
-				pm.broadcastServerPacket(eqPacket, entity, false);
-			}
-			equipment.put(entity.getUniqueId(), eqPackets);
+		Set<PacketContainer> eqPackets = createEquipmentPackets(entity.getEntityId(), target);
+		for (PacketContainer eqPacket : eqPackets) {
+			pm.broadcastServerPacket(eqPacket, entity, false);
 		}
+		equipment.put(entity.getUniqueId(), eqPackets);
 	}
 
 	@Override
@@ -415,7 +385,7 @@ public final class PacketManagerPLib extends PacketManager {
 		}
 		else {
 			Optional<InternalStructure> optStruct = teamPacket.getOptionalStructures().read(0);
-			if (optStruct != null) {
+			if (optStruct.isPresent()) {
 				InternalStructure struct = optStruct.get();
 				struct.getChatComponents().write(0, WrappedChatComponent.fromText(""));
 				struct.getEnumModifier(ChatColor.class, MinecraftReflection.getMinecraftClass("EnumChatFormat")).write(0, color);
@@ -443,13 +413,13 @@ public final class PacketManagerPLib extends PacketManager {
 			for (Block block : blocks) {
 				blockTemporary(block, material);
 				if (!chunks.containsKey(block.getChunk())) {
-					chunks.put(block.getChunk(), new ArrayList<Block>());
+					chunks.put(block.getChunk(), new ArrayList<>());
 				}
 				chunks.get(block.getChunk()).add(block);
 			}
 			for (Chunk chunk : chunks.keySet()) {
 				PacketContainer packet = pm.createPacket(PacketType.Play.Server.MULTI_BLOCK_CHANGE, true);
-				Block[] cBlocks = chunks.get(chunk).toArray(new Block[chunks.get(chunk).size()]);
+				Block[] cBlocks = chunks.get(chunk).toArray(new Block[0]);
 				packet.getChunkCoordIntPairs().write(0, new ChunkCoordIntPair(chunk.getX(), chunk.getZ()));
 				MultiBlockChangeInfo[] changes = new MultiBlockChangeInfo[cBlocks.length];
 				for (int i = 0; i < cBlocks.length; i ++) {
@@ -484,14 +454,14 @@ public final class PacketManagerPLib extends PacketManager {
 			for (BlockPosition bPos : bPosMap.keySet()) {
 				PacketContainer packet = pm.createPacket(PacketType.Play.Server.MULTI_BLOCK_CHANGE, true);
 				packet.getSectionPositions().write(0, bPos);
-				Block[] cBlocks = bPosMap.get(bPos).toArray(new Block[bPosMap.get(bPos).size()]);
+				Block[] cBlocks = bPosMap.get(bPos).toArray(new Block[0]);
 				short[] locs = new short[cBlocks.length];
 				WrappedBlockData[] bDatas = new WrappedBlockData[cBlocks.length];
 				for (int i = 0; i < cBlocks.length; i ++) {
 					int x = cBlocks[i].getX() & 0xF,
 							y = cBlocks[i].getY() & 0xF,
 							z = cBlocks[i].getZ() & 0xF;
-					locs[i] = (short) (x << 8 | z << 4 | y << 0);
+					locs[i] = (short) (x << 8 | z << 4 | y);
 					bDatas[i] = WrappedBlockData.createData(data);
 				}
 				packet.getShortArrays().write(0, locs);
@@ -522,15 +492,15 @@ public final class PacketManagerPLib extends PacketManager {
 	@Override
 	public void blockUpdate(Collection<Block> blocks) {
 		if (MCVersion.isLessThan(MCVersion.v1_16_2)) {
-			Map<Chunk, List<Block>> chunks = new HashMap<Chunk, List<Block>>();
+			Map<Chunk, List<Block>> chunks = new HashMap<>();
 			for (Block block : blocks) {
 				if (!chunks.containsKey(block.getChunk())) {
-					chunks.put(block.getChunk(), new ArrayList<Block>());
+					chunks.put(block.getChunk(), new ArrayList<>());
 				}
 				chunks.get(block.getChunk()).add(block);
 			}
 			for (Chunk chunk : chunks.keySet()) {
-				Block[] cBlocks = chunks.get(chunk).toArray(new Block[chunks.get(chunk).size()]);
+				Block[] cBlocks = chunks.get(chunk).toArray(new Block[0]);
 				PacketContainer packet = pm.createPacket(PacketType.Play.Server.MULTI_BLOCK_CHANGE, true);
 				packet.getChunkCoordIntPairs().write(0, new ChunkCoordIntPair(chunk.getX(), chunk.getZ()));
 				MultiBlockChangeInfo[] changes = new MultiBlockChangeInfo[cBlocks.length];
@@ -565,14 +535,14 @@ public final class PacketManagerPLib extends PacketManager {
 			for (BlockPosition bPos : bPosMap.keySet()) {
 				PacketContainer packet = pm.createPacket(PacketType.Play.Server.MULTI_BLOCK_CHANGE, true);
 				packet.getSectionPositions().write(0, bPos);
-				Block[] cBlocks = bPosMap.get(bPos).toArray(new Block[bPosMap.get(bPos).size()]);
+				Block[] cBlocks = bPosMap.get(bPos).toArray(new Block[0]);
 				short[] locs = new short[cBlocks.length];
 				WrappedBlockData[] bDatas = new WrappedBlockData[cBlocks.length];
 				for (int i = 0; i < cBlocks.length; i ++) {
 					int x = cBlocks[i].getX() & 0xF,
 							y = cBlocks[i].getY() & 0xF,
 							z = cBlocks[i].getZ() & 0xF;
-					locs[i] = (short) (x << 8 | z << 4 | y << 0);
+					locs[i] = (short) (x << 8 | z << 4 | y);
 					bDatas[i] = WrappedBlockData.createData(cBlocks[i].getType());
 				}
 				packet.getShortArrays().write(0, locs);
@@ -606,7 +576,7 @@ public final class PacketManagerPLib extends PacketManager {
 		        slotList.add(new Pair<>(EnumWrappers.ItemSlot.MAINHAND, equip.getItemInMainHand()));
 		        slotList.add(new Pair<>(EnumWrappers.ItemSlot.OFFHAND, equip.getItemInOffHand()));
 		        packet.getSlotStackPairLists().write(0, slotList);
-				packets = Set.of(packet);
+				packets = Collections.singleton(packet);
 			}
 		}
 		return packets;
@@ -632,16 +602,37 @@ public final class PacketManagerPLib extends PacketManager {
         }
         return packet;
     }
+
+	private PacketContainer createPlayerInfoPacket(UUID uuid, Player player) {
+		WrappedSignedProperty currentTexture = WrappedGameProfile.fromPlayer(player).getProperties().get("textures")
+				.iterator().next();
+		PacketContainer infoPacket = pm.createPacket(PacketType.Play.Server.PLAYER_INFO);
+		WrappedGameProfile profile = WrappedGameProfile.fromPlayer(player).withId(uuid.toString());
+		profile.getProperties().get("textures").clear();
+		profile.getProperties().put("textures", currentTexture);
+		NativeGameMode mode = NativeGameMode.fromBukkit(player.getGameMode());
+		WrappedChatComponent name = WrappedChatComponent.fromText(player.getDisplayName());
+		List<PlayerInfoData> pInfo = List.of(new PlayerInfoData(profile, 0, mode, name));
+		if (MCVersion.isLessThan(MCVersion.v1_19_3)) {
+			infoPacket.getPlayerInfoAction().write(0, PlayerInfoAction.ADD_PLAYER);
+			infoPacket.getPlayerInfoDataLists().write(0, pInfo);
+		}
+		else {
+			infoPacket.getPlayerInfoActions().write(0, EnumSet.of(PlayerInfoAction.ADD_PLAYER));
+			infoPacket.getPlayerInfoDataLists().write(1, pInfo);
+		}
+		return infoPacket;
+	}
 	
-	private WrappedDataWatcher createWrappedDataWatcher(Entity entity, Map<Integer, Object> map) {
-		WrappedDataWatcher watcher = entity != null ? WrappedDataWatcher.getEntityWatcher(entity) : new WrappedDataWatcher();
+	private WrappedDataWatcher createWrappedDataWatcher(Map<Integer, Object> map) {
+		WrappedDataWatcher watcher = new WrappedDataWatcher();
 		for (Integer i : map.keySet()) {
 			if (watcher.hasIndex(i)
 					&& watcher.getObject(i) instanceof Byte) {
 				watcher.setObject(i, Registry.get(Byte.class), (byte) (watcher.getByte(i) + (byte) map.get(i)), true);
 			}
 			else {
-				watcher.setObject(i, Registry.get(map.get(i).getClass()), (Object) map.get(i), true);
+				watcher.setObject(i, Registry.get(map.get(i).getClass()), map.get(i), true);
 			}
 		}
 		return watcher;
@@ -658,7 +649,9 @@ public final class PacketManagerPLib extends PacketManager {
 
 	@Override
 	public void fakeExplosion(Location loc, float radius) {
-		loc.getWorld().playSound(loc, Sound.ENTITY_GENERIC_EXPLODE, 1.0F, 1.0F);
+		if (loc.getWorld() != null) {
+			loc.getWorld().playSound(loc, Sound.ENTITY_GENERIC_EXPLODE, 1.0F, 1.0F);
+		}
 		PacketContainer packet = pm.createPacket(PacketType.Play.Server.EXPLOSION);
 		packet.getDoubles().write(0, loc.getX());
 		packet.getDoubles().write(1, loc.getY());
@@ -672,22 +665,17 @@ public final class PacketManagerPLib extends PacketManager {
 	}
 	
 	private ItemSlot getItemSlot(EquipmentSlot slot) {
-		switch (slot) {
-			case HAND: return ItemSlot.MAINHAND;
-			case OFF_HAND: return ItemSlot.OFFHAND;
-			default: return ItemSlot.valueOf(slot.name());
-		}
+		return switch (slot) {
+			case HAND -> ItemSlot.MAINHAND;
+			case OFF_HAND -> ItemSlot.OFFHAND;
+			default -> ItemSlot.valueOf(slot.name());
+		};
 	}
 
 	@Override
 	public boolean hasDisguise(Block block) {
 		BlockPosition bPos = new BlockPosition(block.getX(), block.getY(), block.getZ());
 		return blocks.containsKey(bPos);
-	}
-
-	@Override
-	public boolean hasDisguise(Entity entity) {
-		return disguises.containsKey(entity.getUniqueId());
 	}
 
 	@Override
@@ -828,19 +816,20 @@ public final class PacketManagerPLib extends PacketManager {
 	@Override
 	public void showHearts(LivingEntity entity, Player player) {
 		WrappedDataWatcher watcher = WrappedDataWatcher.getEntityWatcher(entity);
-		double i = ((LivingEntity) entity).getHealth() / 2,
-				j = ((LivingEntity) entity).getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue() / 2;
-		String health = "";
+		AttributeInstance health = entity.getAttribute(Attribute.GENERIC_MAX_HEALTH);
+		double i = entity.getHealth() / 2,
+				j = health != null ? health.getValue() / 2 : 0;
+		StringBuilder healthString = new StringBuilder();
 		for (int k = 0; k < j; k ++) {
 			if (i > 0) {
-				health = health + ChatColor.RED + "\u2665";
+				healthString.append(ChatColor.RED).append("♥");
 				i --;
 			}
 			else {
-				health = health + ChatColor.GRAY + "\u2665";
+				healthString.append(ChatColor.GRAY).append("♥");
 			}
 		}
-		watcher.setObject(MCMetadata.EntityMeta.ENTITY_CUSTOM_NAME.getIndex(), Registry.getChatComponentSerializer(true), Optional.of(WrappedChatComponent.fromText(health).getHandle()));
+		watcher.setObject(MCMetadata.EntityMeta.ENTITY_CUSTOM_NAME.getIndex(), Registry.getChatComponentSerializer(true), Optional.of(WrappedChatComponent.fromText(healthString.toString()).getHandle()));
 		watcher.setObject(MCMetadata.EntityMeta.ENTITY_IS_CUSTOM_NAME_VISIBLE.getIndex(), Registry.get(Boolean.class), (Object) true);
 		PacketContainer packet = createEntityMetadataPacket(entity.getEntityId(), watcher);
 		sendServerPacket(player, packet);
@@ -855,45 +844,33 @@ public final class PacketManagerPLib extends PacketManager {
 	}
 	
 	private void updateEntity(Entity entity) {
-		updateEntity(entity, false);
-	}
-	
-	private void updateEntity(Entity entity, boolean sendToEntity) {
 		try {
 			pm.updateEntity(entity, pm.getEntityTrackers(entity));
 		} catch (Exception e) {
-			PacketContainer packet1 = null, packet2 = null;
-			if (entity instanceof Player) {
-				packet1 = pm.createPacketConstructor(PacketType.Play.Server.NAMED_ENTITY_SPAWN, (Player) entity).createPacket(entity);
-				Player player = (Player) entity;
-				packet2 = pm.createPacket(PacketType.Play.Server.PLAYER_INFO);
-				packet2.getPlayerInfoAction().write(0, PlayerInfoAction.ADD_PLAYER);
-				List<PlayerInfoData> pInfo = new ArrayList<>();
-				WrappedGameProfile profile = WrappedGameProfile.fromPlayer(player).withId(Integer.toString(entity.getEntityId()));
-				NativeGameMode mode = NativeGameMode.fromBukkit(player.getGameMode());
-				WrappedChatComponent name = WrappedChatComponent.fromText(player.getDisplayName());
-				pInfo.add(new PlayerInfoData(profile, 0, mode, name));
-				packet2.getPlayerInfoDataLists().write(0, pInfo);
+			PacketContainer packet1, packet2 = null;
+			if (entity instanceof Player player) {
+				packet1 = pm.createPacketConstructor(PacketType.Play.Server.NAMED_ENTITY_SPAWN, entity).createPacket(entity);
+				packet2 = createPlayerInfoPacket(entity.getUniqueId(), player);
 			}
 			else if (entity instanceof ExperienceOrb) {
-				packet1 = pm.createPacketConstructor(PacketType.Play.Server.SPAWN_ENTITY_EXPERIENCE_ORB, (ExperienceOrb) entity).createPacket(entity);
+				packet1 = pm.createPacketConstructor(PacketType.Play.Server.SPAWN_ENTITY_EXPERIENCE_ORB, entity).createPacket(entity);
 			}
 			else {
 				packet1 = pm.createPacketConstructor(PacketType.Play.Server.SPAWN_ENTITY, entity).createPacket(entity);
 			}
 			PacketContainer packet3 = createEntityMetadataPacket(entity.getEntityId(), WrappedDataWatcher.getEntityWatcher(entity));
 			if (packet2 != null) {
-				pm.broadcastServerPacket(packet2, entity, sendToEntity);
+				pm.broadcastServerPacket(packet2, entity, false);
 			}
-			pm.broadcastServerPacket(packet1, entity, sendToEntity);
-			pm.broadcastServerPacket(packet3, entity, sendToEntity);
+			pm.broadcastServerPacket(packet1, entity, false);
+			pm.broadcastServerPacket(packet3, entity, false);
 		}
 	}
 	
 	private enum Anchor {
 		
 		FEET,
-		EYES;
+		EYES
 		
 	}
 	
