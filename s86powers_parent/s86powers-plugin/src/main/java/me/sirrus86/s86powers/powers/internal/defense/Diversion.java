@@ -84,6 +84,8 @@ public final class Diversion extends Power {
 								@Override
 								public void run() {
 									pz.setPatrolLeader(false);
+									pz.setSilent(true);
+									pz.setTarget(damager);
 									PowerTools.addDisguise(pz, EntityType.PLAYER, null, user.getPlayer().getUniqueId());
 									PowerTools.addEquipmentDisguise(pz, user.getPlayer());
 									PowerTools.addGhost(user.getPlayer());
@@ -93,8 +95,6 @@ public final class Diversion extends Power {
 							if (damager instanceof Mob) {
 								((Mob) damager).setTarget(pz);
 							}
-							pz.setSilent(true);
-							pz.setTarget(damager);
 							Decoy decoy = new Decoy(user, pz);
 							decoys.get(user).add(decoy);
 							user.increaseStat(decoysMade, 1);
