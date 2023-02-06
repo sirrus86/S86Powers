@@ -43,7 +43,7 @@ import me.sirrus86.s86powers.users.PowerUser;
 			+ " [act:item]ing a [item] with a stored entity will thorw it, causing it to expel the stored entity on contact.")
 public final class MobCatcher extends Power {
 
-	private final Set<EntityType> capturable = EnumSet.of(EntityType.BAT, EntityType.BLAZE, EntityType.CAT, EntityType.CAVE_SPIDER, EntityType.CHICKEN,
+	private final Set<EntityType> capturable = EnumSet.of(EntityType.BAT, EntityType.BEE, EntityType.BLAZE, EntityType.CAT, EntityType.CAVE_SPIDER, EntityType.CHICKEN,
 			EntityType.COW, EntityType.CREEPER, EntityType.DOLPHIN, EntityType.DROWNED, EntityType.ENDERMAN, EntityType.ENDERMITE, EntityType.FOX,
 			EntityType.GHAST, EntityType.GUARDIAN, EntityType.HUSK, EntityType.MAGMA_CUBE, EntityType.MUSHROOM_COW, EntityType.OCELOT, EntityType.PANDA,
 			EntityType.PARROT, EntityType.PHANTOM, EntityType.PIG, PowerTools.resolveEntityType("PIGZOMBIE"), EntityType.POLAR_BEAR, EntityType.RABBIT, EntityType.SHEEP,
@@ -357,7 +357,7 @@ public final class MobCatcher extends Power {
 				ItemStack item = event.getItem().clone();
 				item.setAmount(1);
 				Snowball snowball = user.getPlayer().launchProjectile(Snowball.class);
-				PowerTools.addDisguise(snowball, item);
+				snowball.setItem(item);
 				eggs.put(snowball, item);
 				if (user.hasStatMaxed(eggsThrown)) {
 					eggOwners.put(snowball, user);
