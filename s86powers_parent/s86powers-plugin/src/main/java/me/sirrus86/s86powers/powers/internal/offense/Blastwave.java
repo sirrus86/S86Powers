@@ -76,7 +76,9 @@ public final class Blastwave extends Power {
 	@EventHandler(ignoreCancelled = true)
 	private void onFall(EntityDamageEvent event) {
 		if (event.getEntity() instanceof Player
-				&& event.getCause() == DamageCause.FALL) {
+				&& (event.getCause() == DamageCause.FALL
+						|| event.getCause() == DamageCause.FIRE
+						|| event.getCause() == DamageCause.FIRE_TICK)) {
 			PowerUser user = getUser((Player) event.getEntity());
 			if (user.allowPower(this)
 					&& fallCDs.containsKey(user)
