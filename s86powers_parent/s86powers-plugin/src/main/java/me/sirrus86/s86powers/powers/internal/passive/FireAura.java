@@ -1,10 +1,8 @@
 package me.sirrus86.s86powers.powers.internal.passive;
 
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.bukkit.EntityEffect;
 import org.bukkit.Location;
@@ -17,8 +15,6 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.event.player.PlayerMoveEvent;
-import org.bukkit.potion.PotionEffect;
-import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import com.google.common.collect.Lists;
@@ -32,21 +28,17 @@ import me.sirrus86.s86powers.users.PowerUser;
 import me.sirrus86.s86powers.utils.PowerTime;
 
 @PowerManifest(name = "Fire Aura", type = PowerType.PASSIVE, author = "sirrus86", concept = "FyreCat", icon = Material.BLAZE_POWDER,
-	description = "Regenerate hunger from fire and magma blocks, while regenerating health while in lava. Lose hunger in rain, and lose health in water."
-			+ "[blind-in-lava] Vision while in lava is improved.[/blind-in-lava]")
+	description = "Regenerate hunger from fire and magma blocks, while regenerating health while in lava. Lose hunger in rain, and lose health in water.")
 public final class FireAura extends Power {
-	
-	private Set<PowerUser> isBlind;
+
 	private Map<PowerUser, Integer> rainTask, sparkTask, waterTask;
 	private Map<PowerUser, Long> sparkDur;
-	
-	private PowerOption<Boolean> goBlind;
+
 	private PowerOption<Integer> rainDmg;
 	private PowerOption<Double> waterDmg;
 	
 	@Override
 	protected void onEnable() {
-		isBlind = new HashSet<>();
 		rainTask = new HashMap<>();
 		sparkDur = new HashMap<>();
 		sparkTask = new HashMap<>();
@@ -55,10 +47,6 @@ public final class FireAura extends Power {
 	
 	@Override
 	protected void onDisable(PowerUser user) {
-		if (isBlind.contains(user)) {
-			user.removePotionEffect(PotionEffectType.BLINDNESS);
-			isBlind.remove(user);
-		}
 		if (rainTask.containsKey(user)) {
 			cancelTask(rainTask.get(user));
 			rainTask.remove(user);
@@ -75,7 +63,6 @@ public final class FireAura extends Power {
 	
 	@Override
 	protected void config() {
-		goBlind = option("blind-in-lava", true, "Whether to apply blindness to player while in lava. This actually improves vision.");
 		rainDmg = option("rain-damage", 1, "Hunger caused by being in the rain.");
 		waterDmg = option("water-damage", 4.0D, "Damage caused by being in water.");
 	}
@@ -142,11 +129,6 @@ public final class FireAura extends Power {
 		}
 	}
 	
-	private boolean inLava(PowerUser user) {
-		Block block = user.getPlayer().getEyeLocation().getBlock();
-		return block.getType() == Material.LAVA;
-	}
-	
 	private boolean inRain(PowerUser user) {
 		Location loc = user.getPlayer().getEyeLocation();
 		return PowerTools.isOutside(loc)
@@ -198,16 +180,6 @@ public final class FireAura extends Power {
 	private void inWater(PlayerMoveEvent event) {
 		PowerUser user = getUser(event.getPlayer());
 		if (user.allowPower(this)) {
-			if (inLava(user)
-					&& user.getOption(goBlind)) {
-				user.addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, Integer.MAX_VALUE, 0));
-				isBlind.add(user);
-			}
-			else if (!inLava(user)
-					&& isBlind.contains(user)) {
-				user.removePotionEffect(PotionEffectType.BLINDNESS);
-				isBlind.remove(user);
-			}
 			if (inWater(user)
 					&& !waterTask.containsKey(user)) {
 				waterTask(user);
