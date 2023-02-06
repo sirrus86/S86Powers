@@ -611,7 +611,7 @@ public final class PacketManagerPLib extends PacketManager {
 		profile.getProperties().get("textures").clear();
 		profile.getProperties().put("textures", currentTexture);
 		NativeGameMode mode = NativeGameMode.fromBukkit(player.getGameMode());
-		WrappedChatComponent name = WrappedChatComponent.fromText(player.getDisplayName());
+		WrappedChatComponent name = WrappedChatComponent.fromText(player.getName());
 		List<PlayerInfoData> pInfo = List.of(new PlayerInfoData(profile, 0, mode, name));
 		if (MCVersion.isLessThan(MCVersion.v1_19_3)) {
 			infoPacket.getPlayerInfoAction().write(0, PlayerInfoAction.ADD_PLAYER);
