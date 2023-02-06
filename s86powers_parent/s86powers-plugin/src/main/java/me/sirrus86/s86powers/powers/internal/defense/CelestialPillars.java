@@ -20,7 +20,6 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.entity.EntityChangeBlockEvent;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.scheduler.BukkitRunnable;
 
 import me.sirrus86.s86powers.events.PowerUseEvent;
 import me.sirrus86.s86powers.powers.Power;
@@ -175,7 +174,8 @@ public final class CelestialPillars extends Power {
 		private final List<Block> blocks;
 		private final Block core;
 		private long life;
-		private final int task;
+		private Runnable task;
+		private int taskID;
 		private final PowerUser user;
 		
 		public Pillar(PowerUser user, Block core, boolean isSuper) {
@@ -185,44 +185,46 @@ public final class CelestialPillars extends Power {
 			this.life = System.currentTimeMillis() + user.getOption(pDur);
 			inside = new HashMap<>();
 			outside = new HashMap<>();
-			Runnable manage = new BukkitRunnable() {
-				@Override
-				public void run() {
-					if (life > System.currentTimeMillis()) {
-						double range = isSuper ? user.getOption(sPRange) : user.getOption(pRange);
-						for (Entity entity : PowerTools.getNearbyEntities(Entity.class, core.getLocation(), range + 2)) {
-							if (entity instanceof FallingBlock
-									&& !falling.containsKey(entity)
-									&& !superFalling.contains(entity)) {
-								Location checkLoc = core.getLocation().clone();
-								checkLoc.setY(entity.getLocation().getY());
-								if (!inside.containsKey(entity.getUniqueId())
-										&& !outside.containsKey(entity.getUniqueId())) {
-									if (entity.getLocation().distanceSquared(checkLoc) > range * range) {
-										outside.put(entity.getUniqueId(), entity.getLocation().clone());
-									} else {
-										inside.put(entity.getUniqueId(), entity.getLocation().clone());
-									}
-								}
-								if (inside.containsKey(entity.getUniqueId()) && checkLoc.distanceSquared(entity.getLocation()) > range * range) {
-									entity.teleport(inside.get(entity.getUniqueId()));
-								} else if (outside.containsKey(entity.getUniqueId()) && checkLoc.distanceSquared(entity.getLocation()) <= range * range) {
-									entity.teleport(outside.get(entity.getUniqueId()));
-								} else {
-									if (inside.containsKey(entity.getUniqueId())) {
-										inside.put(entity.getUniqueId(), entity.getLocation().clone());
-									} else if (outside.containsKey(entity.getUniqueId())) {
-										outside.put(entity.getUniqueId(), entity.getLocation().clone());
-									}
-								}
+			task = () -> {
+				if (life > System.currentTimeMillis()) {
+					double range = isSuper ? user.getOption(sPRange) : user.getOption(pRange);
+					for (Entity entity : PowerTools.getNearbyEntities(Entity.class, core.getLocation(), range + 2)) {
+						Location checkLoc = core.getLocation().clone();
+						checkLoc.setY(entity.getLocation().getY());
+						//noinspection SuspiciousMethodCalls
+						if (!falling.containsKey(entity)
+								&& !superFalling.contains(entity)
+								&& !inside.containsKey(entity.getUniqueId())
+								&& !outside.containsKey(entity.getUniqueId())) {
+							if (entity.getLocation().distanceSquared(checkLoc) > range * range) {
+								outside.put(entity.getUniqueId(), entity.getLocation().clone());
+							}
+							else {
+								inside.put(entity.getUniqueId(), entity.getLocation().clone());
 							}
 						}
-					} else {
-						shatter();
+						if (inside.containsKey(entity.getUniqueId()) && checkLoc.distanceSquared(entity.getLocation()) > range * range) {
+							entity.teleport(inside.get(entity.getUniqueId()));
+						}
+						else if (outside.containsKey(entity.getUniqueId()) && checkLoc.distanceSquared(entity.getLocation()) <= range * range) {
+							entity.teleport(outside.get(entity.getUniqueId()));
+						}
+						else {
+							if (inside.containsKey(entity.getUniqueId())) {
+								inside.put(entity.getUniqueId(), entity.getLocation().clone());
+							}
+							else if (outside.containsKey(entity.getUniqueId())) {
+								outside.put(entity.getUniqueId(), entity.getLocation().clone());
+							}
+						}
 					}
+					taskID = runTaskLater(task, 2L).getTaskId();
+				}
+				else {
+					shatter();
 				}
 			};
-			task = runTaskTimer(manage, 0L, 0L).getTaskId();
+			taskID = runTask(task).getTaskId();
 			registerEvents(this);
 		}
 		
@@ -260,7 +262,7 @@ public final class CelestialPillars extends Power {
 			inside.clear();
 			outside.clear();
 			unregisterEvents(this);
-			cancelTask(task);
+			cancelTask(taskID);
 		}
 
 		@EventHandler(ignoreCancelled = true)
