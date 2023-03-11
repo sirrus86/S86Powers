@@ -229,11 +229,11 @@ public final class S86Powers extends JavaPlugin {
 				"Note: Editing this file (enUS.yml) is pointless as it is overwritten every time the",
 				"server restarts.");
 		if (MCVersion.isLessThan(MCVersion.v1_18_1)) {
-			defYaml.options().setHeader(header);
-		}
-		else {
 			//noinspection deprecation
 			defYaml.options().header(String.join("\n", header));
+		}
+		else {
+			defYaml.options().setHeader(header);
 		}
 		for (LocaleString string : LocaleString.values()) {
 			defYaml.set(string.getPath(), string.getDefaultText());
