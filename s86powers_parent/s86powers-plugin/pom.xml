@@ -146,6 +146,13 @@
 			<optional>true</optional>
 		</dependency>
 		<dependency>
+			<groupId>me.sirrus86</groupId>
+			<artifactId>s86powers-v1_19_4</artifactId>
+			<version>v1_19_4</version>
+			<scope>compile</scope>
+			<optional>true</optional>
+		</dependency>
+		<dependency>
 			<groupId>org.jetbrains</groupId>
 			<artifactId>annotations</artifactId>
 			<version>23.1.0</version>

@@ -128,6 +128,11 @@ public enum MCVersion {
 	 * Represents server version 1.19.3.
 	 */
 	v1_19_3("v1_19_3", 5.0D),
+
+	/**
+	 * Represents server version 1.19.4.
+	 */
+	v1_19_4("v1_19_4", 5.0D),
 	
 	/**
 	 * Represents an unsupported server version.
