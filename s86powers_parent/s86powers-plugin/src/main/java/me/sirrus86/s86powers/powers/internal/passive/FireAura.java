@@ -34,6 +34,8 @@ public final class FireAura extends Power {
 	private Map<PowerUser, Integer> rainTask, sparkTask, waterTask;
 	private Map<PowerUser, Long> sparkDur;
 
+	private PowerOption<Integer> foodRegen;
+	private PowerOption<Double> healthRegen;
 	private PowerOption<Integer> rainDmg;
 	private PowerOption<Double> waterDmg;
 	
@@ -63,6 +65,8 @@ public final class FireAura extends Power {
 	
 	@Override
 	protected void config() {
+		foodRegen = option("food-regen", 1, "Hunger regenerated while on fire or on magma blocks.");
+		healthRegen = option("health-regen", 1.0D, "Health regenerated while in lava.");
 		rainDmg = option("rain-damage", 1, "Hunger caused by being in the rain.");
 		waterDmg = option("water-damage", 4.0D, "Damage caused by being in water.");
 	}
@@ -158,16 +162,20 @@ public final class FireAura extends Power {
 			if (user.allowPower(this)) {
 				switch (event.getCause()) {
 					case FIRE, FIRE_TICK, HOT_FLOOR -> {
-						user.regenHunger((int) event.getDamage());
-						event.setCancelled(true);
+						if (user.getOption(foodRegen) > 0) {
+							user.regenHunger(user.getOption(foodRegen));
+							event.setCancelled(true);
+						}
 					}
 					case LAVA -> {
-						user.heal(event.getDamage());
-						sparkDur.put(user, System.currentTimeMillis() + PowerTime.toMillis(3, 0));
-						if (!sparkTask.containsKey(user)) {
-							sparkTask(user);
+						if (user.getOption(healthRegen) > 0.0D) {
+							user.heal(user.getOption(healthRegen));
+							sparkDur.put(user, System.currentTimeMillis() + PowerTime.toMillis(3, 0));
+							if (!sparkTask.containsKey(user)) {
+								sparkTask(user);
+							}
+							event.setCancelled(true);
 						}
-						event.setCancelled(true);
 					}
 					default -> {
 					}
