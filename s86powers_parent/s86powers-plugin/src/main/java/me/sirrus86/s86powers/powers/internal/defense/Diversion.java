@@ -147,6 +147,7 @@ public final class Diversion extends Power {
 		private void onTarget(EntityTargetEvent event) {
 			if (event.getEntity() == this.zombie
 					&& event.getTarget() == this.owner.getPlayer()) {
+				event.setTarget(null);
 				event.setCancelled(true);
 			}
 		}
