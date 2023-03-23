@@ -753,7 +753,7 @@ public final class PowerUser implements Comparable<PowerUser> {
 	
 	public void setCooldown(Power power, long time) {
 		if (!this.isAdmin()
-				|| !ConfigOption.Admin.BYPASS_COOLDOWN) {
+				|| (this.isAdmin() && !ConfigOption.Admin.BYPASS_COOLDOWN)) {
 			cooldowns.put(power, System.currentTimeMillis() + time);
 			if (ConfigOption.Powers.SHOW_COOLDOWN_ON_ITEM
 					&& power.getRequiredItem() != null
