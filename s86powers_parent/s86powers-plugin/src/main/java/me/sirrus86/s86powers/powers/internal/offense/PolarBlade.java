@@ -120,16 +120,15 @@ public final class PolarBlade extends Power {
 	@SuppressWarnings("DataFlowIssue")
 	@EventHandler(ignoreCancelled = true)
 	private void onDamage(EntityDamageByEntityEvent event) {
-		if (event.getDamager() instanceof LivingEntity
-				&& event.getEntity() instanceof LivingEntity damager) {
+		if (event.getDamager() instanceof LivingEntity damager
+				&& event.getEntity() instanceof LivingEntity entity) {
 			if (hasPBlade(damager)) {
 				if (damager instanceof Player) {
 					PowerUser user = getUser((Player) damager);
 					user.causeDamage(this, event);
 				}
 				ItemStack sword = damager instanceof Player ? ((Player) damager).getInventory().getItemInMainHand() : damager.getEquipment() != null ? damager.getEquipment().getItemInMainHand() : null;
-				LivingEntity entity = (LivingEntity) event.getEntity();
-				int slowAmp = sword != null && sword.getItemMeta() != null ? sword.getItemMeta().getPersistentDataContainer().get(pBladeEffectAmps, PersistentDataType.INTEGER) : -1;
+				int slowAmp = (sword != null && sword.getItemMeta() != null) ? sword.getItemMeta().getPersistentDataContainer().get(pBladeEffectAmps, PersistentDataType.INTEGER) : -1;
 				entity.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, PowerTime.toTicks(3, 0), slowAmp));
 			}
 		}
