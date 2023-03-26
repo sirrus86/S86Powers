@@ -48,7 +48,7 @@ public class MCMetadata {
 		DISPLAY_SCALE(-1,-1,-1,-1,-1,-1,-1,11,Vector.class),
 		DISPLAY_ROTATION_LEFT(-1,-1,-1,-1,-1,-1,-1,12,null), // TODO Quaternion
 		DISPLAY_ROTATION_RIGHT(-1,-1,-1,-1,-1,-1,-1,13,null), // TODO Quaternion
-		DISPLAY_BILLBOARD_CONSTRAINTS(-1,-1,-1,-1,-1,-1,-1,14,Display.Billboard.class),
+		DISPLAY_BILLBOARD_CONSTRAINTS(-1,-1,-1,-1,-1,-1,-1,14,null), // TODO Display Billboard
 		DISPLAY_BRIGHTNESS_OVERRIDE(-1,-1,-1,-1,-1,-1,-1,15,Integer.class),
 		DISPLAY_VIEW_RANGE(-1,-1,-1,-1,-1,-1,-1,16,Float.class),
 		DISPLAY_SHADOW_RADIUS(-1,-1,-1,-1,-1,-1,-1,17,Float.class),
